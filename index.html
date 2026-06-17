@@ -1,0 +1,2969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户关系管理系统 - 本地加密存储版</title>
+<style>
+/* ========================================
+   全局样式变量：支持浅色 / 深色主题切换（紧凑布局版）
+   ======================================== */
+:root {
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #eef2f7;
+  --border-color: #e1e8ed;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #dbeafe;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 6px 20px rgba(0,0,0,0.12);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --compact-pad: 8px;
+  --compact-gap: 6px;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --border-color: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-light: #1e3a8a;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --danger-hover: #f87171;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* ========================================
+   基础重置（紧凑布局）
+   ======================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.45;
+  transition: background-color 0.3s, color 0.3s;
+  overflow-x: hidden;
+}
+button { font-family: inherit; cursor: pointer; border: none; outline: none; font-size: 13px; }
+input, select, textarea { font-family: inherit; outline: none; font-size: 13px; }
+a { color: var(--accent); text-decoration: none; }
+
+/* ========================================
+   通用组件（紧凑）
+   ======================================== */
+.btn {
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  height: 28px;
+}
+.btn:hover:not(:disabled) { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+.btn-success { background: var(--success); color: white; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-outline {
+  background: transparent;
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+.btn-outline:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 3px 8px; font-size: 12px; height: 24px; }
+.btn-lg { padding: 8px 20px; font-size: 14px; height: 36px; }
+
+.input, .select, .textarea {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: border-color 0.15s;
+  height: 28px;
+}
+.textarea { min-height: 70px; height: auto; resize: vertical; padding: 5px 8px; line-height: 1.5; }
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.input.valid { border-color: var(--success); }
+.input.invalid { border-color: var(--danger); }
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+.label.required::after {
+  content: " *";
+  color: var(--danger);
+}
+.error-text { color: var(--danger); font-size: 11px; margin-top: 2px; display: none; }
+.input.invalid + .error-text { display: block; }
+
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.badge-success { background: #dcfce7; color: var(--success); }
+.badge-warning { background: #fef3c7; color: var(--warning); }
+.badge-danger { background: #fee2e2; color: var(--danger); }
+[data-theme="dark"] .badge-success { background: rgba(34,197,94,0.2); }
+[data-theme="dark"] .badge-warning { background: rgba(245,158,11,0.2); }
+[data-theme="dark"] .badge-danger { background: rgba(239,68,68,0.2); }
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+/* ========================================
+   解锁页 / 初始化页（紧凑）
+   ======================================== */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-primary), var(--bg-tertiary));
+  padding: 16px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 24px 24px;
+  box-shadow: var(--shadow-lg);
+}
+.auth-logo {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.auth-logo-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+.auth-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+.auth-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.auth-group { margin-bottom: 12px; }
+.auth-info {
+  background: var(--bg-tertiary);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.auth-footer {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.auth-link { color: var(--accent); cursor: pointer; }
+.auth-link:hover { text-decoration: underline; }
+.auth-locked {
+  background: #fee2e2;
+  color: var(--danger);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  margin-bottom: 12px;
+  font-weight: 500;
+  font-size: 12px;
+}
+[data-theme="dark"] .auth-locked { background: rgba(239,68,68,0.15); }
+
+/* ========================================
+   主应用布局（紧凑）
+   ======================================== */
+.app-container { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 180px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: 12px 0;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+.sidebar-header {
+  padding: 0 14px 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+}
+.sidebar-title { font-size: 13px; font-weight: 600; }
+.sidebar-subtitle { font-size: 10px; color: var(--text-muted); }
+.nav-list { list-style: none; padding: 8px; }
+.nav-item {
+  padding: 7px 10px;
+  margin-bottom: 2px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  transition: all 0.15s;
+  user-select: none;
+}
+.nav-item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.nav-item.active {
+  background: var(--accent);
+  color: white;
+}
+.nav-icon { font-size: 14px; width: 16px; text-align: center; }
+
+.main-content {
+  flex: 1;
+  margin-left: 180px;
+  padding: 16px;
+  min-width: 0;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  background: var(--bg-secondary);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+.topbar-left h1 { font-size: 16px; font-weight: 600; }
+.topbar-left p { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.sync-status {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sync-status.syncing { color: var(--warning); }
+.sync-status.online { color: var(--success); }
+.sync-status.offline { color: var(--text-muted); }
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* ========================================
+   仪表盘（紧凑）
+   ======================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.stat-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+.stat-label { font-size: 12px; color: var(--text-secondary); }
+.stat-value { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
+.stat-change { font-size: 11px; margin-top: 4px; color: var(--text-muted); }
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.chart-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+.chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.chart-legend {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-align: center;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+.quick-action-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 8px;
+  text-align: center;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.quick-action-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.quick-action-icon { font-size: 18px; margin-bottom: 4px; }
+.quick-action-text { font-size: 12px; }
+
+/* ========================================
+   列表页（紧凑）
+   ======================================== */
+.filter-bar {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.filter-grid > div { display: flex; flex-direction: column; }
+.filter-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.table-wrap {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+.data-table th, .data-table td {
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.data-table th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  position: sticky;
+  top: 0;
+}
+.data-table th:hover { color: var(--accent); }
+.data-table tr:hover td { background: var(--bg-tertiary); }
+.data-table td input[type="checkbox"] { cursor: pointer; }
+.table-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pagination-info { font-size: 12px; color: var(--text-secondary); }
+.pagination-controls { display: flex; gap: 4px; align-items: center; }
+
+/* ========================================
+   弹窗（紧凑）
+   ======================================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  animation: fadeIn 0.15s;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  max-width: 900px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s;
+}
+.modal.modal-sm { max-width: 440px; }
+.modal.modal-md { max-width: 700px; }
+.modal-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  z-index: 1;
+}
+.modal-title { font-size: 14px; font-weight: 600; }
+.modal-close {
+  background: transparent;
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+.modal-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.modal-body { padding: 14px; }
+.modal-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-secondary);
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================
+   表单分组（折叠式，紧凑）
+   ======================================== */
+.form-section {
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.form-section-header {
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  font-weight: 600;
+  font-size: 13px;
+}
+.form-section-header:hover { background: var(--bg-primary); }
+.form-section-body { padding: 10px 12px; display: none; }
+.form-section.open .form-section-body { display: block; }
+.form-section.open .form-section-toggle { transform: rotate(180deg); }
+.form-section-toggle { transition: transform 0.15s; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 12px;
+}
+.form-group { margin-bottom: 8px; }
+.form-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.form-row > div { flex: 1; }
+
+.tag-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  margin: 2px 4px 2px 0;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.tag-chip:hover { opacity: 0.8; }
+.tag-picker-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  min-height: 28px;
+  background: var(--bg-secondary);
+}
+.tag-picker-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 4px;
+  min-width: 120px;
+  font-size: 13px;
+}
+
+/* ========================================
+   详情页（紧凑）
+   ======================================== */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.detail-title { font-size: 16px; font-weight: 600; }
+.detail-actions { display: flex; gap: 6px; }
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px 16px;
+}
+.detail-item {
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border-color);
+}
+.detail-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; }
+.detail-value { font-size: 13px; color: var(--text-primary); font-weight: 500; word-break: break-all; }
+
+.timeline {
+  margin-top: 14px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border-color);
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 10px;
+  padding-left: 12px;
+}
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -21px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg-secondary);
+}
+.timeline-time { font-size: 11px; color: var(--text-muted); }
+.timeline-content { font-size: 13px; margin-top: 2px; }
+
+/* ========================================
+   数据安全中心（紧凑）
+   ======================================== */
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.security-item-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
+.security-item-value { font-size: 13px; font-weight: 500; color: var(--text-primary); word-break: break-all; }
+.security-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.log-list { max-height: 400px; overflow-y: auto; }
+.log-item {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: grid;
+  grid-template-columns: 150px 110px 1fr;
+  gap: 8px;
+  font-size: 12px;
+}
+.log-item:hover { background: var(--bg-tertiary); }
+.log-time { color: var(--text-muted); font-size: 11px; }
+.log-type { font-weight: 500; }
+.log-result { color: var(--success); }
+.log-result.fail { color: var(--danger); }
+
+/* ========================================
+   Toast 提示（紧凑）
+   ======================================== */
+.toast-container {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border-left: 3px solid var(--accent);
+  min-width: 180px;
+  animation: toastIn 0.2s;
+  pointer-events: auto;
+  font-size: 13px;
+}
+.toast.success { border-left-color: var(--success); }
+.toast.warning { border-left-color: var(--warning); }
+.toast.error { border-left-color: var(--danger); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.toast.fade-out { animation: toastOut 0.2s forwards; }
+@keyframes toastOut {
+  to { opacity: 0; transform: translateX(30px); }
+}
+
+/* ========================================
+   加载动画
+   ======================================== */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+[data-theme="dark"] .loading-overlay { background: rgba(15,23,42,0.7); }
+
+/* ========================================
+   响应式（紧凑）
+   ======================================== */
+.menu-toggle {
+  display: none;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  height: 28px;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 180px;
+  }
+  .sidebar.show { transform: translateX(0); }
+  .main-content { margin-left: 0; padding: 10px; }
+  .menu-toggle { display: block; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .log-item { grid-template-columns: 1fr; gap: 4px; }
+  .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .modal-body { padding: 12px; }
+  .modal-header { padding: 10px 12px; }
+  .pagination { flex-direction: column; align-items: flex-start; }
+}
+
+/* 主题切换按钮（紧凑） */
+.theme-toggle {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  height: 28px;
+}
+
+/* 空状态（紧凑） */
+.empty-state {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.empty-state-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.4; }
+.empty-state-text { font-size: 13px; }
+
+/* 进度条（紧凑） */
+.progress-bar {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  height: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+</style>
+</head>
+<body>
+
+<!-- 解锁 / 初始化 视图容器 -->
+<div id="auth-view" class="auth-wrap" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">客</div>
+      <div class="auth-title">客户关系管理系统</div>
+      <div class="auth-subtitle">本地加密 · 隐私优先</div>
+    </div>
+
+    <!-- 解锁视图 -->
+    <div id="view-unlock">
+      <div class="auth-info">
+        所有数据仅存储在您的本地设备（浏览器）和您授权的本地文件夹中，不会上传至任何服务器。
+      </div>
+      <div id="lockout-warning" class="auth-locked" style="display:none;">
+        系统已锁定，请 <span id="lockout-countdown">60</span> 秒后重试
+      </div>
+      <div class="auth-group">
+        <label class="label required">解锁密码</label>
+        <input type="password" id="unlock-password" class="input" placeholder="请输入解锁密码" autocomplete="off">
+        <div class="error-text" id="unlock-error">密码错误</div>
+      </div>
+      <div style="margin-bottom:12px;font-size:12px;color:var(--text-muted);" id="attempt-info"></div>
+      <button class="btn btn-primary btn-lg" style="width:100%;" id="btn-unlock">解锁系统</button>
+      <div class="auth-footer">
+        忘记密码？<span class="auth-link" id="btn-forgot">强制清空并重置</span>
+      </div>
+    </div>
+
+    <!-- 初始化视图 -->
+    <div id="view-init" style="display:none;">
+      <div class="auth-info">
+        首次使用，请设置解锁密码。密码用于派生加密密钥，密码丢失无法找回，将导致所有数据不可恢复。
+      </div>
+      <div class="auth-group">
+        <label class="label required">设置解锁密码（至少6位）</label>
+        <input type="password" id="init-password" class="input" placeholder="至少6位，建议字母+数字组合" autocomplete="off">
+      </div>
+      <div class="auth-group">
+        <label class="label required">再次输入密码</label>
+        <input type="password" id="init-password2" class="input" placeholder="请再次输入相同密码" autocomplete="off">
+        <div class="error-text" id="init-error">两次密码不一致</div>
+      </div>
+      <div style="margin-bottom:16px;background:var(--bg-tertiary);padding:12px;border-radius:var(--radius-sm);font-size:12px;line-height:1.6;">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="init-privacy" style="margin-top:3px;">
+          <span>我已阅读并确认：<strong>所有数据仅存储在我本地设备，不会上传任何服务器</strong>；我理解密码丢失将导致数据无法恢复。</span>
+        </label>
+      </div>
+      <button class="btn btn-primary btn-lg" style="width:100%;" id="btn-init">初始化并进入系统</button>
+      <div class="auth-footer">
+        已有数据？<span class="auth-link" id="btn-back-unlock">返回解锁</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 主应用 -->
+<div id="app-view" style="display:none;">
+  <div class="app-container">
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">客</div>
+        <div>
+          <div class="sidebar-title">客户管理</div>
+          <div class="sidebar-subtitle">v1.0 本地加密</div>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item active" data-page="dashboard"><span class="nav-icon">■</span>仪表盘</li>
+        <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表</li>
+        <li class="nav-item" data-page="new"><span class="nav-icon">+</span>新增客户</li>
+        <li class="nav-item" data-page="tags"><span class="nav-icon">#</span>标签管理</li>
+        <li class="nav-item" data-page="security"><span class="nav-icon">⚙</span>数据与安全</li>
+      </ul>
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menu-toggle">☰</button>
+          <h1 id="page-title">仪表盘</h1>
+          <p id="page-subtitle">系统总览</p>
+        </div>
+        <div class="topbar-right">
+          <span class="sync-status" id="sync-status">● 未配置本地存储目录</span>
+          <button class="theme-toggle" id="theme-toggle">🌙 深色</button>
+          <button class="btn btn-sm btn-outline" id="btn-lock">🔒 锁屏</button>
+        </div>
+      </div>
+
+      <!-- 仪表盘 -->
+      <section class="page active" id="page-dashboard">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">客户来源分布</div>
+            <canvas id="chart-source" width="400" height="280"></canvas>
+            <div class="chart-legend" id="legend-source"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">近6个月新增趋势</div>
+            <canvas id="chart-trend" width="400" height="280"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:16px;font-weight:600;margin-bottom:16px;">快捷操作</div>
+          <div class="quick-actions">
+            <button class="quick-action-btn" data-nav="new">
+              <div class="quick-action-icon">➕</div>
+              <div class="quick-action-text">新增客户</div>
+            </button>
+            <button class="quick-action-btn" id="qa-backup">
+              <div class="quick-action-icon">💾</div>
+              <div class="quick-action-text">手动备份</div>
+            </button>
+            <button class="quick-action-btn" id="qa-export">
+              <div class="quick-action-icon">📤</div>
+              <div class="quick-action-text">导出数据</div>
+            </button>
+            <button class="quick-action-btn" id="qa-sync">
+              <div class="quick-action-icon">🔗</div>
+              <div class="quick-action-text">同步存储</div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 客户列表 -->
+      <section class="page" id="page-list">
+        <div class="filter-bar">
+          <div class="filter-grid">
+            <div>
+              <label class="label">关键词搜索</label>
+              <input type="text" class="input" id="filter-keyword" placeholder="姓名 / 脱敏手机号">
+            </div>
+            <div>
+              <label class="label">客户等级</label>
+              <select class="select" id="filter-level">
+                <option value="">全部</option>
+                <option value="普通">普通</option>
+                <option value="VIP">VIP</option>
+                <option value="重点">重点</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">成交状态</label>
+              <select class="select" id="filter-status">
+                <option value="">全部</option>
+                <option value="未沟通">未沟通</option>
+                <option value="跟进中">跟进中</option>
+                <option value="已成交">已成交</option>
+                <option value="流失">流失</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">客户来源</label>
+              <select class="select" id="filter-source">
+                <option value="">全部</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">录入开始日期</label>
+              <input type="date" class="input" id="filter-date-start">
+            </div>
+            <div>
+              <label class="label">录入结束日期</label>
+              <input type="date" class="input" id="filter-date-end">
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-primary btn-sm" id="btn-apply-filter">筛选</button>
+            <button class="btn btn-sm btn-outline" id="btn-reset-filter">重置</button>
+            <button class="btn btn-sm" id="btn-new-customer">➕ 新增客户</button>
+            <button class="btn btn-sm btn-danger" id="btn-batch-delete">🗑 批量删除</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table" id="customer-table">
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox" id="check-all"></th>
+                <th style="width:50px;">序号</th>
+                <th data-sort="name">姓名 ▾</th>
+                <th data-sort="phone">手机号 ▾</th>
+                <th data-sort="level">等级 ▾</th>
+                <th data-sort="source">来源 ▾</th>
+                <th data-sort="status">成交状态 ▾</th>
+                <th data-sort="createdAt">录入时间 ▾</th>
+                <th style="width:240px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="customer-tbody"></tbody>
+          </table>
+          <div class="pagination">
+            <div class="pagination-info" id="pagination-info"></div>
+            <div class="pagination-controls">
+              <span>每页</span>
+              <select class="select" id="page-size" style="width:auto;">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+              <span>条</span>
+              <button class="btn btn-sm btn-outline" id="btn-prev-page">上一页</button>
+              <span id="page-num">1 / 1</span>
+              <button class="btn btn-sm btn-outline" id="btn-next-page">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 新增/编辑客户（在此作为独立页面，也通过弹窗形式） -->
+      <section class="page" id="page-new">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;" id="form-title">新增客户</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status">草稿自动保存中...</div>
+          </div>
+          <div id="customer-form-container"></div>
+        </div>
+      </section>
+
+      <!-- 客户详情页 -->
+      <section class="page" id="page-detail">
+        <div class="card" id="detail-container">
+          <div class="empty-state">请从客户列表选择客户查看详情</div>
+        </div>
+      </section>
+
+      <!-- 标签管理 -->
+      <section class="page" id="page-tags">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;">自定义标签管理</h2>
+            <button class="btn btn-primary btn-sm" id="btn-new-tag">➕ 新增标签</button>
+          </div>
+          <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
+            标签用于客户分类，可自定义颜色。删除标签不会影响已关联客户的历史数据（标签如被使用则无法删除）。
+          </div>
+          <div id="tag-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+        </div>
+      </section>
+
+      <!-- 数据与安全中心 -->
+      <section class="page" id="page-security">
+        <div class="card" style="margin-bottom:16px;">
+          <h2 style="font-size:18px;margin-bottom:16px;">存储状态</h2>
+          <div class="security-grid">
+            <div>
+              <div class="security-item-label">本地存储文件夹</div>
+              <div class="security-item-value" id="info-folder">未配置（仅使用浏览器缓存）</div>
+            </div>
+            <div>
+              <div class="security-item-label">最后同步时间</div>
+              <div class="security-item-value" id="info-sync-time">未同步</div>
+            </div>
+            <div>
+              <div class="security-item-label">数据条目</div>
+              <div class="security-item-value" id="info-entries">0</div>
+            </div>
+            <div>
+              <div class="security-item-label">备份版本数</div>
+              <div class="security-item-value" id="info-versions">0</div>
+            </div>
+          </div>
+          <div class="security-actions">
+            <button class="btn btn-primary" id="btn-select-folder">选择存储文件夹</button>
+            <button class="btn btn-sm" id="btn-sync-now">立即同步</button>
+            <button class="btn btn-sm btn-outline" id="btn-change-folder">更换存储目录</button>
+            <button class="btn btn-sm btn-outline" id="btn-revoke-folder">取消授权</button>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-muted);" id="folder-api-hint"></div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <h2 style="font-size:18px;margin-bottom:16px;">数据操作</h2>
+          <div class="security-actions">
+            <button class="btn btn-primary" id="btn-export-encrypted">导出加密备份</button>
+            <button class="btn" id="btn-import-encrypted">导入加密备份</button>
+            <button class="btn" id="btn-export-masked">导出脱敏数据 (CSV)</button>
+            <button class="btn btn-warning" id="btn-export-plain">导出明文数据 (CSV)</button>
+            <button class="btn" id="btn-rollback">回滚到上一版本</button>
+            <button class="btn btn-danger" id="btn-reset-data">清空全部数据</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <h2 style="font-size:18px;margin-bottom:16px;">密码管理</h2>
+          <button class="btn" id="btn-change-password">修改解锁密码</button>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;">操作审计日志</h2>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select class="select" id="log-filter-type" style="width:auto;">
+                <option value="">全部类型</option>
+              </select>
+              <button class="btn btn-sm btn-outline" id="btn-export-log">导出日志</button>
+            </div>
+          </div>
+          <div class="log-list" id="log-list"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- 通用弹窗容器 -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">弹窗</div>
+      <button class="modal-close" id="modal-close">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- Toast 容器 -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* =================================================================
+   客户关系管理系统 - 单文件实现
+   默认测试密码：123456  （首次初始化时也可设置您自己的密码）
+   首次进入若未初始化，会引导设置解锁密码；
+   如需使用内置3条演示数据，可在解锁后的"数据与安全 -> 数据操作 -> 导入加密备份"
+   选择以 123456 为密码的演示备份文件。
+   ================================================================= */
+
+/* ================================================================
+   模块 0：基础工具函数
+   ================================================================ */
+
+// HTML 实体转义：杜绝 XSS 注入
+function escapeHTML(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/\//g, '&#x2F;');
+}
+// 使用 textContent 渲染：在 DOM 上使用 safeText(el, text) 代替 innerHTML
+function safeText(el, text) {
+  if (el) el.textContent = (text == null ? '' : String(text));
+}
+
+// 日期格式化
+function formatDate(ts, withSec = true) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2, '0');
+  let s = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  if (withSec) s += `:${pad(d.getSeconds())}`;
+  return s;
+}
+function dateOnly(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function parseDateStr(s) {
+  if (!s) return null;
+  const [y, m, d] = s.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d ? date.getTime() : null;
+}
+
+// 生成 UUID
+function uuid() {
+  return 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+}
+
+// Toast 提示
+function showToast(msg, type = 'success', duration = 3000) {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('fade-out');
+    setTimeout(() => el.remove(), 300);
+  }, duration);
+}
+
+// 简单的全局状态
+const STORAGE_KEY = 'crm_encrypted_v1';
+const SETTINGS_KEY = 'crm_settings_v1';
+const DRAFT_KEY = 'crm_form_draft_v1';
+const LOG_KEY = 'crm_log_v1';
+const DATA_FILENAME = 'customer_data_encrypted.dat';
+const PBKDF2_ITERATIONS = 200000;
+
+/* ================================================================
+   模块 1：原生加密 - Web Crypto API
+   使用 AES-GCM 加密；密钥从用户密码 PBKDF2 派生；
+   密码本身不存储，仅存储派生哈希用于校验。
+   ================================================================ */
+
+// 将字符串转为 Uint8Array（UTF-8）
+function strToBytes(str) {
+  return new TextEncoder().encode(str);
+}
+function bytesToStr(bytes) {
+  return new TextDecoder().decode(bytes);
+}
+function bytesToBase64(bytes) {
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+function base64ToBytes(b64) {
+  const binary = atob(b64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+function bytesToHex(bytes) {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// 从密码派生 AES key
+async function deriveKey(password, saltBytes, usage) {
+  const passwordBytes = strToBytes(password);
+  const baseKey = await crypto.subtle.importKey(
+    'raw', passwordBytes, { name: 'PBKDF2' }, false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: saltBytes, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    baseKey, { name: 'AES-GCM', length: 256 }, false, usage
+  );
+}
+
+// 生成密码校验哈希：使用固定salt派生一个校验值
+async function passwordHash(password) {
+  const salt = strToBytes('crm_password_check_salt_v1_fixed');
+  const key = await deriveKey(password, salt, ['encrypt']);
+  // 通过 encrypt 一小段固定文本作为校验值
+  const iv = new Uint8Array(12);
+  const enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, strToBytes('check_ok'));
+  return bytesToBase64(new Uint8Array(enc));
+}
+
+// 加密：输出 { iv, ciphertext, salt } 的 base64 JSON 文本
+async function encryptData(plaintext, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt, ['encrypt']);
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, strToBytes(plaintext));
+  return JSON.stringify({
+    salt: bytesToBase64(salt),
+    iv: bytesToBase64(iv),
+    ciphertext: bytesToBase64(new Uint8Array(encrypted))
+  });
+}
+
+// 解密：输入 JSON 字符串，输出 plaintext；失败抛错
+async function decryptData(encryptedJson, password) {
+  const obj = JSON.parse(encryptedJson);
+  const salt = base64ToBytes(obj.salt);
+  const iv = base64ToBytes(obj.iv);
+  const ct = base64ToBytes(obj.ciphertext);
+  const key = await deriveKey(password, salt, ['decrypt']);
+  const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct);
+  return bytesToStr(new Uint8Array(dec));
+}
+
+// SHA-256 校验
+async function sha256(text) {
+  const hash = await crypto.subtle.digest('SHA-256', strToBytes(text));
+  return bytesToHex(new Uint8Array(hash));
+}
+
+/* ================================================================
+   模块 2：数据存储层（localStorage 加密 + 本地文件夹同步）
+   ================================================================ */
+
+const Store = {
+  // 运行态内存：解锁成功后保存
+  unlocked: false,
+  password: null,          // 当前会话的密码（用于后台加密同步）
+  data: { customers: [], tags: [], logs: [], versions: [] }, // 明文内存
+  settings: { folderHandleKey: null, theme: 'light' },
+  // 文件夹授权句柄（无法持久化，仅运行态保存）
+  folderHandle: null,
+  folderName: '',
+  lastSyncTime: 0,
+
+  /* --- 通用读写 localStorage（加密） --- */
+  async load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        this.data = { customers: [], tags: [], logs: [], versions: [] };
+        return;
+      }
+      const plain = await decryptData(raw, this.password);
+      const parsed = JSON.parse(plain);
+      this.data = Object.assign({ customers: [], tags: [], logs: [], versions: [] }, parsed);
+      // 确保关键字段存在
+      if (!Array.isArray(this.data.customers)) this.data.customers = [];
+      if (!Array.isArray(this.data.tags)) this.data.tags = [];
+      if (!Array.isArray(this.data.logs)) this.data.logs = [];
+      if (!Array.isArray(this.data.versions)) this.data.versions = [];
+    } catch (e) {
+      throw new Error('数据解密失败，密码可能错误或数据已损坏');
+    }
+  },
+  async save() {
+    // 生成备份：保留最近 3 个版本
+    const snapshot = JSON.parse(JSON.stringify({
+      customers: this.data.customers,
+      tags: this.data.tags,
+      createdAt: Date.now()
+    }));
+    if (this.data.versions.length === 0 ||
+        JSON.stringify(this.data.versions[0].customers) !== JSON.stringify(snapshot.customers)) {
+      this.data.versions.unshift(snapshot);
+      if (this.data.versions.length > 3) this.data.versions.length = 3;
+    }
+    const plaintext = JSON.stringify(this.data);
+    const enc = await encryptData(plaintext, this.password);
+    localStorage.setItem(STORAGE_KEY, enc);
+    // 同步到文件夹
+    this.syncToFolder(enc);
+  },
+
+  saveSettings() {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings));
+  },
+  loadSettings() {
+    try {
+      const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      this.settings = Object.assign(this.settings, s);
+    } catch (e) { /* ignore */ }
+  },
+
+  /* --- 本地文件夹同步（File System Access API，不支持则降级） --- */
+  isFolderApiSupported() {
+    return typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+  },
+  async selectFolder() {
+    if (!this.isFolderApiSupported()) {
+      throw new Error('当前浏览器不支持 File System Access API，请使用 Chrome/Edge，并降级为手动导入/导出备份');
+    }
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    this.folderHandle = handle;
+    this.folderName = handle.name;
+    this.settings.folderHandleKey = handle.name;
+    this.saveSettings();
+    // 立即写入
+    const enc = localStorage.getItem(STORAGE_KEY);
+    if (enc) await this.writeFileToFolder(enc);
+    this.updateSyncUI();
+    this.addLog('更换存储目录', '成功', '授权目录：' + handle.name);
+  },
+  revokeFolder() {
+    this.folderHandle = null;
+    this.folderName = '';
+    this.settings.folderHandleKey = null;
+    this.saveSettings();
+    this.updateSyncUI();
+    this.addLog('取消存储目录', '成功', '已取消文件夹授权');
+  },
+  async writeFileToFolder(encryptedJson) {
+    if (!this.folderHandle) return false;
+    try {
+      // 附带 SHA-256 校验
+      const checksum = await sha256(encryptedJson);
+      const payload = JSON.stringify({
+        app: 'CRM_LOCAL_V1',
+        version: 1,
+        createdAt: Date.now(),
+        checksum,
+        encrypted: encryptedJson
+      });
+      const fileHandle = await this.folderHandle.getFileHandle(DATA_FILENAME, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(payload);
+      await writable.close();
+      this.lastSyncTime = Date.now();
+      return true;
+    } catch (e) {
+      console.error('写入文件夹失败', e);
+      return false;
+    }
+  },
+  async readFileFromFolder() {
+    if (!this.folderHandle) return null;
+    try {
+      const fileHandle = await this.folderHandle.getFileHandle(DATA_FILENAME);
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      const obj = JSON.parse(text);
+      // 完整性校验
+      const checksum = await sha256(obj.encrypted);
+      if (checksum !== obj.checksum) {
+        throw new Error('文件校验失败，可能已损坏');
+      }
+      return obj.encrypted;
+    } catch (e) {
+      if (e && e.name === 'NotFoundError') return null;
+      throw e;
+    }
+  },
+  async syncToFolder(encryptedData) {
+    if (!this.folderHandle) { this.updateSyncUI(); return; }
+    try {
+      const enc = encryptedData || localStorage.getItem(STORAGE_KEY);
+      if (!enc) return;
+      await this.writeFileToFolder(enc);
+      this.updateSyncUI();
+    } catch (e) {
+      showToast('文件夹同步失败：' + e.message, 'warning');
+    }
+  },
+  async mergeFromFolder() {
+    // 启动时：若文件夹数据更新，与本地对齐（以最新时间为准）
+    if (!this.folderHandle) return;
+    try {
+      const enc = await this.readFileFromFolder();
+      if (!enc) return;
+      // 尝试解密 - 需要当前密码
+      let plaintext;
+      try {
+        plaintext = await decryptData(enc, this.password);
+      } catch (e) {
+        // 文件夹数据使用不同密码或损坏，保留本地，通知用户
+        showToast('文件夹中的数据无法用当前密码解密，已保留本地数据', 'warning');
+        return;
+      }
+      const parsed = JSON.parse(plaintext);
+      const folderCount = (parsed.customers || []).length;
+      const localCount = this.data.customers.length;
+      // 以条目更多 + 写入时间最新为权威
+      if (folderCount > localCount) {
+        this.data.customers = parsed.customers || this.data.customers;
+        this.data.tags = parsed.tags || this.data.tags;
+        if (parsed.versions) this.data.versions = parsed.versions;
+        await this.save();
+        showToast(`已从文件夹同步 ${folderCount} 条客户数据`, 'success');
+      }
+    } catch (e) {
+      showToast('从文件夹读取数据失败：' + e.message, 'warning');
+    }
+  },
+  updateSyncUI() {
+    const el = document.getElementById('sync-status');
+    const folderEl = document.getElementById('info-folder');
+    const timeEl = document.getElementById('info-sync-time');
+    const entriesEl = document.getElementById('info-entries');
+    const verEl = document.getElementById('info-versions');
+    const hint = document.getElementById('folder-api-hint');
+    if (!el) return;
+    if (this.folderHandle) {
+      el.className = 'sync-status online';
+      el.textContent = '● 已连接：' + this.folderName + '（最近同步：' + formatDate(this.lastSyncTime) + '）';
+    } else if (!this.isFolderApiSupported()) {
+      el.className = 'sync-status offline';
+      el.textContent = '● 当前浏览器不支持文件夹API，仅使用浏览器缓存';
+    } else {
+      el.className = 'sync-status offline';
+      el.textContent = '● 未配置本地存储目录（仅浏览器缓存）';
+    }
+    if (folderEl) folderEl.textContent = this.folderHandle ? this.folderName : '未配置（仅使用浏览器缓存）';
+    if (timeEl) timeEl.textContent = this.lastSyncTime ? formatDate(this.lastSyncTime) : '未同步';
+    if (entriesEl) entriesEl.textContent = (this.data.customers ? this.data.customers.length : 0) + ' 条';
+    if (verEl) verEl.textContent = (this.data.versions ? this.data.versions.length : 0) + ' 个';
+    if (hint) {
+      if (!this.isFolderApiSupported()) {
+        hint.textContent = '提示：当前浏览器不支持 File System Access API，"实时文件夹同步"功能不可用。您仍可使用"导出加密备份"来手动迁移数据。推荐使用最新版 Chrome 或 Edge。';
+      } else {
+        hint.textContent = '提示：授权文件夹后，所有客户数据变更将自动写入该目录下的 ' + DATA_FILENAME + ' 文件（加密存储）。';
+      }
+    }
+  },
+
+  /* --- 操作日志 --- */
+  addLog(type, result, detail) {
+    try {
+      const entry = {
+        id: 'l_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+        type: type,
+        result: result,
+        detail: detail || '',
+        time: Date.now()
+      };
+      if (!this.data.logs) this.data.logs = [];
+      this.data.logs.unshift(entry);
+      if (this.data.logs.length > 500) this.data.logs.length = 500;
+      // 日志不触发全盘重新加密（避免循环），但稍后会被 save 涵盖
+    } catch (e) { /* ignore */ }
+  },
+  saveWithLog(type, detail) {
+    this.addLog(type, '成功', detail);
+    return this.save();
+  }
+};
+
+/* ================================================================
+   模块 3：信息脱敏工具
+   ================================================================ */
+function maskPhone(phone) {
+  if (!phone) return '';
+  const s = String(phone);
+  if (s.length < 7) return s.replace(/./g, '*');
+  return s.slice(0, 3) + '****' + s.slice(-4);
+}
+function maskIdCard(id) {
+  if (!id) return '';
+  const s = String(id);
+  if (s.length < 8) return s.replace(/./g, '*');
+  return s.slice(0, 4) + '********' + s.slice(-4);
+}
+function maskEmail(email) {
+  if (!email) return '';
+  const [a, b] = String(email).split('@');
+  if (!a || !b) return String(email).replace(/./g, '*');
+  const am = a.length <= 2 ? a[0] + '*' : a[0] + '***' + a.slice(-1);
+  const bd = b.length <= 3 ? b : b[0] + '***' + b.slice(-2);
+  return am + '@' + bd;
+}
+function maskAddress(addr) {
+  if (!addr) return '';
+  const s = String(addr);
+  if (s.length < 8) return s.replace(/./g, '*');
+  return s.slice(0, 6) + '****' + (s.length > 10 ? s.slice(-3) : '');
+}
+function maskCustomer(c, { phone = true, idcard = true, email = true, address = true } = {}) {
+  return {
+    ...c,
+    phone: phone ? maskPhone(c.phone) : c.phone,
+    phone2: phone ? maskPhone(c.phone2) : c.phone2,
+    idcard: idcard ? maskIdCard(c.idcard) : c.idcard,
+    email: email ? maskEmail(c.email) : c.email,
+    address: address ? maskAddress(c.address) : c.address
+  };
+}
+
+/* ================================================================
+   模块 4：表单校验
+   ================================================================ */
+function validatePhone(v) { return /^1[3-9]\d{9}$/.test(v); }
+function validateIdCard(v) { return /^\d{17}[\dXx]$/.test(v); }
+function validateEmail(v) { return /^[\w.+-]+@[\w-]+\.[\w.-]+$/.test(v); }
+function validateAge(v) { return /^\d+$/.test(v) && +v >= 0 && +v <= 120; }
+function truncate(v, n) { return (v || '').toString().slice(0, n); }
+
+/* ================================================================
+   模块 5：通用弹窗
+   ================================================================ */
+function openModal({ title, bodyHTML, footer, size, onOpen, onClose }) {
+  const box = document.getElementById('modal-box');
+  box.classList.remove('modal-sm', 'modal-md');
+  if (size === 'sm') box.classList.add('modal-sm');
+  else if (size === 'md') box.classList.add('modal-md');
+  safeText(document.getElementById('modal-title'), title);
+  const b = document.getElementById('modal-body');
+  b.innerHTML = bodyHTML || '';
+  const f = document.getElementById('modal-footer');
+  f.innerHTML = '';
+  if (footer) footer(f);
+  document.getElementById('modal-overlay').classList.add('show');
+  if (onOpen) setTimeout(onOpen, 10);
+  const closeBtn = document.getElementById('modal-close');
+  const closeFn = () => { closeModal(); if (onClose) onClose(); };
+  closeBtn.onclick = closeFn;
+  document.getElementById('modal-overlay').onclick = (e) => {
+    if (e.target.id === 'modal-overlay') closeFn();
+  };
+  return { close: closeFn };
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+function confirmDialog(title, message, danger, onConfirm) {
+  openModal({
+    title, size: 'sm',
+    bodyHTML: `<div style="font-size:14px;line-height:1.7;color:var(--text-primary);">${escapeHTML(message)}</div>`,
+    footer: (f) => {
+      const cancel = document.createElement('button');
+      cancel.className = 'btn btn-sm btn-outline';
+      safeText(cancel, '取消');
+      const ok = document.createElement('button');
+      ok.className = 'btn btn-sm ' + (danger ? 'btn-danger' : 'btn-primary');
+      safeText(ok, '确认');
+      f.appendChild(cancel);
+      f.appendChild(ok);
+      cancel.onclick = closeModal;
+      ok.onclick = async () => {
+        try { await onConfirm(); } finally { closeModal(); }
+      };
+    }
+  });
+}
+function promptPassword(title, message, onOk) {
+  openModal({
+    title, size: 'sm',
+    bodyHTML: `<div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">${escapeHTML(message)}</div>
+               <input type="password" id="_pw" class="input" placeholder="请输入解锁密码" autocomplete="off">
+               <div class="error-text" id="_pw_err" style="display:none;">密码错误</div>`,
+    footer: (f) => {
+      const cancel = document.createElement('button');
+      cancel.className = 'btn btn-sm btn-outline';
+      safeText(cancel, '取消');
+      const ok = document.createElement('button');
+      ok.className = 'btn btn-sm btn-primary';
+      safeText(ok, '确认');
+      f.appendChild(cancel);
+      f.appendChild(ok);
+      cancel.onclick = closeModal;
+      const doOk = async () => {
+        const val = document.getElementById('_pw').value;
+        const expected = await passwordHash(Store.password);
+        const actual = await passwordHash(val);
+        if (actual !== expected) {
+          document.getElementById('_pw_err').style.display = 'block';
+          return;
+        }
+        closeModal();
+        await onOk(val);
+      };
+      ok.onclick = doOk;
+      setTimeout(() => {
+        const inp = document.getElementById('_pw');
+        if (inp) { inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') doOk(); }); }
+      }, 30);
+    }
+  });
+}
+
+/* ================================================================
+   模块 6：客户表单（新增/编辑 弹窗）
+   ================================================================ */
+let draftTimer = null;
+
+function getDefaultTags() {
+  // 若用户未设置标签，提供 3 个默认颜色标签
+  if (!Store.data.tags || Store.data.tags.length === 0) {
+    Store.data.tags = [
+      { id: 't_vip', name: 'VIP', color: '#d97706' },
+      { id: 't_hot', name: '重点跟进', color: '#dc2626' },
+      { id: 't_new', name: '新客户', color: '#2563eb' }
+    ];
+  }
+  return Store.data.tags;
+}
+
+function openCustomerForm(customer) {
+  const isEdit = !!customer;
+  const c = customer || { id: uuid(), createdAt: Date.now() };
+  const title = isEdit ? '编辑客户' : '新增客户';
+  const tags = getDefaultTags();
+
+  const sections = [
+    {
+      key: 'basic', title: '基础信息（必填）', open: true,
+      fields: [
+        { key: 'name', label: '姓名', type: 'text', required: true, max: 50 },
+        { key: 'gender', label: '性别', type: 'select', options: ['', '男', '女', '其他'] },
+        { key: 'age', label: '年龄', type: 'number', max: 3 },
+        { key: 'idcard', label: '身份证号', type: 'text', max: 18 },
+        { key: 'phone', label: '手机号', type: 'text', required: true, max: 11 },
+        { key: 'phone2', label: '备用联系电话', type: 'text', max: 20 },
+        { key: 'email', label: '邮箱', type: 'email', max: 80 },
+        { key: 'source', label: '客户来源', type: 'select', options: ['', '老客户介绍', '网络推广', '线下活动', '电话销售', '自然到店', '其他'] },
+        { key: 'level', label: '客户等级', type: 'select', options: ['普通', 'VIP', '重点'] },
+      ]
+    },
+    {
+      key: 'address', title: '联系地址', open: false,
+      fields: [
+        { key: 'province', label: '省/直辖市', type: 'text', max: 30 },
+        { key: 'city', label: '城市', type: 'text', max: 30 },
+        { key: 'district', label: '区/县', type: 'text', max: 30 },
+        { key: 'address', label: '详细住址', type: 'textarea', max: 200 },
+      ]
+    },
+    {
+      key: 'business', title: '业务信息', open: false,
+      fields: [
+        { key: 'product', label: '意向产品', type: 'text', max: 100 },
+        { key: 'budget', label: '预算范围', type: 'text', max: 50 },
+        { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'] },
+        { key: 'nextFollowDate', label: '下次跟进日期', type: 'date' },
+      ]
+    },
+    {
+      key: 'remark', title: '沟通备注 / 跟进记录', open: false,
+      fields: [
+        { key: 'remark', label: '新增跟进备注', type: 'textarea', max: 500 }
+      ]
+    }
+  ];
+
+  // 构造 HTML
+  let html = `<div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
+                 录入时间：${formatDate(c.createdAt)}
+               </div>`;
+  for (const sec of sections) {
+    html += `<div class="form-section ${sec.open ? 'open' : ''}" data-sec="${sec.key}">
+                <div class="form-section-header">
+                  <span>${escapeHTML(sec.title)}</span>
+                  <span class="form-section-toggle">▾</span>
+                </div>
+                <div class="form-section-body"><div class="form-grid">`;
+    for (const f of sec.fields) {
+      let val = c[f.key] || '';
+      if (f.type === 'date') {
+        if (typeof val === 'number') val = dateOnly(val);
+        else if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) val = '';
+      }
+      if (f.type === 'select') {
+        html += `<div class="form-group">
+          <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
+          <select class="select" data-key="${f.key}">
+            ${f.options.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o || '请选择')}</option>`).join('')}
+          </select></div>`;
+      } else if (f.type === 'textarea') {
+        html += `<div class="form-group" style="grid-column:1/-1;">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <textarea class="textarea" data-key="${f.key}" maxlength="${f.max || 500}" rows="3">${escapeHTML(val)}</textarea></div>`;
+      } else {
+        html += `<div class="form-group">
+          <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
+          <input type="${f.type}" class="input" data-key="${f.key}" value="${escapeHTML(val)}" maxlength="${f.max || 100}"></div>`;
+      }
+    }
+    // 标签多选（业务信息区块）
+    if (sec.key === 'business') {
+      const currentTags = c.tags || [];
+      html += `<div class="form-group" style="grid-column:1/-1;">
+        <label class="label">客户标签（点击选择，可多选）</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+      for (const t of tags) {
+        const sel = currentTags.indexOf(t.id) !== -1;
+        html += `<span class="tag-chip" data-tag="${t.id}" data-color="${t.color}"
+          style="background:${sel ? t.color : '#e5e7eb'};color:${sel ? 'white' : '#4b5563'};cursor:pointer;padding:4px 12px;border-radius:14px;font-size:12px;">${escapeHTML(t.name)}</span>`;
+      }
+      html += `</div></div>`;
+    }
+    html += `</div></div></div>`;
+  }
+
+  // 历史备注显示（编辑客户时）
+  if (isEdit && c.remarkHistory && c.remarkHistory.length) {
+    html += `<div class="form-section">
+      <div class="form-section-header"><span>历史跟进记录（${c.remarkHistory.length}）</span><span class="form-section-toggle">▾</span></div>
+      <div class="form-section-body"><div style="max-height:180px;overflow-y:auto;">`;
+    for (const r of c.remarkHistory) {
+      html += `<div style="padding:8px 0;border-bottom:1px dashed var(--border-color);font-size:13px;">
+        <div style="color:var(--text-muted);font-size:12px;">${formatDate(r.time)}</div>
+        <div style="margin-top:4px;">${escapeHTML(r.text)}</div></div>`;
+    }
+    html += `</div></div></div>`;
+  }
+
+  openModal({
+    title, size: 'md',
+    bodyHTML: html,
+    footer: (f) => {
+      const btnR = document.createElement('button'); btnR.className = 'btn btn-sm btn-outline'; safeText(btnR, '重置');
+      const btnC = document.createElement('button'); btnC.className = 'btn btn-sm btn-outline'; safeText(btnC, '取消');
+      const btnS = document.createElement('button'); btnS.className = 'btn btn-sm btn-primary'; safeText(btnS, '保存');
+      f.appendChild(btnR); f.appendChild(btnC); f.appendChild(btnS);
+      btnC.onclick = closeModal;
+
+      // 切换分组展开
+      document.querySelectorAll('.form-section-header').forEach(h => {
+        h.onclick = () => h.parentElement.classList.toggle('open');
+      });
+      // 标签选择切换
+      document.querySelectorAll('.tag-chip[data-tag]').forEach(el => {
+        el.onclick = () => {
+          const color = el.dataset.color;
+          const bg = getComputedStyle(el).backgroundColor;
+          // 根据当前背景色判断选择状态
+          const isLight = bg.indexOf('229') !== -1 && bg.indexOf('231') !== -1;
+          if (isLight) {
+            el.style.background = color;
+            el.style.color = 'white';
+          } else {
+            el.style.background = '#e5e7eb';
+            el.style.color = '#4b5563';
+          }
+        };
+      });
+
+      // 草稿自动保存
+      const collect = () => {
+        const d = {};
+        document.querySelectorAll('#modal-box [data-key]').forEach(el => {
+          let val = el.value;
+          if (el.type === 'date') {
+            val = /^\d{4}-\d{2}-\d{2}$/.test(val) ? val : '';
+          }
+          d[el.dataset.key] = val;
+        });
+        d.tags = [];
+        document.querySelectorAll('#modal-box .tag-chip[data-tag]').forEach(el => {
+          const bg = el.style.background;
+          if (bg !== 'rgb(229, 231, 235)') d.tags.push(el.dataset.tag);
+        });
+        return d;
+      };
+      document.querySelectorAll('#modal-box .input, #modal-box .textarea, #modal-box .select').forEach(el => {
+        el.addEventListener('input', () => {
+          clearTimeout(draftTimer);
+          draftTimer = setTimeout(() => {
+            try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ customerId: c.id, data: collect() })); } catch (e) {}
+            try { safeText(document.getElementById('form-draft-status'), '草稿已自动保存于 ' + formatDate(Date.now())); } catch (e) {}
+          }, 800);
+        });
+      });
+
+      // 重置
+      btnR.onclick = () => {
+        document.querySelectorAll('#modal-box .input, #modal-box .textarea').forEach(el => { el.value = c[el.dataset.key] || ''; });
+        document.querySelectorAll('#modal-box .select').forEach(el => { el.value = c[el.dataset.key] || ''; });
+        // 还原标签
+        const currentTags = c.tags || [];
+        document.querySelectorAll('#modal-box .tag-chip[data-tag]').forEach(el => {
+          const sel = currentTags.indexOf(el.dataset.tag) !== -1;
+          el.style.background = sel ? el.dataset.color : '#e5e7eb';
+          el.style.color = sel ? 'white' : '#4b5563';
+        });
+        showToast('已重置', 'success');
+      };
+
+      // 保存
+      btnS.onclick = async () => {
+        const d = collect();
+        // 必填校验
+        const errors = [];
+        if (!d.name || !d.name.trim()) errors.push('姓名不能为空');
+        if (!d.phone || !validatePhone(d.phone)) errors.push('手机号格式不正确（11位数字）');
+        if (d.idcard && !validateIdCard(d.idcard)) errors.push('身份证号格式不正确');
+        if (d.email && !validateEmail(d.email)) errors.push('邮箱格式不正确');
+        if (d.age && !validateAge(d.age)) errors.push('年龄需为 0-120 的数字');
+        if (errors.length) { showToast(errors[0], 'error'); return; }
+
+        // HTML 实体转义
+        const safe = {};
+        for (const k of Object.keys(d)) {
+          if (Array.isArray(d[k])) safe[k] = d[k];
+          else safe[k] = typeof d[k] === 'string' ? escapeHTML(d[k]).trim() : d[k];
+        }
+
+        // 合并到客户对象
+        if (isEdit) {
+          const old = Store.data.customers.find(x => x.id === c.id);
+          if (!old) { showToast('客户数据不存在', 'error'); return; }
+          Object.keys(safe).forEach(k => {
+            if (k === 'tags') old.tags = safe.tags;
+            else old[k] = safe[k];
+          });
+          if (safe.remark && safe.remark !== (c.lastRemark || '')) {
+            old.remarkHistory = old.remarkHistory || [];
+            old.remarkHistory.unshift({ time: Date.now(), text: safe.remark });
+            old.lastRemark = safe.remark;
+          }
+          old.updatedAt = Date.now();
+          // 清空草稿
+          try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+          await Store.saveWithLog('编辑客户', '客户：' + old.name);
+          showToast('客户信息已更新', 'success');
+        } else {
+          const newC = { ...safe, id: c.id, createdAt: Date.now(), remarkHistory: [] };
+          if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark });
+          Store.data.customers.unshift(newC);
+          try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+          await Store.saveWithLog('新增客户', '客户：' + newC.name);
+          showToast('客户已新增', 'success');
+        }
+        closeModal();
+        refreshUI();
+      };
+    }
+  });
+}
+
+/* ================================================================
+   模块 7：客户列表（筛选、排序、分页、批量删除）
+   ================================================================ */
+let listState = {
+  keyword: '', level: '', status: '', source: '',
+  dateStart: '', dateEnd: '', sortKey: 'createdAt', sortAsc: false,
+  page: 1, pageSize: 10, selected: new Set()
+};
+
+function renderFilterSources() {
+  const sel = document.getElementById('filter-source');
+  if (!sel) return;
+  const sources = new Set();
+  (Store.data.customers || []).forEach(c => { if (c.source) sources.add(c.source); });
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">全部</option>' +
+    Array.from(sources).map(s => `<option value="${escapeHTML(s)}" ${s === cur ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('');
+}
+
+function applyListFilters() {
+  const all = Store.data.customers || [];
+  let arr = all.slice();
+  const kw = listState.keyword.trim().toLowerCase();
+  if (kw) {
+    arr = arr.filter(c => {
+      // 在明文上做搜索，但显示时仍然脱敏
+      const name = (c.name || '').toLowerCase();
+      const phone = (c.phone || '');
+      return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
+    });
+  }
+  if (listState.level) arr = arr.filter(c => c.level === listState.level);
+  if (listState.status) arr = arr.filter(c => c.status === listState.status);
+  if (listState.source) arr = arr.filter(c => c.source === listState.source);
+  if (listState.dateStart) {
+    const t = parseDateStr(listState.dateStart);
+    if (t !== null) arr = arr.filter(c => c.createdAt >= t);
+  }
+  if (listState.dateEnd) {
+    const t = parseDateStr(listState.dateEnd);
+    if (t !== null) arr = arr.filter(c => c.createdAt < t + 86400000);
+  }
+  // 排序
+  const k = listState.sortKey;
+  arr.sort((a, b) => {
+    let va = a[k] || '', vb = b[k] || '';
+    if (k === 'createdAt') { va = a.createdAt; vb = b.createdAt; }
+    if (va < vb) return listState.sortAsc ? -1 : 1;
+    if (va > vb) return listState.sortAsc ? 1 : -1;
+    return 0;
+  });
+  return arr;
+}
+
+function renderCustomerTable() {
+  const tbody = document.getElementById('customer-tbody');
+  if (!tbody) return;
+  const data = applyListFilters();
+  const total = data.length;
+  const pageCount = Math.max(1, Math.ceil(total / listState.pageSize));
+  if (listState.page > pageCount) listState.page = pageCount;
+  const start = (listState.page - 1) * listState.pageSize;
+  const pageData = data.slice(start, start + listState.pageSize);
+  const showAll = window.__showPlain === true;
+
+  tbody.innerHTML = '';
+  if (pageData.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="7" style="padding:40px;text-align:center;color:var(--text-muted);">暂无符合条件的客户</td>`;
+    tbody.appendChild(tr);
+  } else {
+    pageData.forEach((c, i) => {
+      const tr = document.createElement('tr');
+      const masked = showAll ? c : maskCustomer(c);
+      const checked = listState.selected.has(c.id) ? 'checked' : '';
+      tr.innerHTML = `
+        <td><input type="checkbox" data-id="${c.id}" ${checked}></td>
+        <td>${start + i + 1}</td>
+        <td><strong>${escapeHTML(masked.name || '-')}</strong></td>
+        <td>${escapeHTML(masked.phone || '-')}</td>
+        <td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>
+        <td>${escapeHTML(c.source || '-')}</td>
+        <td><span class="badge ${statusClass(c.status)}">${escapeHTML(c.status || '-')}</span></td>
+        <td>${formatDate(c.createdAt)}</td>
+        <td>
+          <button class="btn btn-sm" data-act="view" data-id="${c.id}">详情</button>
+          <button class="btn btn-sm btn-outline" data-act="edit" data-id="${c.id}">编辑</button>
+          <button class="btn btn-sm btn-outline" data-act="follow" data-id="${c.id}">跟进</button>
+          <button class="btn btn-sm btn-danger" data-act="del" data-id="${c.id}">删除</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // 事件绑定
+  tbody.querySelectorAll('input[type="checkbox"][data-id]').forEach(el => {
+    el.onchange = () => {
+      const id = el.dataset.id;
+      if (el.checked) listState.selected.add(id); else listState.selected.delete(id);
+    };
+  });
+  tbody.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      const c = Store.data.customers.find(x => x.id === id);
+      if (!c) return;
+      if (btn.dataset.act === 'view') openCustomerDetail(c);
+      else if (btn.dataset.act === 'edit') openCustomerForm(c);
+      else if (btn.dataset.act === 'follow') {
+        openModal({
+          title: '新增跟进记录 - ' + c.name, size: 'sm',
+          bodyHTML: `<label class="label">跟进内容</label><textarea class="textarea" id="_follow_note" rows="4" maxlength="500"></textarea>`,
+          footer: (f) => {
+            const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+            const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '保存');
+            f.appendChild(cc); f.appendChild(ok);
+            cc.onclick = closeModal;
+            ok.onclick = async () => {
+              const t = document.getElementById('_follow_note').value.trim();
+              if (!t) { showToast('请输入跟进内容', 'error'); return; }
+              c.remarkHistory = c.remarkHistory || [];
+              c.remarkHistory.unshift({ time: Date.now(), text: escapeHTML(t) });
+              c.updatedAt = Date.now();
+              await Store.saveWithLog('新增跟进记录', '客户：' + c.name);
+              showToast('已保存跟进记录', 'success');
+              closeModal(); refreshUI();
+            };
+          }
+        });
+      }
+      else if (btn.dataset.act === 'del') {
+        confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？操作不可恢复。', true, async () => {
+          promptPassword('二次验证', '请输入解锁密码以确认删除', async () => {
+            Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
+            await Store.saveWithLog('删除客户', '客户：' + c.name);
+            showToast('已删除', 'success');
+            refreshUI();
+          });
+        });
+      }
+    };
+  });
+
+  // 分页
+  const info = document.getElementById('pagination-info');
+  if (info) safeText(info, `共 ${total} 条  第 ${listState.page}/${pageCount} 页`);
+  const pn = document.getElementById('page-num');
+  if (pn) safeText(pn, `${listState.page} / ${pageCount}`);
+}
+
+function levelColor(level) {
+  if (level === 'VIP') return '#d97706';
+  if (level === '重点') return '#dc2626';
+  return '#2563eb';
+}
+function statusClass(s) {
+  if (s === '已成交') return 'badge-success';
+  if (s === '流失') return 'badge-danger';
+  if (s === '跟进中') return 'badge-warning';
+  return '';
+}
+
+/* ================================================================
+   模块 8：客户详情
+   ================================================================ */
+function openCustomerDetail(c) {
+  window.__lastDetailId = c.id;
+  let displayMode = window.__showPlainDetail === true ? 'plain' : 'masked'; // 默认脱敏
+  renderDetail();
+
+  function renderDetail() {
+    const tags = Store.data.tags || [];
+    const displayed = displayMode === 'plain' ? c : maskCustomer(c);
+    const addressFull = [c.province, c.city, c.district, displayed.address].filter(Boolean).join(' ');
+    const tagHtml = (c.tags || []).map(tid => {
+      const t = tags.find(x => x.id === tid);
+      return t ? `<span class="tag-chip" style="background:${t.color};color:white;padding:4px 12px;border-radius:14px;font-size:12px;">${escapeHTML(t.name)}</span>` : '';
+    }).join('');
+
+    let html = `
+      <div class="detail-header">
+        <div class="detail-title">${escapeHTML(c.name)} ${displayMode === 'masked' ? '<span class="badge badge-warning" style="margin-left:8px;">信息已脱敏</span>' : '<span class="badge badge-success" style="margin-left:8px;">明文显示（临时）</span>'}</div>
+        <div class="detail-actions">
+          <button class="btn btn-sm" id="toggleMask">${displayMode === 'masked' ? '查看明文（需密码）' : '切换为脱敏显示'}</button>
+          <button class="btn btn-sm btn-outline" id="editDetail">编辑</button>
+          <button class="btn btn-sm btn-outline" id="exportOne">导出</button>
+          <button class="btn btn-sm btn-danger" id="delDetail">删除</button>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">手机号</div><div class="detail-value">${escapeHTML(displayed.phone || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">备用电话</div><div class="detail-value">${escapeHTML(displayed.phone2 || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(displayed.email || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">身份证号</div><div class="detail-value">${escapeHTML(displayed.idcard || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">性别 / 年龄</div><div class="detail-value">${escapeHTML((c.gender || '-') + ' / ' + (c.age || '-'))}</div></div>
+        <div class="detail-item"><div class="detail-label">客户等级</div><div class="detail-value">${escapeHTML(c.level || '普通')}</div></div>
+        <div class="detail-item"><div class="detail-label">客户来源</div><div class="detail-value">${escapeHTML(c.source || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">成交状态</div><div class="detail-value">${escapeHTML(c.status || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">意向产品</div><div class="detail-value">${escapeHTML(c.product || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">预算范围</div><div class="detail-value">${escapeHTML(c.budget || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">下次跟进日期</div><div class="detail-value">${escapeHTML(c.nextFollowDate || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">录入时间</div><div class="detail-value">${formatDate(c.createdAt)}</div></div>
+        <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">联系地址</div><div class="detail-value">${escapeHTML(addressFull || '-')}</div></div>
+        <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户标签</div><div class="detail-value">${tagHtml || '<span style="color:var(--text-muted);">无</span>'}</div></div>
+      </div>
+      <div style="margin-top:24px;">
+        <h3 style="font-size:16px;margin-bottom:12px;">跟进记录时间线（${(c.remarkHistory || []).length}）</h3>
+        <div class="timeline">`;
+    if (!c.remarkHistory || c.remarkHistory.length === 0) {
+      html += `<div style="color:var(--text-muted);font-size:13px;">暂无跟进记录</div>`;
+    } else {
+      for (const r of c.remarkHistory) {
+        html += `<div class="timeline-item">
+          <div class="timeline-time">${formatDate(r.time)}</div>
+          <div class="timeline-content">${escapeHTML(r.text)}</div>
+        </div>`;
+      }
+    }
+    html += `</div></div>`;
+
+    openModal({
+      title: '客户详情', size: 'md', bodyHTML: html,
+      footer: (f) => {
+        const cl = document.createElement('button'); cl.className = 'btn btn-sm btn-outline'; safeText(cl, '关闭');
+        f.appendChild(cl); cl.onclick = closeModal;
+        document.getElementById('toggleMask').onclick = () => {
+          if (displayMode === 'plain') {
+            displayMode = 'masked';
+            closeModal(); setTimeout(renderDetail, 10);
+            showToast('已切换为脱敏显示', 'success');
+          } else {
+            promptPassword('查看明文二次验证', '请输入解锁密码以查看敏感字段的完整内容', () => {
+              displayMode = 'plain';
+              Store.addLog('查看明文数据', '成功', '客户：' + c.name);
+              Store.save(); // 保存日志
+              closeModal(); setTimeout(renderDetail, 10);
+              showToast('已临时显示明文，离开后将自动恢复', 'success');
+            });
+          }
+        };
+        document.getElementById('editDetail').onclick = () => { closeModal(); setTimeout(() => openCustomerForm(c), 10); };
+        document.getElementById('exportOne').onclick = () => {
+          const row = exportCustomerRows([c], displayMode === 'plain');
+          downloadCSV(`${c.name}_客户资料.csv`, row);
+          showToast('已导出单客户资料', 'success');
+        };
+        document.getElementById('delDetail').onclick = () => {
+          confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？操作不可恢复。', true, async () => {
+            promptPassword('二次验证', '请输入解锁密码以确认删除', async () => {
+              Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
+              await Store.saveWithLog('删除客户', '客户：' + c.name);
+              showToast('已删除', 'success');
+              closeModal(); refreshUI();
+            });
+          });
+        };
+      }
+    });
+  }
+}
+
+/* ================================================================
+   模块 9：CSV 导出工具
+   ================================================================ */
+function exportCustomerRows(list, plain) {
+  const header = ['姓名','性别','年龄','手机号','备用电话','邮箱','身份证号','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签'];
+  const rows = [header.join(',')];
+  list.forEach(c => {
+    const d = plain ? c : maskCustomer(c);
+    const addr = plain ? (c.address || '') : maskAddress(c.address);
+    const row = [
+      d.name, d.gender, d.age, d.phone, d.phone2, d.email, d.idcard,
+      d.province, d.city, d.district, addr,
+      d.source, d.level, d.status, d.product, d.budget, d.nextFollowDate,
+      formatDate(c.createdAt),
+      (d.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|')
+    ];
+    rows.push(row.map(v => csvEscape(v)).join(','));
+  });
+  return rows.join('\r\n');
+}
+function csvEscape(v) {
+  if (v == null) return '';
+  const s = String(v);
+  if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function downloadCSV(filename, content) {
+  // 添加 BOM 以保证中文在 Excel 正常显示
+  const blob = new Blob(['\ufeff' + content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ================================================================
+   模块 10：仪表盘
+   ================================================================ */
+function renderDashboard() {
+  const list = Store.data.customers || [];
+  const total = list.length;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const todayCount = list.filter(c => c.createdAt >= todayStart.getTime()).length;
+  const monthCount = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+  const vipCount = list.filter(c => c.level === 'VIP' || c.level === '重点').length;
+  const followCount = list.filter(c => {
+    if (c.status === '跟进中') return true;
+    if (!c.nextFollowDate) return false;
+    const followTime = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return followTime !== null && followTime >= todayStart.getTime();
+  }).length;
+
+  // 统计卡片
+  const stats = [
+    { label: '客户总数', value: total, hint: '全部录入客户' },
+    { label: '今日新增', value: todayCount, hint: '今日 0 点后录入' },
+    { label: '本月新增', value: monthCount, hint: '本月 1 号后录入' },
+    { label: 'VIP / 重点客户', value: vipCount, hint: '等级为 VIP 或重点' },
+    { label: '待跟进客户', value: followCount, hint: '状态为跟进中 或 下次跟进日期 >= 今日' }
+  ];
+  const el = document.getElementById('stats-grid');
+  if (el) {
+    el.style.display = 'grid';
+    el.style.gridTemplateColumns = 'repeat(auto-fit, minmax(180px, 1fr))';
+    el.style.gap = '16px';
+    el.innerHTML = stats.map(s => `
+      <div class="stat-card" style="padding:18px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);">
+        <div style="font-size:13px;color:var(--text-secondary);">${escapeHTML(s.label)}</div>
+        <div style="font-size:28px;font-weight:700;margin-top:6px;">${s.value}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${escapeHTML(s.hint)}</div>
+      </div>`).join('');
+  }
+
+  // 来源饼图
+  drawSourcePie();
+  drawTrendBar();
+}
+
+function drawSourcePie() {
+  const canvas = document.getElementById('chart-source');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const counts = {};
+  (Store.data.customers || []).forEach(c => {
+    const k = c.source || '未填写';
+    counts[k] = (counts[k] || 0) + 1;
+  });
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const total = entries.reduce((s, e) => s + e[1], 0);
+  const cx = W/2, cy = H/2, R = Math.min(W, H) / 2 - 40;
+  if (total === 0) {
+    ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText('暂无数据', cx, cy);
+    document.getElementById('legend-source').innerHTML = '';
+    return;
+  }
+  const palette = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed', '#0891b2', '#65a30d', '#db2777'];
+  let start = -Math.PI / 2;
+  entries.forEach((e, i) => {
+    const angle = (e[1] / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, start, start + angle);
+    ctx.closePath();
+    ctx.fillStyle = palette[i % palette.length];
+    ctx.fill();
+    start += angle;
+  });
+  // 圆心
+  ctx.beginPath();
+  ctx.arc(cx, cy, R * 0.55, 0, Math.PI * 2);
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-secondary').trim() || '#ffffff';
+  ctx.fill();
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#111';
+  ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(total), cx, cy - 8);
+  ctx.font = '12px sans-serif'; ctx.fillStyle = '#6b7280';
+  ctx.fillText('客户', cx, cy + 14);
+
+  // 图例
+  const legend = document.getElementById('legend-source');
+  if (legend) {
+    legend.style.fontSize = '12px';
+    legend.style.marginTop = '12px';
+    legend.innerHTML = entries.map((e, i) =>
+      `<span style="display:inline-block;margin:4px 10px 4px 0;"><span style="display:inline-block;width:10px;height:10px;background:${palette[i % palette.length]};border-radius:2px;vertical-align:middle;margin-right:6px;"></span>${escapeHTML(e[0])} (${e[1]}, ${(e[1]/total*100).toFixed(1)}%)</span>`
+    ).join('');
+  }
+}
+
+function drawTrendBar() {
+  const canvas = document.getElementById('chart-trend');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  // 最近 6 个月统计
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(); d.setDate(1); d.setHours(0,0,0,0);
+    d.setMonth(d.getMonth() - i);
+    const startMs = d.getTime();
+    const next = new Date(d); next.setMonth(next.getMonth() + 1);
+    months.push({ label: (d.getMonth()+1) + '月', start: startMs, end: next.getTime(), count: 0 });
+  }
+  (Store.data.customers || []).forEach(c => {
+    const m = months.find(m => c.createdAt >= m.start && c.createdAt < m.end);
+    if (m) m.count++;
+  });
+  const max = Math.max(1, ...months.map(m => m.count));
+  const paddingLeft = 40, paddingBottom = 40, paddingTop = 20, paddingRight = 20;
+  const areaW = W - paddingLeft - paddingRight, areaH = H - paddingTop - paddingBottom;
+  const barW = areaW / months.length * 0.6;
+  const gap = areaW / months.length * 0.4;
+  // 坐标轴
+  ctx.strokeStyle = '#e5e7eb';
+  ctx.beginPath(); ctx.moveTo(paddingLeft, paddingTop); ctx.lineTo(paddingLeft, H - paddingBottom); ctx.lineTo(W - paddingRight, H - paddingBottom); ctx.stroke();
+  ctx.font = '12px sans-serif'; ctx.fillStyle = '#6b7280'; ctx.textAlign = 'center';
+  months.forEach((m, i) => {
+    const x = paddingLeft + gap/2 + i * (barW + gap);
+    const h = (m.count / max) * areaH;
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(x, H - paddingBottom - h, barW, h);
+    ctx.fillStyle = '#111'; ctx.textAlign = 'center';
+    ctx.fillText(String(m.count), x + barW/2, H - paddingBottom - h - 6);
+    ctx.fillStyle = '#6b7280';
+    ctx.fillText(m.label, x + barW/2, H - paddingBottom + 18);
+  });
+}
+
+/* ================================================================
+   模块 11：标签管理 / 数据安全中心
+   ================================================================ */
+function renderTagsPage() {
+  const el = document.getElementById('tag-list');
+  if (!el) return;
+  const tags = Store.data.tags || [];
+  el.innerHTML = '';
+  tags.forEach(t => {
+    const chip = document.createElement('div');
+    chip.style.cssText = `display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);`;
+    chip.innerHTML = `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${t.color};"></span>
+      <span style="font-weight:500;">${escapeHTML(t.name)}</span>
+      <span style="color:var(--text-muted);font-size:12px;">${escapeHTML(t.color)}</span>
+      <button class="btn btn-sm btn-outline" style="margin-left:auto;">编辑</button>
+      <button class="btn btn-sm btn-danger">删除</button>`;
+    el.appendChild(chip);
+    const [editBtn, delBtn] = chip.querySelectorAll('button');
+    editBtn.onclick = () => openTagEditor(t);
+    delBtn.onclick = () => {
+      const used = (Store.data.customers || []).some(c => (c.tags || []).indexOf(t.id) !== -1);
+      if (used) { showToast('该标签已被客户使用，无法删除', 'warning'); return; }
+      confirmDialog('删除标签', '确认删除标签 "' + t.name + '" ？', true, async () => {
+        Store.data.tags = (Store.data.tags || []).filter(x => x.id !== t.id);
+        await Store.saveWithLog('删除标签', '标签：' + t.name);
+        renderTagsPage(); showToast('已删除', 'success');
+      });
+    };
+  });
+}
+function openTagEditor(tag) {
+  const isNew = !tag;
+  const t = tag || { id: 't_' + Date.now(), name: '', color: '#2563eb' };
+  openModal({
+    title: isNew ? '新增标签' : '编辑标签', size: 'sm',
+    bodyHTML: `<div class="form-group">
+      <label class="label required">标签名称</label>
+      <input type="text" class="input" id="tname" value="${escapeHTML(t.name)}" maxlength="30">
+    </div>
+    <div class="form-group">
+      <label class="label">标签颜色</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        ${['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#65a30d','#db2777','#334155'].map(c =>
+          `<span data-color="${c}" style="display:inline-block;width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:${c===t.color?'3px solid #111':'2px solid transparent'};box-sizing:border-box;"></span>`).join('')}
+      </div>
+      <div style="margin-top:8px;"><input type="color" id="tcolor" value="${t.color}"> 自定义</div>
+    </div>`,
+    footer: (f) => {
+      const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+      const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '保存');
+      f.appendChild(cc); f.appendChild(ok);
+      let chosenColor = t.color;
+      document.querySelectorAll('span[data-color]').forEach(sp => {
+        sp.onclick = () => {
+          chosenColor = sp.dataset.color;
+          document.querySelectorAll('span[data-color]').forEach(x => { x.style.border = (x.dataset.color === chosenColor ? '3px solid #111' : '2px solid transparent'); });
+          document.getElementById('tcolor').value = chosenColor;
+        };
+      });
+      document.getElementById('tcolor').onchange = (e) => { chosenColor = e.target.value;
+        document.querySelectorAll('span[data-color]').forEach(x => { x.style.border = '2px solid transparent'; }); };
+      cc.onclick = closeModal;
+      ok.onclick = async () => {
+        const name = document.getElementById('tname').value.trim();
+        if (!name) { showToast('请填写标签名称', 'error'); return; }
+        t.name = escapeHTML(name); t.color = chosenColor;
+        if (isNew) {
+          Store.data.tags = Store.data.tags || [];
+          Store.data.tags.push(t);
+        }
+        await Store.saveWithLog(isNew ? '新增标签' : '编辑标签', '标签：' + t.name);
+        showToast(isNew ? '标签已新增' : '标签已更新', 'success');
+        closeModal(); renderTagsPage();
+      };
+    }
+  });
+}
+
+function renderLogsPage() {
+  const el = document.getElementById('log-list');
+  if (!el) return;
+  const sel = document.getElementById('log-filter-type');
+  if (sel && sel.options.length <= 1) {
+    const types = new Set((Store.data.logs || []).map(l => l.type));
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">全部类型</option>' + Array.from(types).map(t =>
+      `<option value="${escapeHTML(t)}" ${t===cur?'selected':''}>${escapeHTML(t)}</option>`).join('');
+    sel.onchange = renderLogsPage;
+  }
+  const filterType = sel ? sel.value : '';
+  let list = (Store.data.logs || []).slice();
+  if (filterType) list = list.filter(l => l.type === filterType);
+  el.innerHTML = list.slice(0, 200).map(l =>
+    `<div class="log-item" style="padding:10px 14px;border-bottom:1px solid var(--border-color);font-size:13px;display:grid;grid-template-columns:200px 140px 1fr;gap:12px;">
+      <span style="color:var(--text-muted);">${formatDate(l.time)}</span>
+      <span style="font-weight:500;">${escapeHTML(l.type)}</span>
+      <span>${escapeHTML(l.detail || '-')}</span>
+    </div>`).join('') || '<div style="padding:20px;text-align:center;color:var(--text-muted);">暂无操作日志</div>';
+}
+
+/* ================================================================
+   模块 12：页面切换 & 自动锁屏
+   ================================================================ */
+function navigate(pageName) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('page-' + pageName);
+  if (el) el.classList.add('active');
+  const nav = document.querySelector('.nav-item[data-page="' + pageName + '"]');
+  if (nav) nav.classList.add('active');
+  const titleMap = {
+    dashboard: ['仪表盘', '系统总览'],
+    list: ['客户列表', '管理所有客户'],
+    'new': ['新增客户', '录入新客户资料'],
+    tags: ['标签管理', '自定义客户分类标签'],
+    security: ['数据与安全', '备份、导入、修改密码、操作日志']
+  };
+  const t = titleMap[pageName] || ['系统', ''];
+  safeText(document.getElementById('page-title'), t[0]);
+  safeText(document.getElementById('page-subtitle'), t[1]);
+  if (pageName === 'dashboard') renderDashboard();
+  else if (pageName === 'list') { renderFilterSources(); renderCustomerTable(); }
+  else if (pageName === 'tags') renderTagsPage();
+  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); }
+  // 进入列表页面自动隐藏移动端侧边栏
+  if (window.innerWidth < 768) {
+    const sb = document.getElementById('sidebar'); if (sb) sb.classList.remove('show');
+  }
+}
+
+let idleTimer = null;
+function resetIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    if (Store.unlocked && location.hash.indexOf('lock') === -1) {
+      // 锁屏：清除运行态敏感信息，重新解锁（保留 localStorage 加密数据）
+      Store.unlocked = false;
+      Store.password = null;
+      document.getElementById('app-view').style.display = 'none';
+      document.getElementById('auth-view').style.display = 'block';
+      showToast('长时间无操作，已自动锁屏', 'warning');
+    }
+  }, 10 * 60 * 1000); // 10 分钟
+}
+
+/* ================================================================
+   模块 13：主题切换
+   ================================================================ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) safeText(btn, theme === 'dark' ? '☀️ 浅色' : '🌙 深色');
+  if (Store.settings) Store.settings.theme = theme;
+  Store.saveSettings();
+}
+
+/* ================================================================
+   模块 14：演示数据（首次进入系统，若数据为空，则自动生成 3 条示例）
+   ================================================================ */
+function ensureSeedData() {
+  if (!Store.data.customers || Store.data.customers.length === 0) {
+    const now = Date.now();
+    Store.data.customers = [
+      {
+        id: 'demo_1', name: '张敏', gender: '女', age: '32', phone: '13900000001', phone2: '',
+        email: 'zhangmin@example.com', idcard: '110101198801011234',
+        source: '老客户介绍', level: 'VIP', status: '跟进中',
+        province: '北京市', city: '北京市', district: '朝阳区', address: '建国路 88 号 SOHO 现代城',
+        product: '企业财税咨询', budget: '20000-50000', nextFollowDate: dateOnly(now + 2 * 86400000),
+        createdAt: now - 3 * 86400000, updatedAt: now - 1 * 86400000,
+        tags: ['t_vip'], remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }]
+      },
+      {
+        id: 'demo_2', name: '李伟', gender: '男', age: '41', phone: '13900000002', phone2: '',
+        email: 'liwei@example.com', idcard: '310104198301011234',
+        source: '网络推广', level: '重点', status: '已成交',
+        province: '上海市', city: '上海市', district: '徐汇区', address: '漕溪北路 18 号',
+        product: '品牌营销咨询', budget: '50000-100000', nextFollowDate: dateOnly(now + 5 * 86400000),
+        createdAt: now - 30 * 86400000, updatedAt: now - 5 * 86400000,
+        tags: ['t_hot', 't_vip'], remarkHistory: [{ time: now - 20 * 86400000, text: '签约成功，首期款已收到。' }]
+      },
+      {
+        id: 'demo_3', name: '王芳', gender: '女', age: '28', phone: '13900000003', phone2: '',
+        email: 'wangfang@example.com', idcard: '440106199601011234',
+        source: '线下活动', level: '普通', status: '未沟通',
+        province: '广东省', city: '广州市', district: '天河区', address: '珠江新城花城大道 85 号',
+        product: '个人法律咨询', budget: '5000 以下', nextFollowDate: '',
+        createdAt: now - 10 * 86400000, updatedAt: now - 10 * 86400000,
+        tags: ['t_new'], remarkHistory: []
+      }
+    ];
+    Store.saveWithLog('初始化演示数据', '首次进入系统，自动生成 3 条演示客户');
+  }
+  // 确保默认标签可用
+  if (!Store.data.tags || Store.data.tags.length === 0) {
+    Store.data.tags = [
+      { id: 't_vip', name: 'VIP', color: '#d97706' },
+      { id: 't_hot', name: '重点跟进', color: '#dc2626' },
+      { id: 't_new', name: '新客户', color: '#2563eb' }
+    ];
+  }
+}
+
+/* ================================================================
+   模块 15：主入口 & 全局事件绑定
+   ================================================================ */
+let unlockFailCount = 0;
+
+async function doUnlock(password) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return true; // 无数据，允许直接进入（会提示初始化）
+    const plain = await decryptData(raw, password);
+    JSON.parse(plain); // 验证解析
+    return true;
+  } catch (e) { return false; }
+}
+
+async function enterApp(password) {
+  Store.password = password;
+  Store.unlocked = true;
+  await Store.load();
+  // 若文件夹可用，尝试同步（不阻塞）
+  if (Store.isFolderApiSupported()) {
+    try { await Store.mergeFromFolder(); } catch (e) {}
+  }
+  ensureSeedData();
+  // 保存一次（记录解锁日志 + 同步到文件夹）
+  Store.addLog('解锁系统', '成功', '用户登录');
+  await Store.save();
+  document.getElementById('auth-view').style.display = 'none';
+  document.getElementById('app-view').style.display = 'block';
+  applyTheme(Store.settings.theme || 'light');
+  navigate('dashboard');
+  Store.updateSyncUI();
+  resetIdle();
+  // 进入应用时清空草稿
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  showToast('欢迎回来，已解锁系统', 'success');
+}
+
+function initAuthPage() {
+  document.getElementById('app-view').style.display = 'none';
+  document.getElementById('auth-view').style.display = 'flex';
+  const hasData = !!localStorage.getItem(STORAGE_KEY);
+  if (hasData) {
+    document.getElementById('view-unlock').style.display = 'block';
+    document.getElementById('view-init').style.display = 'none';
+  } else {
+    document.getElementById('view-unlock').style.display = 'none';
+    document.getElementById('view-init').style.display = 'block';
+    showToast('首次使用，请设置解锁密码', 'success');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  Store.loadSettings();
+
+  // 若浏览器不支持 crypto，需提示
+  if (!window.crypto || !crypto.subtle) {
+    document.body.innerHTML = '<div style="padding:40px;font-family:sans-serif;">当前浏览器不支持 Web Crypto API，请使用最新版 Chrome / Edge 打开。</div>';
+    return;
+  }
+
+  initAuthPage();
+
+  // 解锁按钮
+  const btnUnlock = document.getElementById('btn-unlock');
+  btnUnlock.onclick = async () => {
+    const pw = document.getElementById('unlock-password').value;
+    if (!pw) { showToast('请输入解锁密码', 'error'); return; }
+    if (document.getElementById('lockout-warning') && document.getElementById('lockout-warning').style.display === 'block') {
+      return; // 锁定冷却中
+    }
+    const ok = await doUnlock(pw);
+    if (ok) {
+      unlockFailCount = 0;
+      enterApp(pw);
+    } else {
+      unlockFailCount++;
+      document.getElementById('unlock-error').style.display = 'block';
+      safeText(document.getElementById('attempt-info'), `连续错误 ${unlockFailCount}/5 次，达上限将锁定 1 分钟`);
+      if (unlockFailCount >= 5) {
+        const warn = document.getElementById('lockout-warning');
+        warn.style.display = 'block';
+        let sec = 60;
+        document.getElementById('lockout-countdown').textContent = sec;
+        const timer = setInterval(() => {
+          sec--;
+          document.getElementById('lockout-countdown').textContent = sec;
+          if (sec <= 0) { clearInterval(timer); warn.style.display = 'none'; unlockFailCount = 0; }
+        }, 1000);
+        showToast('连续密码错误，系统已锁定 1 分钟', 'error');
+      } else {
+        showToast('密码错误，请重新输入', 'error');
+      }
+    }
+  };
+  document.getElementById('unlock-password').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') btnUnlock.click();
+  });
+
+  // 忘记密码 - 清空重置
+  document.getElementById('btn-forgot').onclick = () => {
+    confirmDialog('重置系统', '忘记密码将清空全部本地加密数据（不可逆），确定要重置吗？', true, () => {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(SETTINGS_KEY);
+      localStorage.removeItem(DRAFT_KEY);
+      Store.data = { customers: [], tags: [], logs: [], versions: [] };
+      Store.unlocked = false;
+      showToast('数据已清空，请重新初始化', 'success');
+      setTimeout(initAuthPage, 300);
+    });
+  };
+
+  // 初始化按钮
+  document.getElementById('btn-init').onclick = async () => {
+    const pw = document.getElementById('init-password').value;
+    const pw2 = document.getElementById('init-password2').value;
+    if (!pw || pw.length < 6) { showToast('密码长度至少 6 位', 'error'); return; }
+    if (pw !== pw2) {
+      document.getElementById('init-error').style.display = 'block';
+      return;
+    }
+    if (!document.getElementById('init-privacy').checked) {
+      showToast('请先勾选隐私确认', 'warning'); return;
+    }
+    // 首次保存空数据以派生密钥
+    Store.password = pw;
+    Store.data = { customers: [], tags: [], logs: [], versions: [] };
+    Store.addLog('初始化系统', '成功', '首次设置密码');
+    await Store.save();
+    enterApp(pw);
+  };
+  document.getElementById('btn-back-unlock').onclick = () => {
+    document.getElementById('view-init').style.display = 'none';
+    document.getElementById('view-unlock').style.display = 'block';
+  };
+
+  // 导航
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.onclick = () => navigate(el.dataset.page);
+  });
+  document.getElementById('menu-toggle').onclick = () => {
+    document.getElementById('sidebar').classList.toggle('show');
+  };
+  // 主题切换
+  document.getElementById('theme-toggle').onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  };
+  // 手动锁屏
+  document.getElementById('btn-lock').onclick = () => {
+    Store.unlocked = false; Store.password = null;
+    document.getElementById('app-view').style.display = 'none';
+    document.getElementById('auth-view').style.display = 'block';
+    document.getElementById('unlock-password').value = '';
+    showToast('已手动锁屏', 'warning');
+  };
+
+  // 快捷操作
+  document.querySelector('[data-nav="new"]').onclick = () => {
+    // 以弹窗形式（更便捷）打开新增客户表单
+    openCustomerForm(null);
+  };
+  document.getElementById('qa-backup').onclick = async () => {
+    await Store.save();
+    const enc = localStorage.getItem(STORAGE_KEY);
+    const payload = JSON.stringify({ app: 'CRM_LOCAL_V1', createdAt: Date.now(), encrypted: enc });
+    const blob = new Blob([payload], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `crm_backup_${new Date().toISOString().slice(0,10)}.dat`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('已生成加密备份文件', 'success');
+  };
+  document.getElementById('qa-export').onclick = () => {
+    confirmDialog('导出数据', '默认导出脱敏数据；如需导出明文，将进行二次密码验证。', false, () => {
+      const content = exportCustomerRows(Store.data.customers || [], false);
+      downloadCSV('客户资料_脱敏.csv', content);
+      showToast('已导出脱敏数据', 'success');
+    });
+  };
+  document.getElementById('qa-sync').onclick = async () => {
+    if (!Store.isFolderApiSupported()) {
+      showToast('当前浏览器不支持文件夹 API，请使用手动备份', 'warning'); return;
+    }
+    await Store.selectFolder();
+  };
+
+  // 列表页筛选、分页、排序、全选、批量删除、新增
+  document.getElementById('btn-apply-filter').onclick = () => {
+    listState.keyword = document.getElementById('filter-keyword').value.trim();
+    listState.level = document.getElementById('filter-level').value;
+    listState.status = document.getElementById('filter-status').value;
+    listState.source = document.getElementById('filter-source').value;
+    listState.dateStart = document.getElementById('filter-date-start').value;
+    listState.dateEnd = document.getElementById('filter-date-end').value;
+    renderCustomerTable();
+    showToast('已应用筛选条件', 'success');
+  };
+  document.getElementById('btn-reset-filter').onclick = () => {
+    document.getElementById('filter-keyword').value = '';
+    document.getElementById('filter-level').value = '';
+    document.getElementById('filter-status').value = '';
+    document.getElementById('filter-source').value = '';
+    document.getElementById('filter-date-start').value = '';
+    document.getElementById('filter-date-end').value = '';
+    listState = Object.assign(listState, { keyword: '', level: '', status: '', source: '', dateStart: '', dateEnd: '', page: 1 });
+    renderCustomerTable();
+  };
+  document.getElementById('btn-new-customer').onclick = () => openCustomerForm(null);
+  document.getElementById('page-size').onchange = (e) => { listState.pageSize = parseInt(e.target.value, 10) || 10; listState.page = 1; renderCustomerTable(); };
+  document.getElementById('btn-prev-page').onclick = () => { if (listState.page > 1) { listState.page--; renderCustomerTable(); } };
+  document.getElementById('btn-next-page').onclick = () => {
+    const total = (applyListFilters && Store.data.customers ? applyListFilters().length : 0);
+    const pageCount = Math.max(1, Math.ceil(total / listState.pageSize));
+    if (listState.page < pageCount) { listState.page++; renderCustomerTable(); }
+  };
+  // 排序（列表页表头点击）
+  document.querySelectorAll('#customer-table th[data-sort]').forEach(th => {
+    th.style.cursor = 'pointer';
+    th.onclick = () => {
+      const key = th.dataset.sort;
+      if (listState.sortKey === key) listState.sortAsc = !listState.sortAsc;
+      else { listState.sortKey = key; listState.sortAsc = false; }
+      renderCustomerTable();
+    };
+  });
+  // 全选
+  document.getElementById('check-all').onchange = (e) => {
+    const checked = e.target.checked;
+    document.querySelectorAll('#customer-tbody input[type="checkbox"][data-id]').forEach(x => {
+      x.checked = checked;
+      if (checked) listState.selected.add(x.dataset.id);
+      else listState.selected.delete(x.dataset.id);
+    });
+  };
+  document.getElementById('btn-batch-delete').onclick = () => {
+    if (!listState.selected || listState.selected.size === 0) { showToast('请先勾选客户', 'warning'); return; }
+    confirmDialog('批量删除客户', `确认删除 ${listState.selected.size} 个客户？操作不可逆。`, true, () => {
+      promptPassword('二次验证', '请输入解锁密码以执行批量删除', async () => {
+        const ids = new Set(listState.selected);
+        Store.data.customers = (Store.data.customers || []).filter(c => !ids.has(c.id));
+        await Store.saveWithLog('批量删除客户', `共删除 ${ids.size} 条`);
+        listState.selected.clear();
+        showToast('已批量删除', 'success');
+        refreshUI();
+      });
+    });
+  };
+
+  // 数据安全中心按钮
+  document.getElementById('btn-select-folder').onclick = async () => {
+    if (!Store.isFolderApiSupported()) { showToast('当前浏览器不支持 File System Access API，请使用手动备份', 'warning'); return; }
+    try { await Store.selectFolder(); } catch (e) { showToast(e.message, 'error'); }
+  };
+  document.getElementById('btn-sync-now').onclick = async () => { await Store.save(); showToast('已立即同步', 'success'); Store.updateSyncUI(); };
+  document.getElementById('btn-change-folder').onclick = async () => {
+    if (!Store.isFolderApiSupported()) { showToast('浏览器不支持', 'warning'); return; }
+    try { await Store.selectFolder(); } catch (e) { showToast(e.message, 'error'); }
+  };
+  document.getElementById('btn-revoke-folder').onclick = () => { Store.revokeFolder(); showToast('已取消目录授权', 'success'); };
+
+  document.getElementById('btn-export-encrypted').onclick = async () => {
+    await Store.save();
+    const enc = localStorage.getItem(STORAGE_KEY);
+    const blob = new Blob([JSON.stringify({ app: 'CRM_LOCAL_V1', createdAt: Date.now(), encrypted: enc })], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `crm_encrypted_${new Date().toISOString().slice(0,10)}.dat`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    Store.addLog('导出加密备份', '成功', '手动导出加密备份文件'); await Store.save();
+    showToast('已导出加密备份文件', 'success');
+  };
+  document.getElementById('btn-import-encrypted').onclick = () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.dat,.json';
+    input.onchange = async (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const text = await file.text();
+      try {
+        let encJson = text;
+        try { const obj = JSON.parse(text); if (obj.encrypted) encJson = obj.encrypted; } catch (ee) {}
+        // 让用户输入该备份文件的密码
+        openModal({
+          title: '导入加密备份', size: 'sm',
+          bodyHTML: `<div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">请输入该备份文件对应的解锁密码：</div>
+            <input type="password" id="_imp_pw" class="input" placeholder="备份文件密码" autocomplete="off">`,
+          footer: (f) => {
+            const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+            const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '导入并合并');
+            f.appendChild(cc); f.appendChild(ok);
+            cc.onclick = closeModal;
+            ok.onclick = async () => {
+              const pw = document.getElementById('_imp_pw').value;
+              try {
+                const plain = await decryptData(encJson, pw);
+                const obj = JSON.parse(plain);
+                const imported = (obj.customers || []).filter(c =>
+                  !Store.data.customers.some(ex => ex.phone === c.phone)
+                );
+                Store.data.customers = [...imported, ...Store.data.customers];
+                if (obj.tags && obj.tags.length) {
+                  const existingIds = new Set((Store.data.tags || []).map(x => x.id));
+                  for (const t of obj.tags) { if (!existingIds.has(t.id)) Store.data.tags.push(t); }
+                }
+                await Store.saveWithLog('导入加密备份', `从备份导入 ${imported.length} 条新客户`);
+                closeModal(); refreshUI(); showToast(`导入成功，新增 ${imported.length} 条客户`, 'success');
+              } catch (err) { showToast('密码错误或文件已损坏', 'error'); }
+            };
+          }
+        });
+      } catch (err) { showToast('文件解析失败', 'error'); }
+    };
+    input.click();
+  };
+  document.getElementById('btn-export-masked').onclick = () => {
+    const content = exportCustomerRows(Store.data.customers || [], false);
+    downloadCSV('客户资料_脱敏.csv', content);
+    Store.addLog('导出数据', '成功', '脱敏 CSV');
+    Store.save();
+    showToast('已导出脱敏 CSV', 'success');
+  };
+  document.getElementById('btn-export-plain').onclick = () => {
+    promptPassword('导出明文二次验证', '请输入解锁密码以导出包含完整敏感信息的 CSV', async () => {
+      const content = exportCustomerRows(Store.data.customers || [], true);
+      downloadCSV('客户资料_明文.csv', content);
+      Store.addLog('导出明文数据', '成功', '导出完整明文 CSV');
+      await Store.save();
+      showToast('注意：已导出明文数据，请妥善保管', 'warning');
+    });
+  };
+  document.getElementById('btn-rollback').onclick = () => {
+    if (!Store.data.versions || Store.data.versions.length === 0) { showToast('当前没有历史版本可回滚', 'warning'); return; }
+    const latest = Store.data.versions[0];
+    confirmDialog('回滚数据', `将恢复到最近一份备份（共 ${Store.data.versions.length} 个版本），当前最新变更将移到下一版本，是否继续？`, true, async () => {
+      promptPassword('二次验证', '请输入解锁密码以执行回滚', async () => {
+        // 当前数据作为一个新版本，再将 customers 替换为历史数据
+        const currentSnapshot = JSON.parse(JSON.stringify({ customers: Store.data.customers, tags: Store.data.tags, createdAt: Date.now() }));
+        Store.data.customers = JSON.parse(JSON.stringify(latest.customers || []));
+        if (latest.tags) Store.data.tags = JSON.parse(JSON.stringify(latest.tags || []));
+        Store.data.versions.unshift(currentSnapshot);
+        if (Store.data.versions.length > 3) Store.data.versions.length = 3;
+        await Store.saveWithLog('回滚到历史版本', '恢复到最近一份备份');
+        refreshUI(); showToast('已回滚到最近一个历史版本', 'success');
+      });
+    });
+  };
+  document.getElementById('btn-reset-data').onclick = () => {
+    confirmDialog('清空全部数据', '将清空所有客户、标签和操作日志，不可逆。是否继续？', true, () => {
+      promptPassword('二次验证', '请输入解锁密码以清空全部数据', async () => {
+        Store.data = { customers: [], tags: [], logs: [], versions: [] };
+        // 同时清除文件夹同步文件
+        if (Store.folderHandle) {
+          try {
+            const fh = await Store.folderHandle.getFileHandle(DATA_FILENAME).catch(() => null);
+            if (fh) await Store.folderHandle.removeEntry(DATA_FILENAME);
+          } catch (e) {}
+        }
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(DRAFT_KEY);
+        showToast('全部数据已清空', 'success');
+        // 重新进入应用
+        ensureSeedData(); Store.addLog('清空全部数据', '成功', '');
+        await Store.save(); refreshUI();
+      });
+    });
+  };
+  document.getElementById('btn-change-password').onclick = () => {
+    openModal({
+      title: '修改解锁密码', size: 'sm',
+      bodyHTML: `<div class="form-group"><label class="label required">原密码</label><input type="password" id="_old_pw" class="input" autocomplete="off"></div>
+        <div class="form-group"><label class="label required">新密码（至少 6 位）</label><input type="password" id="_new_pw" class="input" autocomplete="off"></div>
+        <div class="form-group"><label class="label required">再次输入新密码</label><input type="password" id="_new_pw2" class="input" autocomplete="off"></div>`,
+      footer: (f) => {
+        const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+        const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '保存');
+        f.appendChild(cc); f.appendChild(ok);
+        cc.onclick = closeModal;
+        ok.onclick = async () => {
+          const oldPw = document.getElementById('_old_pw').value;
+          const np = document.getElementById('_new_pw').value;
+          const np2 = document.getElementById('_new_pw2').value;
+          if (!oldPw || !np || !np2) { showToast('请完整填写', 'error'); return; }
+          if (np.length < 6) { showToast('新密码长度至少 6 位', 'error'); return; }
+          if (np !== np2) { showToast('两次输入的新密码不一致', 'error'); return; }
+          // 验证原密码
+          const ok_verify = await doUnlock(oldPw);
+          if (!ok_verify) { showToast('原密码错误', 'error'); return; }
+          // 以新密码重新加密保存
+          Store.password = np;
+          Store.addLog('修改密码', '成功', '用户修改了解锁密码');
+          await Store.save();
+          closeModal();
+          showToast('密码已更新，请使用新密码解锁', 'success');
+        };
+      }
+    });
+  };
+  document.getElementById('btn-export-log').onclick = () => {
+    const list = Store.data.logs || [];
+    const content = ['时间,类型,详情'].concat(list.map(l => `${formatDate(l.time)},${csvEscape(l.type)},${csvEscape(l.detail || '')}`)).join('\r\n');
+    downloadCSV('操作日志.csv', content);
+    showToast('日志已导出', 'success');
+  };
+
+  // 自动锁屏监控
+  ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(ev => document.addEventListener(ev, resetIdle));
+});
+
+function refreshUI() {
+  // 根据当前所在页面刷新
+  const active = document.querySelector('.page.active');
+  if (!active) { navigate('dashboard'); return; }
+  if (active.id === 'page-dashboard') renderDashboard();
+  else if (active.id === 'page-list') { renderFilterSources(); renderCustomerTable(); }
+  else if (active.id === 'page-tags') renderTagsPage();
+  else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); }
+}
+</script>
+</body>
+</html>
+
