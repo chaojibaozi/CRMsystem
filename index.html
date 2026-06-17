@@ -79,7 +79,7 @@ a { color: var(--accent); text-decoration: none; }
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
-  transition: all 0.15s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -87,13 +87,22 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--bg-tertiary);
   color: var(--text-primary);
   height: 28px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
-.btn:hover:not(:disabled) { opacity: 0.9; }
+.btn:hover:not(:disabled) { 
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
 .btn-danger { background: var(--danger); color: white; }
-.btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+.btn-danger:hover:not(:disabled) { background: var(--danger-hover); box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
 .btn-success { background: var(--success); color: white; }
 .btn-warning { background: var(--warning); color: white; }
 .btn-outline {
@@ -101,7 +110,11 @@ a { color: var(--accent); text-decoration: none; }
   border-color: var(--border-color);
   color: var(--text-primary);
 }
-.btn-outline:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn-outline:hover:not(:disabled) { 
+  border-color: var(--accent); 
+  color: var(--accent);
+  background: rgba(37,99,235,0.05);
+}
 .btn-sm { padding: 3px 8px; font-size: 12px; height: 24px; }
 .btn-lg { padding: 8px 20px; font-size: 14px; height: 36px; }
 
@@ -113,16 +126,37 @@ a { color: var(--accent); text-decoration: none; }
   background: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 13px;
-  transition: border-color 0.15s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   height: 28px;
 }
 .textarea { min-height: 70px; height: auto; resize: vertical; padding: 5px 8px; line-height: 1.5; }
 .input:focus, .select:focus, .textarea:focus {
   border-color: var(--accent);
   outline: none;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
 .input.valid { border-color: var(--success); }
 .input.invalid { border-color: var(--danger); }
+
+/* Checkbox 动画 */
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+input[type="checkbox"]:checked {
+  animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes checkPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
 
 .label {
   display: block;
@@ -271,13 +305,30 @@ a { color: var(--accent); text-decoration: none; }
   gap: 8px;
   color: var(--text-secondary);
   font-size: 13px;
-  transition: all 0.15s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
+  position: relative;
 }
-.nav-item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.nav-item:hover { 
+  background: var(--bg-tertiary); 
+  color: var(--text-primary);
+  transform: translateX(4px);
+}
 .nav-item.active {
   background: var(--accent);
   color: white;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: white;
+  border-radius: 0 2px 2px 0;
 }
 .nav-icon { font-size: 14px; width: 16px; text-align: center; }
 
@@ -315,8 +366,17 @@ a { color: var(--accent); text-decoration: none; }
 .sync-status.online { color: var(--success); }
 .sync-status.offline { color: var(--text-muted); }
 
-.page { display: none; }
-.page.active { display: block; }
+.page { 
+  display: none; 
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.page.active { 
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* ========================================
    仪表盘（紧凑）
@@ -337,6 +397,99 @@ a { color: var(--accent); text-decoration: none; }
 .stat-label { font-size: 12px; color: var(--text-secondary); }
 .stat-value { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
 .stat-change { font-size: 11px; margin-top: 4px; color: var(--text-muted); }
+
+/* 仪表盘统计浮层 */
+.stat-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+}
+.stat-popup-overlay.active { 
+  opacity: 1;
+  visibility: visible;
+}
+.stat-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  z-index: 9999;
+  width: 90%;
+  max-width: 600px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+}
+.stat-popup.active { 
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+.stat-popup-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.stat-popup-title { font-size: 16px; font-weight: 600; }
+.stat-popup-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.stat-popup-close:hover { 
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  transform: rotate(90deg);
+}
+.stat-popup-body {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+.stat-popup-item {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  background: var(--bg-primary);
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s;
+}
+.stat-popup-item:hover {
+  background: var(--bg-secondary);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-color: var(--primary);
+}
+.stat-popup-item-name { font-weight: 600; margin-bottom: 4px; transition: color 0.2s; }
+.stat-popup-item:hover .stat-popup-item-name { color: var(--primary); }
+.stat-popup-item-info { font-size: 12px; color: var(--text-secondary); }
+.stat-popup-empty { text-align: center; color: var(--text-muted); padding: 40px 0; }
 
 .charts-grid {
   display: grid;
@@ -424,6 +577,7 @@ table.data-table {
   border-bottom: 1px solid var(--border-color);
   font-size: 12px;
   white-space: nowrap;
+  transition: background 0.15s;
 }
 .data-table th {
   background: var(--bg-tertiary);
@@ -433,9 +587,21 @@ table.data-table {
   user-select: none;
   position: sticky;
   top: 0;
+  transition: color 0.2s, background 0.2s;
 }
 .data-table th:hover { color: var(--accent); }
-.data-table tr:hover td { background: var(--bg-tertiary); }
+.data-table tbody tr {
+  transition: background 0.15s, transform 0.15s;
+}
+.data-table tbody tr:hover td { 
+  background: var(--bg-tertiary); 
+}
+.data-table tbody tr:hover {
+  transform: scale(1.005);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 1;
+}
 .data-table td input[type="checkbox"] { cursor: pointer; }
 .table-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 
@@ -459,13 +625,22 @@ table.data-table {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1000;
   align-items: center;
   justify-content: center;
   padding: 12px;
-  animation: fadeIn 0.15s;
+  opacity: 0;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.modal-overlay.show { display: flex; }
+.modal-overlay.show { 
+  display: flex; 
+  opacity: 1;
+}
+.modal-overlay.closing {
+  opacity: 0;
+}
 .modal {
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
@@ -474,7 +649,13 @@ table.data-table {
   max-height: 92vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
-  animation: slideUp 0.2s;
+  transform: scale(0.95) translateY(10px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-overlay.show .modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }
 .modal.modal-sm { max-width: 440px; }
 .modal.modal-md { max-width: 700px; }
@@ -498,8 +679,13 @@ table.data-table {
   width: 28px;
   height: 28px;
   border-radius: 50%;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
 }
-.modal-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.modal-close:hover { 
+  background: var(--bg-tertiary); 
+  color: var(--text-primary);
+  transform: rotate(90deg);
+}
 .modal-body { padding: 14px; }
 .modal-footer {
   padding: 10px 14px;
@@ -693,9 +879,15 @@ table.data-table {
   box-shadow: var(--shadow-md);
   border-left: 3px solid var(--accent);
   min-width: 180px;
-  animation: toastIn 0.2s;
+  animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   pointer-events: auto;
   font-size: 13px;
+  opacity: 0;
+  transform: translateX(100%);
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(0);
 }
 .toast.success { border-left-color: var(--success); }
 .toast.warning { border-left-color: var(--warning); }
@@ -704,9 +896,17 @@ table.data-table {
   from { opacity: 0; transform: translateX(30px); }
   to { opacity: 1; transform: translateX(0); }
 }
-.toast.fade-out { animation: toastOut 0.2s forwards; }
+.toast.fade-out { 
+  animation: toastOut 0.25s cubic-bezier(0.4, 0, 1, 1) forwards; 
+}
 @keyframes toastOut {
   to { opacity: 0; transform: translateX(30px); }
+}
+
+/* 涟漪点击动画 */
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
 }
 
 /* ========================================
@@ -801,6 +1001,16 @@ table.data-table {
 </head>
 <body>
 
+<!-- 仪表盘统计浮层 -->
+<div class="stat-popup-overlay" id="stat-popup-overlay"></div>
+<div class="stat-popup" id="stat-popup">
+  <div class="stat-popup-header">
+    <span class="stat-popup-title" id="stat-popup-title">客户列表</span>
+    <button class="stat-popup-close" id="stat-popup-close">×</button>
+  </div>
+  <div class="stat-popup-body" id="stat-popup-body"></div>
+</div>
+
 <!-- 解锁 / 初始化 视图容器 -->
 <div id="auth-view" class="auth-wrap" style="display:none;">
   <div class="auth-card">
@@ -876,8 +1086,9 @@ table.data-table {
         <li class="nav-item" data-page="geo"><span class="nav-icon">🌍</span>GEO客户</li>
         <li class="nav-item" data-page="360"><span class="nav-icon">🔄</span>360客户</li>
         <li class="nav-item" data-page="bing"><span class="nav-icon">🔍</span>Bing客户</li>
-        <li class="nav-item" data-page="tags"><span class="nav-icon">#</span>标签管理</li>
+        <li class="nav-item" data-page="trash"><span class="nav-icon">🗑️</span>作废客户</li>
         <li class="nav-item" data-page="security"><span class="nav-icon">⚙</span>数据与安全</li>
+        <li class="nav-item" data-page="settings"><span class="nav-icon">🔧</span>设置</li>
       </ul>
     </aside>
 
@@ -1057,6 +1268,17 @@ table.data-table {
         </div>
       </section>
 
+      <!-- 作废客户 -->
+      <section class="page" id="page-trash">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;" id="form-title-trash">作废客户</h2>
+            <div style="font-size:12px;color:var(--text-muted);">已作废的客户列表</div>
+          </div>
+          <div id="customer-form-container-trash"></div>
+        </div>
+      </section>
+
       <!-- 客户详情页 -->
       <section class="page" id="page-detail">
         <div class="card" id="detail-container">
@@ -1064,11 +1286,27 @@ table.data-table {
         </div>
       </section>
 
-      <!-- 标签管理 -->
-      <section class="page" id="page-tags">
-        <div class="card">
+      <!-- 设置中心 -->
+      <section class="page" id="page-settings">
+        <div class="card" style="margin-bottom:16px;">
+          <h2 style="font-size:18px;margin-bottom:16px;">📋 跟进提醒设置</h2>
+          <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
+            设置新增客户未跟进的提醒频率，系统将在指定天数后提醒您跟进新客户。
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <label style="font-weight:500;">提醒频率：</label>
+            <div class="btn-group" id="followup-frequency-group">
+              <button class="btn btn-sm frequency-option" data-value="2">2天</button>
+              <button class="btn btn-sm frequency-option" data-value="3">3天</button>
+              <button class="btn btn-sm frequency-option" data-value="5">5天</button>
+            </div>
+            <span id="followup-frequency-desc" style="font-size:13px;color:var(--text-muted);">新增客户超过3天未跟进时提醒</span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h2 style="font-size:18px;">自定义标签管理</h2>
+            <h2 style="font-size:18px;">🏷️ 自定义标签管理</h2>
             <button class="btn btn-primary btn-sm" id="btn-new-tag">➕ 新增标签</button>
           </div>
           <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
@@ -1235,7 +1473,12 @@ function showToast(msg, type = 'success', duration = 3000) {
   el.className = 'toast ' + type;
   el.textContent = msg;
   container.appendChild(el);
+  // 触发动画
+  requestAnimationFrame(() => {
+    el.classList.add('show');
+  });
   setTimeout(() => {
+    el.classList.remove('show');
     el.classList.add('fade-out');
     setTimeout(() => el.remove(), 300);
   }, duration);
@@ -1342,7 +1585,7 @@ const Store = {
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
   data: { customers: [], tags: [], logs: [], versions: [] }, // 明文内存
-  settings: { folderHandleKey: null, theme: 'light' },
+  settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
   folderName: '',
@@ -1999,7 +2242,7 @@ function renderFilterSources() {
 
 function applyListFilters() {
   const all = Store.data.customers || [];
-  let arr = all.slice();
+  let arr = all.filter(c => c.deleted !== true).slice();
   const kw = listState.keyword.trim().toLowerCase();
   if (kw) {
     arr = arr.filter(c => {
@@ -2109,11 +2352,42 @@ function renderCustomerTable() {
         });
       }
       else if (btn.dataset.act === 'del') {
-        confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？此操作不可恢复。', true, async () => {
-          Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
-          await Store.saveWithLog('删除客户', '客户：' + c.name);
-          showToast('已删除', 'success');
-          refreshUI();
+        openModal({
+          title: '删除客户',
+          size: 'sm',
+          bodyHTML: `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">
+            选择删除方式：
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-block btn-outline" id="del-trash">🗑️ 移至作废（可恢复）</button>
+            <button class="btn btn-block btn-danger" id="del-purge">🔥 彻底删除（不可恢复）</button>
+          </div>`,
+          footer: (f) => {
+            const cancel = document.createElement('button');
+            cancel.className = 'btn btn-sm btn-outline';
+            safeText(cancel, '取消');
+            f.appendChild(cancel);
+            cancel.onclick = closeModal;
+            
+            document.getElementById('del-trash').onclick = async () => {
+              c.deleted = true;
+              c.deletedAt = Date.now();
+              await Store.saveWithLog('作废客户', '客户：' + c.name);
+              showToast('客户已移至作废', 'success');
+              closeModal();
+              refreshUI();
+            };
+            
+            document.getElementById('del-purge').onclick = () => {
+              confirmDialog('彻底删除', '确认彻底删除客户 "' + c.name + '"？此操作不可恢复！', true, async () => {
+                Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
+                await Store.saveWithLog('彻底删除客户', '客户：' + c.name);
+                showToast('已彻底删除', 'success');
+                closeModal();
+                refreshUI();
+              });
+            };
+          }
         });
       }
     };
@@ -2186,6 +2460,72 @@ function renderChannelPage(channel) {
   });
 }
 
+function renderTrashPage() {
+  const customers = Store.data.customers.filter(c => c.deleted === true);
+  const container = document.getElementById('customer-form-container-trash');
+  if (!container) return;
+  
+  if (customers.length === 0) {
+    container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);">暂无作废客户</div>`;
+    return;
+  }
+  
+  let html = `<table class="data-table" style="width:100%;">
+    <thead>
+      <tr>
+        <th style="width:50px;">序号</th>
+        <th>姓名</th>
+        <th>手机号</th>
+        <th>等级</th>
+        <th>来源</th>
+        <th>作废时间</th>
+        <th style="width:150px;">操作</th>
+      </tr>
+    </thead>
+    <tbody>`;
+  
+  customers.forEach((c, i) => {
+    html += `<tr style="opacity:0.7;">
+      <td>${i + 1}</td>
+      <td><strong>${escapeHTML(c.name || '-')}</strong></td>
+      <td>${escapeHTML(c.phone || '-')}</td>
+      <td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>
+      <td>${escapeHTML(c.source || '-')}</td>
+      <td>${c.deletedAt ? formatDate(c.deletedAt) : '-'}</td>
+      <td>
+        <button class="btn btn-sm" data-act="restore" data-id="${c.id}">恢复</button>
+        <button class="btn btn-sm btn-danger" data-act="purge" data-id="${c.id}">彻底删除</button>
+      </td>
+    </tr>`;
+  });
+  
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+  
+  container.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.id;
+      const c = Store.data.customers.find(x => x.id === id);
+      if (!c) return;
+      
+      if (btn.dataset.act === 'restore') {
+        c.deleted = false;
+        c.deletedAt = null;
+        await Store.saveWithLog('恢复客户', '客户：' + c.name);
+        showToast('客户已恢复', 'success');
+        renderTrashPage();
+      } else if (btn.dataset.act === 'purge') {
+        confirmDialog('彻底删除', '确认彻底删除客户 "' + c.name + '"？此操作不可恢复！', true, async () => {
+          Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
+          await Store.saveWithLog('彻底删除客户', '客户：' + c.name);
+          showToast('已彻底删除', 'success');
+          renderTrashPage();
+        });
+      }
+    };
+  });
+}
+
 function levelColor(level) {
   if (level === 'A') return '#dc2626';
   if (level === 'B') return '#d97706';
@@ -2202,7 +2542,7 @@ function statusClass(s) {
 /* ================================================================
    模块 8：客户详情
    ================================================================ */
-function openCustomerDetail(c) {
+function openCustomerDetail(c, fromPopup) {
   window.__lastDetailId = c.id;
   renderDetail();
 
@@ -2256,10 +2596,15 @@ function openCustomerDetail(c) {
 
     openModal({
       title: '客户详情', size: 'md', bodyHTML: html,
+      onClose: fromPopup ? _restoreStatPopup : undefined,
       footer: (f) => {
         const cl = document.createElement('button'); cl.className = 'btn btn-sm btn-outline'; safeText(cl, '关闭');
-        f.appendChild(cl); cl.onclick = closeModal;
-        document.getElementById('editDetail').onclick = () => { closeModal(); setTimeout(() => openCustomerForm(c), 10); };
+        f.appendChild(cl); cl.onclick = () => { closeModal(); if (fromPopup) setTimeout(_restoreStatPopup, 100); };
+        document.getElementById('editDetail').onclick = () => {
+          closeModal();
+          if (fromPopup) _statPopupState = null;
+          setTimeout(() => openCustomerForm(c), 10);
+        };
         document.getElementById('exportOne').onclick = () => {
           const row = exportCustomerRows([c], true);
           downloadCSV(`${c.name}_客户资料.csv`, row);
@@ -2354,7 +2699,7 @@ function downloadCSV(filename, content) {
    模块 10：仪表盘
    ================================================================ */
 function renderDashboard() {
-  const list = Store.data.customers || [];
+  const list = (Store.data.customers || []).filter(c => c.deleted !== true);
   const total = list.length;
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
@@ -2370,11 +2715,11 @@ function renderDashboard() {
 
   // 统计卡片
   const stats = [
-    { label: '客户总数', value: total, hint: '全部录入客户' },
-    { label: '今日新增', value: todayCount, hint: '今日 0 点后录入' },
-    { label: '本月新增', value: monthCount, hint: '本月 1 号后录入' },
-    { label: 'A/B 级客户', value: vipCount, hint: '等级为 A 或 B' },
-    { label: '待跟进客户', value: followCount, hint: '状态为跟进中 或 下次跟进日期 >= 今日' }
+    { label: '客户总数', value: total, hint: '全部录入客户', type: 'total' },
+    { label: '今日新增', value: todayCount, hint: '今日 0 点后录入', type: 'today' },
+    { label: '本月新增', value: monthCount, hint: '本月 1 号后录入', type: 'month' },
+    { label: 'A/B 级客户', value: vipCount, hint: '等级为 A 或 B', type: 'vip' },
+    { label: '待跟进客户', value: followCount, hint: '状态为跟进中 或 下次跟进日期 >= 今日', type: 'follow' }
   ];
   const el = document.getElementById('stats-grid');
   if (el) {
@@ -2382,16 +2727,128 @@ function renderDashboard() {
     el.style.gridTemplateColumns = 'repeat(auto-fit, minmax(180px, 1fr))';
     el.style.gap = '16px';
     el.innerHTML = stats.map(s => `
-      <div class="stat-card" style="padding:18px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);">
-        <div style="font-size:13px;color:var(--text-secondary);">${escapeHTML(s.label)}</div>
-        <div style="font-size:28px;font-weight:700;margin-top:6px;">${s.value}</div>
+      <div class="stat-card" data-stat-type="${s.type}" style="padding:18px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);cursor:pointer;transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),border-color 0.2s;" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)';this.style.borderColor='var(--primary)';" onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='';">
+        <div style="font-size:13px;color:var(--text-secondary);transition:color 0.2s;">${escapeHTML(s.label)}</div>
+        <div style="font-size:28px;font-weight:700;margin-top:6px;transition:transform 0.2s;">${s.value}</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${escapeHTML(s.hint)}</div>
       </div>`).join('');
+    // 添加点击事件
+    el.querySelectorAll('.stat-card').forEach(card => {
+      card.addEventListener('click', () => showStatPopup(card.dataset.statType));
+      // 添加点击涟漪效果
+      card.addEventListener('mousedown', function(e) {
+        const ripple = document.createElement('span');
+        ripple.style.cssText = 'position:absolute;border-radius:50%;background:rgba(37,99,235,0.2);width:100px;height:100px;left:' + (e.offsetX - 50) + 'px;top:' + (e.offsetY - 50) + 'px;transform:scale(0);animation:ripple 0.6s ease-out forwards;pointer-events:none;';
+        ripple.style.cssText += 'animation:ripple 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;';
+        this.style.position = 'relative';
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+      });
+    });
   }
 
   // 来源饼图
   drawSourcePie();
   drawTrendBar();
+}
+
+// 显示统计浮层
+function showStatPopup(type) {
+  const list = (Store.data.customers || []).filter(c => c.deleted !== true);
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  
+  let customers = [];
+  let title = '';
+  
+  switch(type) {
+    case 'total':
+      customers = list;
+      title = '客户总数 (' + list.length + ')';
+      break;
+    case 'today':
+      customers = list.filter(c => c.createdAt >= todayStart.getTime());
+      title = '今日新增 (' + customers.length + ')';
+      break;
+    case 'month':
+      customers = list.filter(c => c.createdAt >= monthStart.getTime());
+      title = '本月新增 (' + customers.length + ')';
+      break;
+    case 'vip':
+      customers = list.filter(c => c.level === 'A' || c.level === 'B');
+      title = 'A/B 级客户 (' + customers.length + ')';
+      break;
+    case 'follow':
+      customers = list.filter(c => {
+        if (c.status === '跟进中') return true;
+        if (!c.nextFollowDate) return false;
+        const followTime = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+        return followTime !== null && followTime >= todayStart.getTime();
+      });
+      title = '待跟进客户 (' + customers.length + ')';
+      break;
+  }
+  
+  // 按创建时间倒序
+  customers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  
+  const popupTitle = document.getElementById('stat-popup-title');
+  const popupBody = document.getElementById('stat-popup-body');
+  const popupOverlay = document.getElementById('stat-popup-overlay');
+  const popup = document.getElementById('stat-popup');
+  
+  popupTitle.textContent = title;
+  
+  if (customers.length === 0) {
+    popupBody.innerHTML = '<div class="stat-popup-empty">暂无数据</div>';
+  } else {
+    popupBody.innerHTML = customers.map(c => `
+      <div class="stat-popup-item" data-customer-id="${c.id}">
+        <div class="stat-popup-item-name">${escapeHTML(c.name || '未命名')} ${c.level ? '<span style="margin-left:8px;padding:2px 8px;border-radius:4px;background:' + (c.level === 'A' ? '#dc2626' : c.level === 'B' ? '#f59e0b' : c.level === 'C' ? '#3b82f6' : '#6b7280') + ';color:#fff;font-size:11px;">' + c.level + '</span>' : ''}</div>
+        <div class="stat-popup-item-info">
+          ${c.phone ? '📱 ' + escapeHTML(c.phone) + ' &nbsp;' : ''}
+          ${c.wechat ? '💬 ' + escapeHTML(c.wechat) + ' &nbsp;' : ''}
+          ${c.source ? '来源: ' + escapeHTML(c.source) + ' &nbsp;' : ''}
+          ${c.status ? '状态: ' + escapeHTML(c.status) : ''}
+        </div>
+      </div>
+    `).join('');
+    
+    // 添加点击事件，打开客户详情浮层
+    popupBody.querySelectorAll('.stat-popup-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const customerId = item.dataset.customerId;
+        const customer = Store.data.customers.find(c => c.id === customerId);
+        if (customer) {
+          // 保存当前popup状态
+          _statPopupState = type;
+          closeStatPopup();
+          openCustomerDetail(customer, true);
+        }
+      });
+    });
+  }
+  
+  popupOverlay.classList.add('active');
+  popup.classList.add('active');
+}
+
+// 关闭统计浮层
+function closeStatPopup() {
+  document.getElementById('stat-popup-overlay').classList.remove('active');
+  document.getElementById('stat-popup').classList.remove('active');
+}
+
+// 保存浮层状态，用于详情弹窗关闭后返回
+let _statPopupState = null;
+
+// 恢复浮层
+function _restoreStatPopup() {
+  if (_statPopupState) {
+    const savedType = _statPopupState;
+    _statPopupState = null;
+    setTimeout(() => showStatPopup(savedType), 150);
+  }
 }
 
 function drawSourcePie() {
@@ -2489,9 +2946,54 @@ function drawTrendBar() {
 }
 
 /* ================================================================
-   模块 11：标签管理 / 数据安全中心
+   模块 11：设置中心 / 标签管理 / 数据安全中心
    ================================================================ */
-function renderTagsPage() {
+function renderSettingsPage() {
+  // 渲染跟进提醒频率设置
+  const followupDays = Store.settings.followupDays || 3;
+  const desc = document.getElementById('followup-frequency-desc');
+  if (desc) desc.textContent = `新增客户超过${followupDays}天未跟进时提醒`;
+  
+  // 更新按钮选中状态
+  document.querySelectorAll('.frequency-option').forEach(btn => {
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-outline');
+    if (parseInt(btn.dataset.value) === followupDays) {
+      btn.classList.remove('btn-outline');
+      btn.classList.add('btn-primary');
+    }
+  });
+  
+  // 绑定频率选择事件
+  document.querySelectorAll('.frequency-option').forEach(btn => {
+    btn.onclick = async () => {
+      const days = parseInt(btn.dataset.value);
+      Store.settings.followupDays = days;
+      Store.saveSettings();
+      // 更新UI
+      document.querySelectorAll('.frequency-option').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-outline');
+      });
+      btn.classList.remove('btn-outline');
+      btn.classList.add('btn-primary');
+      if (desc) desc.textContent = `新增客户超过${days}天未跟进时提醒`;
+      showToast(`跟进提醒频率已设置为 ${days} 天`, 'success');
+    };
+  });
+  
+  // 渲染标签列表
+  renderTagsList();
+  
+  // 新增标签按钮事件
+  const btnNewTag = document.getElementById('btn-new-tag');
+  if (btnNewTag) {
+    btnNewTag.onclick = () => openTagEditor(null);
+  }
+}
+
+// 渲染标签列表（从设置页面调用）
+function renderTagsList() {
   const el = document.getElementById('tag-list');
   if (!el) return;
   const tags = Store.data.tags || [];
@@ -2513,7 +3015,7 @@ function renderTagsPage() {
       confirmDialog('删除标签', '确认删除标签 "' + t.name + '" ？', true, async () => {
         Store.data.tags = (Store.data.tags || []).filter(x => x.id !== t.id);
         await Store.saveWithLog('删除标签', '标签：' + t.name);
-        renderTagsPage(); showToast('已删除', 'success');
+        renderTagsList(); showToast('已删除', 'success');
       });
     };
   });
@@ -2560,7 +3062,7 @@ function openTagEditor(tag) {
         }
         await Store.saveWithLog(isNew ? '新增标签' : '编辑标签', '标签：' + t.name);
         showToast(isNew ? '标签已新增' : '标签已更新', 'success');
-        closeModal(); renderTagsPage();
+        closeModal(); renderTagsList();
       };
     }
   });
@@ -2604,8 +3106,9 @@ function navigate(pageName) {
     geo: ['GEO客户', 'GEO渠道客户管理'],
     '360': ['360客户', '360渠道客户管理'],
     bing: ['Bing客户', 'Bing渠道客户管理'],
-    tags: ['标签管理', '自定义客户分类标签'],
-    security: ['数据与安全', '备份、导入、修改密码、操作日志']
+    trash: ['作废客户', '已作废的客户列表'],
+    security: ['数据与安全', '备份、导入、修改密码、操作日志'],
+    settings: ['设置', '系统设置与标签管理']
   };
   const t = titleMap[pageName] || ['系统', ''];
   safeText(document.getElementById('page-title'), t[0]);
@@ -2615,7 +3118,8 @@ function navigate(pageName) {
   else if (pageName === 'geo') renderChannelPage('geo');
   else if (pageName === '360') renderChannelPage('360');
   else if (pageName === 'bing') renderChannelPage('bing');
-  else if (pageName === 'tags') renderTagsPage();
+  else if (pageName === 'trash') renderTrashPage();
+  else if (pageName === 'settings') renderSettingsPage();
   else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); }
   // 进入列表页面自动隐藏移动端侧边栏
   if (window.innerWidth < 768) {
@@ -2951,6 +3455,11 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   };
+
+  // 仪表盘统计浮层关闭事件
+  document.getElementById('stat-popup-close').onclick = closeStatPopup;
+  document.getElementById('stat-popup-overlay').onclick = closeStatPopup;
+
   document.getElementById('qa-backup').onclick = async () => {
     await Store.save();
     const enc = localStorage.getItem(STORAGE_KEY);
