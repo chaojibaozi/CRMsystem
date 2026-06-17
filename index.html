@@ -1178,6 +1178,18 @@ function dateOnly(ts) {
   const pad = n => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 }
+function formatNextFollowDate(val) {
+  if (!val) return '-';
+  // 如果是时间戳数字
+  if (typeof val === 'number') {
+    return dateOnly(val);
+  }
+  // 如果是日期字符串
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    return val;
+  }
+  return '-';
+}
 function parseDateStr(s) {
   if (!s) return null;
   const [y, m, d] = s.split('-').map(Number);
@@ -1631,7 +1643,13 @@ function confirmDialog(title, message, danger, onConfirm) {
       f.appendChild(ok);
       cancel.onclick = closeModal;
       ok.onclick = async () => {
-        try { await onConfirm(); } finally { closeModal(); }
+        try { 
+          if (typeof onConfirm === 'function') {
+            await onConfirm(); 
+          }
+        } finally { 
+          closeModal(); 
+        }
       };
     }
   });
@@ -1777,7 +1795,7 @@ function openCustomerForm(customer) {
         <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
       for (const t of tags) {
         const sel = currentTags.indexOf(t.id) !== -1;
-        html += `<span class="tag-chip" data-tag="${t.id}" data-color="${t.color}"
+        html += `<span class="tag-chip" data-tag="${t.id}" data-color="${t.color}" data-selected="${sel ? 'true' : 'false'}"
           style="background:${sel ? t.color : '#e5e7eb'};color:${sel ? 'white' : '#4b5563'};cursor:pointer;padding:4px 12px;border-radius:14px;font-size:12px;">${escapeHTML(t.name)}</span>`;
       }
       html += `</div></div>`;
@@ -1816,15 +1834,15 @@ function openCustomerForm(customer) {
       document.querySelectorAll('.tag-chip[data-tag]').forEach(el => {
         el.onclick = () => {
           const color = el.dataset.color;
-          const bg = getComputedStyle(el).backgroundColor;
-          // 根据当前背景色判断选择状态
-          const isLight = bg.indexOf('229') !== -1 && bg.indexOf('231') !== -1;
-          if (isLight) {
-            el.style.background = color;
-            el.style.color = 'white';
-          } else {
+          const isSelected = el.dataset.selected === 'true';
+          if (isSelected) {
             el.style.background = '#e5e7eb';
             el.style.color = '#4b5563';
+            el.dataset.selected = 'false';
+          } else {
+            el.style.background = color;
+            el.style.color = 'white';
+            el.dataset.selected = 'true';
           }
         };
       });
@@ -1841,8 +1859,7 @@ function openCustomerForm(customer) {
         });
         d.tags = [];
         document.querySelectorAll('#modal-box .tag-chip[data-tag]').forEach(el => {
-          const bg = el.style.background;
-          if (bg !== 'rgb(229, 231, 235)') d.tags.push(el.dataset.tag);
+          if (el.dataset.selected === 'true') d.tags.push(el.dataset.tag);
         });
         return d;
       };
@@ -1866,6 +1883,7 @@ function openCustomerForm(customer) {
           const sel = currentTags.indexOf(el.dataset.tag) !== -1;
           el.style.background = sel ? el.dataset.color : '#e5e7eb';
           el.style.color = sel ? 'white' : '#4b5563';
+          el.dataset.selected = sel ? 'true' : 'false';
         });
         showToast('已重置', 'success');
       };
@@ -2053,8 +2071,9 @@ function renderCustomerTable() {
         });
       }
       else if (btn.dataset.act === 'del') {
-        confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？操作不可恢复。', true, async () => {
-          promptPassword('二次验证', '请输入解锁密码以确认删除', async () => {
+        confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？操作不可恢复。', true, () => {
+          closeModal();
+          promptPassword('二次验证', '请输入解锁密码以确认删除', async (pw) => {
             Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
             await Store.saveWithLog('删除客户', '客户：' + c.name);
             showToast('已删除', 'success');
@@ -2119,7 +2138,7 @@ function openCustomerDetail(c) {
         <div class="detail-item"><div class="detail-label">成交状态</div><div class="detail-value">${escapeHTML(c.status || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">意向产品</div><div class="detail-value">${escapeHTML(c.product || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">预算范围</div><div class="detail-value">${escapeHTML(c.budget || '-')}</div></div>
-        <div class="detail-item"><div class="detail-label">下次跟进日期</div><div class="detail-value">${escapeHTML(c.nextFollowDate || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">下次跟进日期</div><div class="detail-value">${formatNextFollowDate(c.nextFollowDate)}</div></div>
         <div class="detail-item"><div class="detail-label">录入时间</div><div class="detail-value">${formatDate(c.createdAt)}</div></div>
         <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">联系地址</div><div class="detail-value">${escapeHTML(addressFull || '-')}</div></div>
         <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户标签</div><div class="detail-value">${tagHtml || '<span style="color:var(--text-muted);">无</span>'}</div></div>
@@ -2504,20 +2523,7 @@ function navigate(pageName) {
   }
 }
 
-let idleTimer = null;
-function resetIdle() {
-  clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => {
-    if (Store.unlocked && location.hash.indexOf('lock') === -1) {
-      // 锁屏：清除运行态敏感信息，重新解锁（保留 localStorage 加密数据）
-      Store.unlocked = false;
-      Store.password = null;
-      document.getElementById('app-view').style.display = 'none';
-      document.getElementById('auth-view').style.display = 'block';
-      showToast('长时间无操作，已自动锁屏', 'warning');
-    }
-  }, 10 * 60 * 1000); // 10 分钟
-}
+// 注：自动锁屏逻辑已移至 resetIdleTimer 函数，统一使用1小时无操作登出
 
 /* ================================================================
    模块 13：主题切换
@@ -2538,31 +2544,31 @@ function ensureSeedData() {
     const now = Date.now();
     Store.data.customers = [
       {
-        id: 'demo_1', name: '张敏', gender: '女', age: '32', phone: '13900000001', phone2: '',
-        email: 'zhangmin@example.com', idcard: '110101198801011234',
+        id: 'demo_1', name: '张敏', gender: '女', age: '32', phone: '13900000001',
+        wechat: 'zhangmin_wx', email: 'zhangmin@example.com',
         source: '老客户介绍', level: 'A', status: '跟进中',
         province: '北京市', city: '北京市', district: '朝阳区', address: '建国路 88 号 SOHO 现代城',
         product: '企业财税咨询', budget: '20000-50000', nextFollowDate: dateOnly(now + 2 * 86400000),
         createdAt: now - 3 * 86400000, updatedAt: now - 1 * 86400000,
-        tags: ['t_a'], remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }]
+        tags: ['t_a'], remark: '初次沟通，客户兴趣较强', remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }]
       },
       {
-        id: 'demo_2', name: '李伟', gender: '男', age: '41', phone: '13900000002', phone2: '',
-        email: 'liwei@example.com', idcard: '310104198301011234',
+        id: 'demo_2', name: '李伟', gender: '男', age: '41', phone: '13900000002',
+        wechat: 'liwei_wx', email: 'liwei@example.com',
         source: '网络推广', level: 'B', status: '已成交',
         province: '上海市', city: '上海市', district: '徐汇区', address: '漕溪北路 18 号',
         product: '品牌营销咨询', budget: '50000-100000', nextFollowDate: dateOnly(now + 5 * 86400000),
         createdAt: now - 30 * 86400000, updatedAt: now - 5 * 86400000,
-        tags: ['t_b'], remarkHistory: [{ time: now - 20 * 86400000, text: '签约成功，首期款已收到。' }]
+        tags: ['t_b'], remark: '签约成功', remarkHistory: [{ time: now - 20 * 86400000, text: '签约成功，首期款已收到。' }]
       },
       {
-        id: 'demo_3', name: '王芳', gender: '女', age: '28', phone: '13900000003', phone2: '',
-        email: 'wangfang@example.com', idcard: '440106199601011234',
+        id: 'demo_3', name: '王芳', gender: '女', age: '28', phone: '13900000003',
+        wechat: 'wangfang_wx', email: 'wangfang@example.com',
         source: '线下活动', level: 'C', status: '未沟通',
         province: '广东省', city: '广州市', district: '天河区', address: '珠江新城花城大道 85 号',
         product: '个人法律咨询', budget: '5000 以下', nextFollowDate: '',
         createdAt: now - 10 * 86400000, updatedAt: now - 10 * 86400000,
-        tags: ['t_new'], remarkHistory: []
+        tags: ['t_new'], remark: '', remarkHistory: []
       }
     ];
     Store.saveWithLog('初始化演示数据', '首次进入系统，自动生成 3 条演示客户');
@@ -2593,6 +2599,40 @@ async function doUnlock(password) {
   } catch (e) { return false; }
 }
 
+let idleTimer = null;
+const IDLE_TIMEOUT_MS = 60 * 60 * 1000; // 1小时
+let idleDetectionSetup = false; // 防止重复添加事件监听
+
+function resetIdleTimer() {
+  if (idleTimer) clearTimeout(idleTimer);
+  if (!Store.unlocked) return; // 已登出则不启动计时器
+  idleTimer = setTimeout(() => {
+    if (!Store.unlocked) return;
+    Store.unlocked = false; 
+    Store.password = null;
+    document.getElementById('app-view').style.display = 'none';
+    document.getElementById('auth-view').style.display = 'block';
+    document.getElementById('unlock-password').value = '';
+    showToast('系统已自动登出，请重新登录', 'warning');
+  }, IDLE_TIMEOUT_MS);
+}
+
+function setupIdleDetection() {
+  if (idleDetectionSetup) return; // 已设置过则跳过
+  idleDetectionSetup = true;
+  const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+  events.forEach(event => {
+    document.addEventListener(event, resetIdleTimer, true);
+  });
+}
+
+function clearIdleTimer() {
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+    idleTimer = null;
+  }
+}
+
 async function enterApp(password) {
   Store.password = password;
   Store.unlocked = true;
@@ -2609,8 +2649,10 @@ async function enterApp(password) {
   document.getElementById('app-view').style.display = 'block';
   applyTheme(Store.settings.theme || 'light');
   navigate('dashboard');
+  // 启动无操作检测
+  resetIdleTimer();
+  setupIdleDetection();
   Store.updateSyncUI();
-  resetIdle();
   // 进入应用时清空草稿
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
   showToast('欢迎回来，已解锁系统', 'success');
@@ -2728,6 +2770,7 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   // 手动锁屏
   document.getElementById('btn-lock').onclick = () => {
+    clearIdleTimer(); // 清除计时器
     Store.unlocked = false; Store.password = null;
     document.getElementById('app-view').style.display = 'none';
     document.getElementById('auth-view').style.display = 'block';
@@ -2807,7 +2850,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tags: (row[17] || '').split('|').filter(t => t.trim()).map(t => {
               let tag = (Store.data.tags || []).find(x => x.name === t.trim());
               if (!tag) {
-                tag = { id: 'tag_' + Date.now(), name: t.trim(), color: '#2563eb' };
+                tag = { id: uuid(), name: t.trim(), color: '#2563eb' };
                 Store.data.tags.push(tag);
               }
               return tag.id;
@@ -3059,8 +3102,7 @@ document.addEventListener('DOMContentLoaded', function () {
     showToast('日志已导出', 'success');
   };
 
-  // 自动锁屏监控
-  ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(ev => document.addEventListener(ev, resetIdle));
+  // 注：自动锁屏监控已在 setupIdleDetection 中统一处理
 });
 
 function refreshUI() {
