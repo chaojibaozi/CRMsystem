@@ -519,6 +519,96 @@ input[type="checkbox"]:checked {
   text-align: center;
 }
 
+/* BI 看板 */
+.bi-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.bi-kpi-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.bi-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.bi-kpi-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+.bi-kpi-value { font-size: 24px; font-weight: 700; color: var(--accent); }
+.bi-kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.bi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.bi-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+.bi-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+.bi-chart-area {
+  width: 100%;
+  min-height: 200px;
+}
+.bi-chart-area canvas { width: 100%; height: auto; border-radius: 6px; }
+.bi-insights {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.bi-insight-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.bi-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+.bi-insight-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.bi-insight-item strong { color: var(--accent); }
+.bi-tag-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.bi-tag-bar-fill {
+  height: 18px;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 4px;
+}
+.bi-tag-bar-label { width: 70px; flex-shrink: 0; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bi-tag-bar-count { width: 30px; flex-shrink: 0; text-align: right; font-weight: 600; }
+@media (max-width: 768px) {
+  .bi-grid { grid-template-columns: 1fr; }
+  .bi-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -1082,6 +1172,7 @@ table.data-table {
       </div>
       <ul class="nav-list">
         <li class="nav-item active" data-page="dashboard"><span class="nav-icon">■</span>仪表盘</li>
+        <li class="nav-item" data-page="bi"><span class="nav-icon">📊</span>BI看板</li>
         <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表</li>
         <li class="nav-item" data-page="geo"><span class="nav-icon">🌍</span>GEO客户</li>
         <li class="nav-item" data-page="360"><span class="nav-icon">🔄</span>360客户</li>
@@ -1146,6 +1237,46 @@ table.data-table {
             </button>
           </div>
         </div>
+      </section>
+
+      <!-- BI 看板 -->
+      <section class="page" id="page-bi">
+        <div class="bi-kpi-row" id="bi-kpi-row"></div>
+        <div class="bi-grid">
+          <div class="bi-card">
+            <div class="bi-card-title">📈 客户等级分布</div>
+            <div class="bi-chart-area"><canvas id="bi-chart-level" width="400" height="240"></canvas></div>
+          </div>
+          <div class="bi-card">
+            <div class="bi-card-title">🔀 客户来源分布</div>
+            <div class="bi-chart-area"><canvas id="bi-chart-source" width="400" height="240"></canvas></div>
+          </div>
+          <div class="bi-card">
+            <div class="bi-card-title">🏆 成交转化漏斗</div>
+            <div class="bi-chart-area"><canvas id="bi-chart-funnel" width="400" height="240"></canvas></div>
+          </div>
+          <div class="bi-card">
+            <div class="bi-card-title">📊 月度新增趋势</div>
+            <div class="bi-chart-area"><canvas id="bi-chart-monthly" width="400" height="240"></canvas></div>
+          </div>
+          <div class="bi-card">
+            <div class="bi-card-title">🌍 渠道对比分析</div>
+            <div class="bi-chart-area"><canvas id="bi-chart-channel" width="400" height="240"></canvas></div>
+          </div>
+          <div class="bi-card">
+            <div class="bi-card-title">🏙️ 省份客户排行 TOP10</div>
+            <div class="bi-chart-area"><canvas id="bi-chart-province" width="400" height="240"></canvas></div>
+          </div>
+          <div class="bi-card">
+            <div class="bi-card-title">🏷️ 标签使用排行</div>
+            <div class="bi-chart-area" id="bi-tag-rank"></div>
+          </div>
+          <div class="bi-card">
+            <div class="bi-card-title">⏰ 跟进时效分析</div>
+            <div class="bi-chart-area"><canvas id="bi-chart-followup" width="400" height="240"></canvas></div>
+          </div>
+        </div>
+        <div class="bi-insights" id="bi-insights"></div>
       </section>
 
       <!-- 客户列表 -->
@@ -2041,10 +2172,14 @@ function openCustomerForm(customer) {
         else if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) val = '';
       }
       if (f.type === 'select') {
+        const channelLabels = { '': '无', 'geo': 'GEO', '360': '360', 'bing': 'Bing' };
         html += `<div class="form-group">
           <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
           <select class="select" data-key="${f.key}">
-            ${f.options.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o || '请选择')}</option>`).join('')}
+            ${f.options.map(o => {
+              const display = f.key === 'channel' ? (channelLabels[o] || o) : (o || '请选择');
+              return `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(display)}</option>`;
+            }).join('')}
           </select></div>`;
       } else if (f.type === 'textarea') {
         html += `<div class="form-group" style="grid-column:1/-1;">
@@ -2169,10 +2304,12 @@ function openCustomerForm(customer) {
         if (d.age && !validateAge(d.age)) errors.push('年龄需为 0-120 的数字');
         if (errors.length) { showToast(errors[0], 'error'); return; }
 
-        // HTML 实体转义
+        // HTML 实体转义（跳过备注字段，备注存储原始文本仅在显示时转义）
+        const noEscapeKeys = ['remark', 'remarkHistory'];
         const safe = {};
         for (const k of Object.keys(d)) {
           if (Array.isArray(d[k])) safe[k] = d[k];
+          else if (noEscapeKeys.includes(k)) safe[k] = typeof d[k] === 'string' ? d[k].trim() : d[k];
           else safe[k] = typeof d[k] === 'string' ? escapeHTML(d[k]).trim() : d[k];
         }
 
@@ -2343,7 +2480,7 @@ function renderCustomerTable() {
               const t = document.getElementById('_follow_note').value.trim();
               if (!t) { showToast('请输入跟进内容', 'error'); return; }
               c.remarkHistory = c.remarkHistory || [];
-              c.remarkHistory.unshift({ time: Date.now(), text: escapeHTML(t) });
+              c.remarkHistory.unshift({ time: Date.now(), text: t });
               c.updatedAt = Date.now();
               await Store.saveWithLog('新增跟进记录', '客户：' + c.name);
               showToast('已保存跟进记录', 'success');
@@ -2512,12 +2649,14 @@ function renderTrashPage() {
       if (btn.dataset.act === 'restore') {
         c.deleted = false;
         c.deletedAt = null;
+        listState.selected.clear();
         await Store.saveWithLog('恢复客户', '客户：' + c.name);
         showToast('客户已恢复', 'success');
         renderTrashPage();
       } else if (btn.dataset.act === 'purge') {
         confirmDialog('彻底删除', '确认彻底删除客户 "' + c.name + '"？此操作不可恢复！', true, async () => {
           Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
+          listState.selected.clear();
           await Store.saveWithLog('彻底删除客户', '客户：' + c.name);
           showToast('已彻底删除', 'success');
           renderTrashPage();
@@ -2617,7 +2756,9 @@ function openCustomerDetail(c, fromPopup) {
               Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
               await Store.saveWithLog('删除客户', '客户：' + c.name);
               showToast('已删除', 'success');
-              closeModal(); refreshUI();
+              closeModal();
+              if (fromPopup) { _statPopupState = null; navigate('dashboard'); }
+              else refreshUI();
             });
           });
         };
@@ -2630,7 +2771,7 @@ function openCustomerDetail(c, fromPopup) {
    模块 9：CSV 导出工具
    ================================================================ */
 function exportCustomerRows(list, plain) {
-  const header = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注'];
+  const header = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
   const rows = [header.join(',')];
   list.forEach(c => {
     const d = plain ? c : maskCustomer(c);
@@ -2641,7 +2782,8 @@ function exportCustomerRows(list, plain) {
       d.source, d.level, d.status, d.product, d.budget, d.nextFollowDate,
       formatDate(c.createdAt),
       (d.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|'),
-      c.remark || ''
+      c.remark || '',
+      c.channel || ''
     ];
     rows.push(row.map(v => csvEscape(v)).join(','));
   });
@@ -2947,7 +3089,361 @@ function drawTrendBar() {
 }
 
 /* ================================================================
-   模块 11：设置中心 / 标签管理 / 数据安全中心
+   模块 11：BI 看板 - 商业智能数据分析
+   ================================================================ */
+function renderBIPage() {
+  const list = (Store.data.customers || []).filter(c => c.deleted !== true);
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay()); weekStart.setHours(0,0,0,0);
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const now = Date.now();
+
+  // ========== KPI 指标卡 ==========
+  const total = list.length;
+  const weekNew = list.filter(c => c.createdAt >= weekStart.getTime()).length;
+  const monthNew = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+  const dealCount = list.filter(c => c.status === '已成交').length;
+  const followCount = list.filter(c => c.status === '跟进中').length;
+  const contactRate = total ? Math.round((list.filter(c => c.status !== '未沟通').length / total) * 100) : 0;
+  const kpis = [
+    { label: '客户总数', value: total, sub: '总保有量' },
+    { label: '本周新增', value: weekNew, sub: '本周新增客户' },
+    { label: '本月新增', value: monthNew, sub: '本月新增客户' },
+    { label: '本月成交', value: list.filter(c => c.status === '已成交' && c.updatedAt >= monthStart.getTime()).length, sub: '本月成交客户' },
+    { label: '跟进中', value: followCount, sub: '占比 ' + (total ? (followCount/total*100).toFixed(1) : '0') + '%' },
+    { label: '成交客户', value: dealCount, sub: '成交率 ' + (total ? (dealCount/total*100).toFixed(1) : '0') + '%' },
+    { label: '联系率', value: contactRate + '%', sub: '已联系占比' },
+    { label: '作废客户', value: (Store.data.customers || []).filter(c => c.deleted === true).length, sub: '已作废' }
+  ];
+  const kpiEl = document.getElementById('bi-kpi-row');
+  if (kpiEl) {
+    kpiEl.innerHTML = kpis.map(k => `<div class="bi-kpi-card"><div class="bi-kpi-label">${escapeHTML(k.label)}</div><div class="bi-kpi-value">${k.value}</div><div class="bi-kpi-sub">${escapeHTML(k.sub)}</div></div>`).join('');
+  }
+
+  // 渲染各个图表
+  drawBILevelChart(list);
+  drawBISourceChart(list);
+  drawBIFunnelChart(list);
+  drawBIMonthlyChart(list);
+  drawBIChannelChart(list);
+  drawBIProvinceChart(list);
+  drawBITagRank(list);
+  drawBIFollowupChart(list);
+  drawBIInsights(list);
+}
+
+// 等级分布柱状图
+function drawBILevelChart(list) {
+  const canvas = document.getElementById('bi-chart-level'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const counts = { A: 0, B: 0, C: 0, D: 0 };
+  list.forEach(c => { const k = c.level || 'C'; if (counts[k] !== undefined) counts[k]++; });
+  const entries = Object.entries(counts);
+  const maxVal = Math.max(...entries.map(e=>e[1]), 1);
+  const padding = { top: 20, bottom: 30, left: 30, right: 10 };
+  const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
+  const barW = chartW / entries.length * 0.6;
+  const colors = ['#dc2626', '#f59e0b', '#3b82f6', '#6b7280'];
+  ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+  entries.forEach((e, i) => {
+    const x = padding.left + i * (chartW / entries.length) + (chartW / entries.length - barW) / 2;
+    const bh = (e[1] / maxVal) * chartH;
+    const y = padding.top + chartH - bh;
+    ctx.fillStyle = colors[i];
+    ctx.beginPath(); ctx.roundRect(x, y, barW, bh, 4); ctx.fill();
+    ctx.fillStyle = '#9ca3af'; ctx.fillText(e[0], x + barW/2, H - padding.bottom + 14);
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#111';
+    ctx.font = 'bold 13px sans-serif'; ctx.fillText(String(e[1]), x + barW/2, y - 6);
+    ctx.font = '12px sans-serif';
+  });
+}
+
+// 来源分布（环形图）
+function drawBISourceChart(list) {
+  const canvas = document.getElementById('bi-chart-source'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const counts = {}; list.forEach(c => { const k = c.source || '未填写'; counts[k] = (counts[k]||0)+1; });
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const total = entries.reduce((s,e) => s+e[1], 0);
+  if (total === 0) {
+    ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('暂无数据', W/2, H/2); return;
+  }
+  const cx = W/2, cy = H/2, R = Math.min(W,H)/2 - 30;
+  const palette = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#65a30d','#db2777','#334155'];
+  let start = -Math.PI/2;
+  entries.forEach((e, i) => {
+    const angle = (e[1] / total) * Math.PI * 2;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, start, start + angle); ctx.closePath();
+    ctx.fillStyle = palette[i % palette.length]; ctx.fill();
+    start += angle;
+  });
+  // 内圈
+  ctx.beginPath(); ctx.arc(cx, cy, R * 0.55, 0, Math.PI * 2);
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-secondary').trim() || '#fff'; ctx.fill();
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#111';
+  ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(total), cx, cy - 6);
+  ctx.font = '11px sans-serif'; ctx.fillStyle = '#6b7280'; ctx.fillText('客户', cx, cy + 12);
+  // 图例（在canvas下方，通过DOM展示）
+  const parent = canvas.parentElement;
+  const oldLegend = parent.querySelector('.bi-source-legend');
+  if (oldLegend) oldLegend.remove();
+  const legend = document.createElement('div');
+  legend.className = 'bi-source-legend';
+  legend.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;color:var(--text-muted);';
+  legend.innerHTML = entries.map((e,i) => `<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:${palette[i%palette.length]};"></span>${escapeHTML(e[0])} ${e[1]}</span>`).join('');
+  parent.appendChild(legend);
+}
+
+// 成交转化漏斗
+function drawBIFunnelChart(list) {
+  const canvas = document.getElementById('bi-chart-funnel'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const stages = ['未沟通','跟进中','已成交'];
+  const stageCounts = stages.map(s => list.filter(c => c.status === s).length);
+  const maxCount = Math.max(...stageCounts, 1);
+  const padding = { top: 10, bottom: 10, left: 70, right: 10 };
+  const chartW = W - padding.left - padding.right;
+  const barH = 40;
+  const gap = 12;
+  const colors = ['#6b7280', '#f59e0b', '#16a34a'];
+  const totalH = stages.length * barH + (stages.length - 1) * gap;
+  const startY = (H - totalH) / 2;
+  stages.forEach((s, i) => {
+    const w = (stageCounts[i] / maxCount) * chartW;
+    const x = padding.left + (chartW - w) / 2;
+    const y = startY + i * (barH + gap);
+    ctx.fillStyle = colors[i];
+    ctx.beginPath();
+    const r = 6;
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + barH - r); ctx.quadraticCurveTo(x + w, y + barH, x + w - r, y + barH);
+    ctx.lineTo(x + r, y + barH); ctx.quadraticCurveTo(x, y + barH, x, y + barH - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(s + ': ' + stageCounts[i], W/2, y + barH/2 + 4);
+    // 转化率箭头
+    if (i < stages.length - 1 && stageCounts[i] > 0) {
+      const rate = (stageCounts[i+1] / stageCounts[i] * 100).toFixed(1);
+      ctx.fillStyle = '#9ca3af'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('↓ ' + rate + '%', W/2, y + barH + gap - 2);
+    }
+  });
+}
+
+// 月度新增趋势
+function drawBIMonthlyChart(list) {
+  const canvas = document.getElementById('bi-chart-monthly'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const now2 = new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now2.getFullYear(), now2.getMonth() - i, 1);
+    months.push({ year: d.getFullYear(), month: d.getMonth(), label: (d.getMonth()+1) + '月' });
+  }
+  const counts = months.map(m => {
+    const start = new Date(m.year, m.month, 1).getTime();
+    const end = new Date(m.year, m.month + 1, 1).getTime();
+    return list.filter(c => c.createdAt >= start && c.createdAt < end).length;
+  });
+  const maxVal = Math.max(...counts, 1);
+  const padding = { top: 20, bottom: 25, left: 30, right: 10 };
+  const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
+  const barW = chartW / months.length * 0.7;
+  const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
+  gradient.addColorStop(0, '#2563eb'); gradient.addColorStop(1, '#93c5fd');
+  months.forEach((m, i) => {
+    const x = padding.left + i * (chartW / months.length) + (chartW / months.length - barW) / 2;
+    const bh = (counts[i] / maxVal) * chartH;
+    const y = padding.top + chartH - bh;
+    ctx.fillStyle = gradient;
+    ctx.beginPath(); ctx.roundRect(x, y, barW, Math.max(bh, 1), 3); ctx.fill();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(m.label, x + barW/2, H - padding.bottom + 14);
+    if (counts[i] > 0) { ctx.fillStyle = '#6b7280'; ctx.font = '10px sans-serif'; ctx.fillText(String(counts[i]), x + barW/2, y - 4); }
+  });
+  // 平均线
+  const avg = counts.reduce((s,v)=>s+v, 0) / counts.length;
+  const avgY = padding.top + chartH - (avg / maxVal) * chartH;
+  ctx.strokeStyle = '#dc2626'; ctx.setLineDash([4,4]); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(padding.left, avgY); ctx.lineTo(W - padding.right, avgY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#dc2626'; ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('月均 ' + avg.toFixed(1), W - padding.right - 50, avgY - 4);
+}
+
+// 渠道对比分析
+function drawBIChannelChart(list) {
+  const canvas = document.getElementById('bi-chart-channel'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const channels = [
+    { key: 'geo', label: 'GEO', color: '#2563eb' },
+    { key: '360', label: '360', color: '#16a34a' },
+    { key: 'bing', label: 'Bing', color: '#d97706' }
+  ];
+  const groups = [
+    { label: '客户数', fn: (list, k) => list.filter(c => c.channel === k).length },
+    { label: '成交', fn: (list, k) => list.filter(c => c.channel === k && c.status === '已成交').length },
+    { label: '跟进', fn: (list, k) => list.filter(c => c.channel === k && c.status === '跟进中').length }
+  ];
+  const padding = { top: 15, bottom: 25, left: 30, right: 10 };
+  const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
+  const groupW = chartW / groups.length;
+  const barW = groupW / channels.length * 0.6;
+  // 找最大值
+  let maxVal = 1;
+  groups.forEach(g => channels.forEach(ch => { maxVal = Math.max(maxVal, g.fn(list, ch.key)); }));
+  groups.forEach((g, gi) => {
+    channels.forEach((ch, ci) => {
+      const v = g.fn(list, ch.key);
+      const x = padding.left + gi * groupW + ci * (groupW / channels.length) + (groupW / channels.length - barW) / 2;
+      const bh = (v / maxVal) * chartH;
+      const y = padding.top + chartH - bh;
+      ctx.fillStyle = ch.color;
+      ctx.beginPath(); ctx.roundRect(x, y, barW, Math.max(bh, 1), 3); ctx.fill();
+      if (v > 0) { ctx.fillStyle = '#6b7280'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(String(v), x + barW/2, y - 2); }
+    });
+    ctx.fillStyle = '#9ca3af'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(g.label, padding.left + gi * groupW + groupW/2, H - padding.bottom + 14);
+  });
+  // 图例
+  ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+  channels.forEach((ch, i) => {
+    const lx = padding.left + i * 80;
+    ctx.fillStyle = ch.color; ctx.fillRect(lx, 6, 10, 10);
+    ctx.fillStyle = '#6b7280'; ctx.fillText(ch.label, lx + 14, 15);
+  });
+}
+
+// 省份排行 TOP10 水平条
+function drawBIProvinceChart(list) {
+  const canvas = document.getElementById('bi-chart-province'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const counts = {}; list.forEach(c => { const p = c.province || '未知'; counts[p] = (counts[p]||0)+1; });
+  const top = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 10);
+  if (top.length === 0) {
+    ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('暂无数据', W/2, H/2); return;
+  }
+  const maxVal = top[0][1];
+  const padding = { top: 10, bottom: 10, left: 75, right: 40 };
+  const chartW = W - padding.left - padding.right;
+  const barH = Math.min(18, (H - padding.top - padding.bottom) / top.length - 4);
+  const palette = ['#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#16a34a','#22c55e','#4ade80','#d97706','#f59e0b'];
+  top.forEach((e, i) => {
+    const x = padding.left;
+    const y = padding.top + i * (barH + 4);
+    const bw = Math.max((e[1] / maxVal) * chartW, 4);
+    ctx.fillStyle = palette[i % palette.length];
+    ctx.beginPath(); ctx.roundRect(x, y, bw, barH, 3); ctx.fill();
+    ctx.fillStyle = '#6b7280'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(e[0], x - 4, y + barH/2 + 4);
+    ctx.fillStyle = '#6b7280'; ctx.textAlign = 'left'; ctx.font = '11px sans-serif';
+    ctx.fillText(String(e[1]), x + bw + 4, y + barH/2 + 4);
+  });
+}
+
+// 标签使用排行（HTML 水平条）
+function drawBITagRank(list) {
+  const el = document.getElementById('bi-tag-rank'); if (!el) return;
+  const tags = Store.data.tags || [];
+  if (tags.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:30px 0;">暂无标签</div>'; return; }
+  const counts = tags.map(t => ({ tag: t, count: list.filter(c => (c.tags||[]).indexOf(t.id) !== -1).length }));
+  counts.sort((a,b) => b.count - a.count);
+  const maxCount = Math.max(...counts.map(c => c.count), 1);
+  el.innerHTML = counts.map(c => `
+    <div class="bi-tag-bar">
+      <span class="bi-tag-bar-label">${escapeHTML(c.tag.name)}</span>
+      <div style="flex:1;background:var(--bg-tertiary);border-radius:4px;overflow:hidden;">
+        <div class="bi-tag-bar-fill" style="width:${(c.count/maxCount*100).toFixed(1)}%;background:${c.tag.color};"></div>
+      </div>
+      <span class="bi-tag-bar-count">${c.count}</span>
+    </div>
+  `).join('');
+}
+
+// 跟进时效分析
+function drawBIFollowupChart(list) {
+  const canvas = document.getElementById('bi-chart-followup'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  // 统计各客户的跟进天数（从最近一次跟进到今日）
+  const now2 = Date.now();
+  const ranges = [
+    { min: 0, max: 1, label: '今日/昨日' },
+    { min: 2, max: 3, label: '2-3天' },
+    { min: 4, max: 7, label: '4-7天' },
+    { min: 8, max: 14, label: '1-2周' },
+    { min: 15, max: 30, label: '2周-1月' },
+    { min: 31, max: Infinity, label: '超过1月' }
+  ];
+  const counts = ranges.map(() => 0);
+  list.forEach(c => {
+    if (!c.remarkHistory || c.remarkHistory.length === 0) {
+      counts[counts.length-1]++;
+      return;
+    }
+    const lastRemark = c.remarkHistory[0];
+    const days = (now2 - lastRemark.time) / 86400000;
+    for (let i = 0; i < ranges.length; i++) {
+      if (days >= ranges[i].min && days <= ranges[i].max) { counts[i]++; break; }
+    }
+  });
+  const maxVal = Math.max(...counts, 1);
+  const padding = { top: 15, bottom: 25, left: 30, right: 10 };
+  const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
+  const barW = chartW / ranges.length * 0.6;
+  const colors = ['#16a34a','#22c55e','#f59e0b','#f97316','#ef4444','#dc2626'];
+  ranges.forEach((r, i) => {
+    const x = padding.left + i * (chartW / ranges.length) + (chartW / ranges.length - barW) / 2;
+    const bh = (counts[i] / maxVal) * chartH;
+    const y = padding.top + chartH - bh;
+    ctx.fillStyle = colors[i];
+    ctx.beginPath(); ctx.roundRect(x, y, barW, Math.max(bh, 1), 3); ctx.fill();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(r.label, x + barW/2, H - padding.bottom + 14);
+    ctx.fillStyle = '#6b7280'; ctx.font = '10px sans-serif';
+    ctx.fillText(String(counts[i]), x + barW/2, y - 4);
+  });
+}
+
+// 经营洞察
+function drawBIInsights(list) {
+  const el = document.getElementById('bi-insights'); if (!el) return;
+  const total = list.length;
+  if (total === 0) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">暂无客户数据，无法生成洞察分析</div>'; return; }
+  const dealCount = list.filter(c => c.status === '已成交').length;
+  const followCount = list.filter(c => c.status === '跟进中').length;
+  const uncontacted = list.filter(c => c.status === '未沟通').length;
+  const levelA = list.filter(c => c.level === 'A').length;
+  const levelD = list.filter(c => c.level === 'D').length;
+  const hasChannel = list.filter(c => c.channel).length;
+  const channelRate = (hasChannel / total * 100).toFixed(1);
+  const now2 = Date.now();
+  const overdueFollow = list.filter(c => c.status === '跟进中' && c.nextFollowDate).filter(c => {
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft < now2;
+  }).length;
+  const insights = [
+    `📊 <strong>${total}</strong> 位客户中，已成交 <strong>${dealCount}</strong> 位（${(dealCount/total*100).toFixed(1)}%），跟进中 <strong>${followCount}</strong> 位，未联系 <strong>${uncontacted}</strong> 位（${(uncontacted/total*100).toFixed(1)}%）需要尽快跟进。`,
+    `🏆 A级客户 <strong>${levelA}</strong> 位，D级客户 <strong>${levelD}</strong> 位，高意向客户占比 ${(levelA/total*100).toFixed(1)}%。`,
+    overdueFollow > 0 ? `⏰ 已超过跟进日期的客户有 <strong>${overdueFollow}</strong> 位，建议立即安排联系。` : `✅ 所有跟进中的客户均在计划时间内，继续保持。`,
+    `🌍 已分配渠道的客户 <strong>${hasChannel}</strong> 位，渠道分配率 ${channelRate}%。`,
+    `📈 ${uncontacted > 0 ? '当前有 ' + uncontacted + ' 位客户从未联系，建议优先进行初次沟通以提升转化率。' : '所有客户均有初步联系记录，继续保持。'}`
+  ];
+  el.innerHTML = `<div class="bi-insight-title">💡 经营洞察</div><div class="bi-insight-grid">${insights.map(i => `<div class="bi-insight-item">${i}</div>`).join('')}</div>`;
+}
+
+/* ================================================================
+   模块 12：设置中心 / 标签管理 / 数据安全中心
    ================================================================ */
 function renderSettingsPage() {
   // 渲染跟进提醒频率设置
@@ -3092,7 +3588,7 @@ function renderLogsPage() {
 }
 
 /* ================================================================
-   模块 12：页面切换 & 自动锁屏
+   模块 13：页面切换 & 自动锁屏
    ================================================================ */
 function navigate(pageName) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
@@ -3103,6 +3599,7 @@ function navigate(pageName) {
   if (nav) nav.classList.add('active');
   const titleMap = {
     dashboard: ['仪表盘', '系统总览'],
+    bi: ['BI看板', '商业智能数据分析'],
     list: ['客户列表', '管理所有客户'],
     geo: ['GEO客户', 'GEO渠道客户管理'],
     '360': ['360客户', '360渠道客户管理'],
@@ -3115,6 +3612,7 @@ function navigate(pageName) {
   safeText(document.getElementById('page-title'), t[0]);
   safeText(document.getElementById('page-subtitle'), t[1]);
   if (pageName === 'dashboard') renderDashboard();
+  else if (pageName === 'bi') renderBIPage();
   else if (pageName === 'list') { renderFilterSources(); renderCustomerTable(); }
   else if (pageName === 'geo') renderChannelPage('geo');
   else if (pageName === '360') renderChannelPage('360');
@@ -3131,7 +3629,7 @@ function navigate(pageName) {
 // 注：自动锁屏逻辑已移至 resetIdleTimer 函数，统一使用1小时无操作登出
 
 /* ================================================================
-   模块 13：主题切换
+   模块 14：主题切换
    ================================================================ */
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -3142,7 +3640,7 @@ function applyTheme(theme) {
 }
 
 /* ================================================================
-   模块 14：演示数据（首次进入系统，若数据为空，则自动生成 3 条示例）
+   模块 15：演示数据（首次进入系统，若数据为空，则自动生成 3 条示例）
    ================================================================ */
 function ensureSeedData() {
   if (!Store.data.customers || Store.data.customers.length === 0) {
@@ -3155,7 +3653,8 @@ function ensureSeedData() {
         province: '北京市', city: '北京市', district: '朝阳区', address: '建国路 88 号 SOHO 现代城',
         product: '企业财税咨询', budget: '20000-50000', nextFollowDate: dateOnly(now + 2 * 86400000),
         createdAt: now - 3 * 86400000, updatedAt: now - 1 * 86400000,
-        tags: ['t_a'], remark: '初次沟通，客户兴趣较强', remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }]
+        tags: ['t_a'], remark: '初次沟通，客户兴趣较强', remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }],
+        channel: 'geo'
       },
       {
         id: 'demo_2', name: '李伟', gender: '男', age: '41', phone: '13900000002',
@@ -3190,7 +3689,7 @@ function ensureSeedData() {
 }
 
 /* ================================================================
-   模块 15：主入口 & 全局事件绑定
+   模块 16：主入口 & 全局事件绑定
    ================================================================ */
 let unlockFailCount = 0;
 
@@ -3444,6 +3943,7 @@ document.addEventListener('DOMContentLoaded', function () {
               c.updatedAt = Date.now();
             }
           });
+          selectedIds.clear();
           await Store.saveWithLog('批量添加客户到渠道', `${count} 位客户 → ${channel}`);
           showToast(`已将 ${count} 位客户添加到渠道`, 'success');
           closeModal();
@@ -3497,7 +3997,7 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
         const header = rows[0];
-        const expectedHeader = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注'];
+        const expectedHeader = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
         if (header.length !== expectedHeader.length || !header.every((h, i) => h.trim() === expectedHeader[i])) {
           showToast('表头格式不正确，请使用导出数据的表头格式', 'error');
           return;
@@ -3534,6 +4034,7 @@ document.addEventListener('DOMContentLoaded', function () {
               return tag.id;
             }),
             remark: row[18] || '',
+            channel: row[19] || '',
             createdBy: 'import',
             updatedAt: Date.now()
           };
@@ -3788,6 +4289,7 @@ function refreshUI() {
   const active = document.querySelector('.page.active');
   if (!active) { navigate('dashboard'); return; }
   if (active.id === 'page-dashboard') renderDashboard();
+  else if (active.id === 'page-bi') renderBIPage();
   else if (active.id === 'page-list') { renderFilterSources(); renderCustomerTable(); }
   else if (active.id === 'page-geo') renderChannelPage('geo');
   else if (active.id === 'page-360') renderChannelPage('360');
