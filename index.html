@@ -189,14 +189,10 @@ a { color: var(--accent); text-decoration: none; }
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), #7c3aed);
   margin: 0 auto 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 24px;
-  font-weight: bold;
+  display: block;
+  object-fit: contain;
+  background: white;
 }
 .auth-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
 .auth-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
@@ -258,13 +254,9 @@ a { color: var(--accent); text-decoration: none; }
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: linear-gradient(135deg, var(--accent), #7c3aed);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
+  display: block;
+  object-fit: contain;
+  background: white;
 }
 .sidebar-title { font-size: 13px; font-weight: 600; }
 .sidebar-subtitle { font-size: 10px; color: var(--text-muted); }
@@ -813,7 +805,7 @@ table.data-table {
 <div id="auth-view" class="auth-wrap" style="display:none;">
   <div class="auth-card">
     <div class="auth-logo">
-      <div class="auth-logo-icon">客</div>
+      <img class="auth-logo-icon" src="logo213.jpg" alt="Logo">
       <div class="auth-title">客户关系管理系统</div>
       <div class="auth-subtitle">本地加密 · 隐私优先</div>
     </div>
@@ -872,7 +864,7 @@ table.data-table {
     <!-- 侧边栏 -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-logo">客</div>
+        <img class="sidebar-logo" src="logo213.jpg" alt="Logo">
         <div>
           <div class="sidebar-title">客户管理</div>
           <div class="sidebar-subtitle">v1.0 本地加密</div>
@@ -927,6 +919,10 @@ table.data-table {
               <div class="quick-action-icon">💾</div>
               <div class="quick-action-text">手动备份</div>
             </button>
+            <button class="quick-action-btn" id="qa-import">
+              <div class="quick-action-icon">📥</div>
+              <div class="quick-action-text">导入数据</div>
+            </button>
             <button class="quick-action-btn" id="qa-export">
               <div class="quick-action-icon">📤</div>
               <div class="quick-action-text">导出数据</div>
@@ -951,9 +947,10 @@ table.data-table {
               <label class="label">客户等级</label>
               <select class="select" id="filter-level">
                 <option value="">全部</option>
-                <option value="普通">普通</option>
-                <option value="VIP">VIP</option>
-                <option value="重点">重点</option>
+                <option value="A">A（意向最强）</option>
+                <option value="B">B（中等意向）</option>
+                <option value="C">C（低意向）</option>
+                <option value="D">D（无意向）</option>
               </select>
             </div>
             <div>
@@ -1330,6 +1327,20 @@ const Store = {
       if (!Array.isArray(this.data.tags)) this.data.tags = [];
       if (!Array.isArray(this.data.logs)) this.data.logs = [];
       if (!Array.isArray(this.data.versions)) this.data.versions = [];
+      // 数据迁移：将旧的等级值转换为新的 A/B/C/D 格式
+      this.data.customers.forEach(c => {
+        if (c.level === 'VIP') c.level = 'A';
+        else if (c.level === '重点') c.level = 'B';
+        else if (c.level === '普通') c.level = 'C';
+        // 迁移旧标签ID到新标签ID
+        if (Array.isArray(c.tags)) {
+          c.tags = c.tags.map(tagId => {
+            if (tagId === 't_vip') return 't_a';
+            if (tagId === 't_hot') return 't_b';
+            return tagId;
+          });
+        }
+      });
     } catch (e) {
       throw new Error('数据解密失败，密码可能错误或数据已损坏');
     }
@@ -1555,10 +1566,14 @@ function maskAddress(addr) {
   return s.slice(0, 6) + '****' + (s.length > 10 ? s.slice(-3) : '');
 }
 function maskCustomer(c, { phone = true, idcard = true, email = true, address = true } = {}) {
+  const maskWechat = (w) => {
+    if (!w) return w;
+    return w.slice(0, 2) + '****' + (w.length > 4 ? w.slice(-1) : '');
+  };
   return {
     ...c,
     phone: phone ? maskPhone(c.phone) : c.phone,
-    phone2: phone ? maskPhone(c.phone2) : c.phone2,
+    wechat: phone ? maskWechat(c.wechat) : c.wechat,
     idcard: idcard ? maskIdCard(c.idcard) : c.idcard,
     email: email ? maskEmail(c.email) : c.email,
     address: address ? maskAddress(c.address) : c.address
@@ -1666,9 +1681,10 @@ function getDefaultTags() {
   // 若用户未设置标签，提供 3 个默认颜色标签
   if (!Store.data.tags || Store.data.tags.length === 0) {
     Store.data.tags = [
-      { id: 't_vip', name: 'VIP', color: '#d97706' },
-      { id: 't_hot', name: '重点跟进', color: '#dc2626' },
-      { id: 't_new', name: '新客户', color: '#2563eb' }
+      { id: 't_a', name: 'A级客户', color: '#dc2626' },
+      { id: 't_b', name: 'B级客户', color: '#d97706' },
+      { id: 't_c', name: 'C级客户', color: '#2563eb' },
+      { id: 't_new', name: '新客户', color: '#16a34a' }
     ];
   }
   return Store.data.tags;
@@ -1687,12 +1703,11 @@ function openCustomerForm(customer) {
         { key: 'name', label: '姓名', type: 'text', required: true, max: 50 },
         { key: 'gender', label: '性别', type: 'select', options: ['', '男', '女', '其他'] },
         { key: 'age', label: '年龄', type: 'number', max: 3 },
-        { key: 'idcard', label: '身份证号', type: 'text', max: 18 },
         { key: 'phone', label: '手机号', type: 'text', required: true, max: 11 },
-        { key: 'phone2', label: '备用联系电话', type: 'text', max: 20 },
+        { key: 'wechat', label: '微信', type: 'text', max: 50 },
         { key: 'email', label: '邮箱', type: 'email', max: 80 },
         { key: 'source', label: '客户来源', type: 'select', options: ['', '老客户介绍', '网络推广', '线下活动', '电话销售', '自然到店', '其他'] },
-        { key: 'level', label: '客户等级', type: 'select', options: ['普通', 'VIP', '重点'] },
+        { key: 'level', label: '客户等级', type: 'select', options: ['A', 'B', 'C', 'D'] },
       ]
     },
     {
@@ -1970,7 +1985,7 @@ function renderCustomerTable() {
   if (listState.page > pageCount) listState.page = pageCount;
   const start = (listState.page - 1) * listState.pageSize;
   const pageData = data.slice(start, start + listState.pageSize);
-  const showAll = window.__showPlain === true;
+  const showAll = window.__showPlain !== false;
 
   tbody.innerHTML = '';
   if (pageData.length === 0) {
@@ -2058,9 +2073,10 @@ function renderCustomerTable() {
 }
 
 function levelColor(level) {
-  if (level === 'VIP') return '#d97706';
-  if (level === '重点') return '#dc2626';
-  return '#2563eb';
+  if (level === 'A') return '#dc2626';
+  if (level === 'B') return '#d97706';
+  if (level === 'C') return '#2563eb';
+  return '#9ca3af';
 }
 function statusClass(s) {
   if (s === '已成交') return 'badge-success';
@@ -2074,13 +2090,11 @@ function statusClass(s) {
    ================================================================ */
 function openCustomerDetail(c) {
   window.__lastDetailId = c.id;
-  let displayMode = window.__showPlainDetail === true ? 'plain' : 'masked'; // 默认脱敏
   renderDetail();
 
   function renderDetail() {
     const tags = Store.data.tags || [];
-    const displayed = displayMode === 'plain' ? c : maskCustomer(c);
-    const addressFull = [c.province, c.city, c.district, displayed.address].filter(Boolean).join(' ');
+    const addressFull = [c.province, c.city, c.district, c.address].filter(Boolean).join(' ');
     const tagHtml = (c.tags || []).map(tid => {
       const t = tags.find(x => x.id === tid);
       return t ? `<span class="tag-chip" style="background:${t.color};color:white;padding:4px 12px;border-radius:14px;font-size:12px;">${escapeHTML(t.name)}</span>` : '';
@@ -2088,21 +2102,19 @@ function openCustomerDetail(c) {
 
     let html = `
       <div class="detail-header">
-        <div class="detail-title">${escapeHTML(c.name)} ${displayMode === 'masked' ? '<span class="badge badge-warning" style="margin-left:8px;">信息已脱敏</span>' : '<span class="badge badge-success" style="margin-left:8px;">明文显示（临时）</span>'}</div>
+        <div class="detail-title">${escapeHTML(c.name)}</div>
         <div class="detail-actions">
-          <button class="btn btn-sm" id="toggleMask">${displayMode === 'masked' ? '查看明文（需密码）' : '切换为脱敏显示'}</button>
           <button class="btn btn-sm btn-outline" id="editDetail">编辑</button>
           <button class="btn btn-sm btn-outline" id="exportOne">导出</button>
           <button class="btn btn-sm btn-danger" id="delDetail">删除</button>
         </div>
       </div>
       <div class="detail-grid">
-        <div class="detail-item"><div class="detail-label">手机号</div><div class="detail-value">${escapeHTML(displayed.phone || '-')}</div></div>
-        <div class="detail-item"><div class="detail-label">备用电话</div><div class="detail-value">${escapeHTML(displayed.phone2 || '-')}</div></div>
-        <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(displayed.email || '-')}</div></div>
-        <div class="detail-item"><div class="detail-label">身份证号</div><div class="detail-value">${escapeHTML(displayed.idcard || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">手机号</div><div class="detail-value">${escapeHTML(c.phone || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">微信</div><div class="detail-value">${escapeHTML(c.wechat || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(c.email || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">性别 / 年龄</div><div class="detail-value">${escapeHTML((c.gender || '-') + ' / ' + (c.age || '-'))}</div></div>
-        <div class="detail-item"><div class="detail-label">客户等级</div><div class="detail-value">${escapeHTML(c.level || '普通')}</div></div>
+        <div class="detail-item"><div class="detail-label">客户等级</div><div class="detail-value">${escapeHTML(c.level || 'C')}</div></div>
         <div class="detail-item"><div class="detail-label">客户来源</div><div class="detail-value">${escapeHTML(c.source || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">成交状态</div><div class="detail-value">${escapeHTML(c.status || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">意向产品</div><div class="detail-value">${escapeHTML(c.product || '-')}</div></div>
@@ -2111,6 +2123,7 @@ function openCustomerDetail(c) {
         <div class="detail-item"><div class="detail-label">录入时间</div><div class="detail-value">${formatDate(c.createdAt)}</div></div>
         <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">联系地址</div><div class="detail-value">${escapeHTML(addressFull || '-')}</div></div>
         <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户标签</div><div class="detail-value">${tagHtml || '<span style="color:var(--text-muted);">无</span>'}</div></div>
+        <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">备注</div><div class="detail-value">${escapeHTML(c.remark || '-')}</div></div>
       </div>
       <div style="margin-top:24px;">
         <h3 style="font-size:16px;margin-bottom:12px;">跟进记录时间线（${(c.remarkHistory || []).length}）</h3>
@@ -2132,24 +2145,9 @@ function openCustomerDetail(c) {
       footer: (f) => {
         const cl = document.createElement('button'); cl.className = 'btn btn-sm btn-outline'; safeText(cl, '关闭');
         f.appendChild(cl); cl.onclick = closeModal;
-        document.getElementById('toggleMask').onclick = () => {
-          if (displayMode === 'plain') {
-            displayMode = 'masked';
-            closeModal(); setTimeout(renderDetail, 10);
-            showToast('已切换为脱敏显示', 'success');
-          } else {
-            promptPassword('查看明文二次验证', '请输入解锁密码以查看敏感字段的完整内容', () => {
-              displayMode = 'plain';
-              Store.addLog('查看明文数据', '成功', '客户：' + c.name);
-              Store.save(); // 保存日志
-              closeModal(); setTimeout(renderDetail, 10);
-              showToast('已临时显示明文，离开后将自动恢复', 'success');
-            });
-          }
-        };
         document.getElementById('editDetail').onclick = () => { closeModal(); setTimeout(() => openCustomerForm(c), 10); };
         document.getElementById('exportOne').onclick = () => {
-          const row = exportCustomerRows([c], displayMode === 'plain');
+          const row = exportCustomerRows([c], true);
           downloadCSV(`${c.name}_客户资料.csv`, row);
           showToast('已导出单客户资料', 'success');
         };
@@ -2172,17 +2170,18 @@ function openCustomerDetail(c) {
    模块 9：CSV 导出工具
    ================================================================ */
 function exportCustomerRows(list, plain) {
-  const header = ['姓名','性别','年龄','手机号','备用电话','邮箱','身份证号','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签'];
+  const header = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注'];
   const rows = [header.join(',')];
   list.forEach(c => {
     const d = plain ? c : maskCustomer(c);
     const addr = plain ? (c.address || '') : maskAddress(c.address);
     const row = [
-      d.name, d.gender, d.age, d.phone, d.phone2, d.email, d.idcard,
+      d.name, d.gender, d.age, d.phone, d.wechat, d.email,
       d.province, d.city, d.district, addr,
       d.source, d.level, d.status, d.product, d.budget, d.nextFollowDate,
       formatDate(c.createdAt),
-      (d.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|')
+      (d.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|'),
+      c.remark || ''
     ];
     rows.push(row.map(v => csvEscape(v)).join(','));
   });
@@ -2193,6 +2192,39 @@ function csvEscape(v) {
   const s = String(v);
   if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
   return s;
+}
+function parseCSV(content) {
+  const rows = [];
+  const lines = content.replace(/\r\n/g, '\n').split('\n');
+  let currentRow = [];
+  let currentCell = '';
+  let inQuotes = false;
+  for (const line of lines) {
+    currentCell = '';
+    inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          currentCell += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        currentRow.push(currentCell.trim());
+        currentCell = '';
+      } else {
+        currentCell += char;
+      }
+    }
+    currentRow.push(currentCell.trim());
+    if (currentRow.length > 0 && !(currentRow.length === 1 && currentRow[0] === '')) {
+      rows.push(currentRow);
+    }
+    currentRow = [];
+  }
+  return rows;
 }
 function downloadCSV(filename, content) {
   // 添加 BOM 以保证中文在 Excel 正常显示
@@ -2214,7 +2246,7 @@ function renderDashboard() {
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
   const todayCount = list.filter(c => c.createdAt >= todayStart.getTime()).length;
   const monthCount = list.filter(c => c.createdAt >= monthStart.getTime()).length;
-  const vipCount = list.filter(c => c.level === 'VIP' || c.level === '重点').length;
+  const vipCount = list.filter(c => c.level === 'A' || c.level === 'B').length;
   const followCount = list.filter(c => {
     if (c.status === '跟进中') return true;
     if (!c.nextFollowDate) return false;
@@ -2227,7 +2259,7 @@ function renderDashboard() {
     { label: '客户总数', value: total, hint: '全部录入客户' },
     { label: '今日新增', value: todayCount, hint: '今日 0 点后录入' },
     { label: '本月新增', value: monthCount, hint: '本月 1 号后录入' },
-    { label: 'VIP / 重点客户', value: vipCount, hint: '等级为 VIP 或重点' },
+    { label: 'A/B 级客户', value: vipCount, hint: '等级为 A 或 B' },
     { label: '待跟进客户', value: followCount, hint: '状态为跟进中 或 下次跟进日期 >= 今日' }
   ];
   const el = document.getElementById('stats-grid');
@@ -2508,25 +2540,25 @@ function ensureSeedData() {
       {
         id: 'demo_1', name: '张敏', gender: '女', age: '32', phone: '13900000001', phone2: '',
         email: 'zhangmin@example.com', idcard: '110101198801011234',
-        source: '老客户介绍', level: 'VIP', status: '跟进中',
+        source: '老客户介绍', level: 'A', status: '跟进中',
         province: '北京市', city: '北京市', district: '朝阳区', address: '建国路 88 号 SOHO 现代城',
         product: '企业财税咨询', budget: '20000-50000', nextFollowDate: dateOnly(now + 2 * 86400000),
         createdAt: now - 3 * 86400000, updatedAt: now - 1 * 86400000,
-        tags: ['t_vip'], remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }]
+        tags: ['t_a'], remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }]
       },
       {
         id: 'demo_2', name: '李伟', gender: '男', age: '41', phone: '13900000002', phone2: '',
         email: 'liwei@example.com', idcard: '310104198301011234',
-        source: '网络推广', level: '重点', status: '已成交',
+        source: '网络推广', level: 'B', status: '已成交',
         province: '上海市', city: '上海市', district: '徐汇区', address: '漕溪北路 18 号',
         product: '品牌营销咨询', budget: '50000-100000', nextFollowDate: dateOnly(now + 5 * 86400000),
         createdAt: now - 30 * 86400000, updatedAt: now - 5 * 86400000,
-        tags: ['t_hot', 't_vip'], remarkHistory: [{ time: now - 20 * 86400000, text: '签约成功，首期款已收到。' }]
+        tags: ['t_b'], remarkHistory: [{ time: now - 20 * 86400000, text: '签约成功，首期款已收到。' }]
       },
       {
         id: 'demo_3', name: '王芳', gender: '女', age: '28', phone: '13900000003', phone2: '',
         email: 'wangfang@example.com', idcard: '440106199601011234',
-        source: '线下活动', level: '普通', status: '未沟通',
+        source: '线下活动', level: 'C', status: '未沟通',
         province: '广东省', city: '广州市', district: '天河区', address: '珠江新城花城大道 85 号',
         product: '个人法律咨询', budget: '5000 以下', nextFollowDate: '',
         createdAt: now - 10 * 86400000, updatedAt: now - 10 * 86400000,
@@ -2538,9 +2570,10 @@ function ensureSeedData() {
   // 确保默认标签可用
   if (!Store.data.tags || Store.data.tags.length === 0) {
     Store.data.tags = [
-      { id: 't_vip', name: 'VIP', color: '#d97706' },
-      { id: 't_hot', name: '重点跟进', color: '#dc2626' },
-      { id: 't_new', name: '新客户', color: '#2563eb' }
+      { id: 't_a', name: 'A级客户', color: '#dc2626' },
+      { id: 't_b', name: 'B级客户', color: '#d97706' },
+      { id: 't_c', name: 'C级客户', color: '#2563eb' },
+      { id: 't_new', name: '新客户', color: '#16a34a' }
     ];
   }
 }
@@ -2720,12 +2753,88 @@ document.addEventListener('DOMContentLoaded', function () {
     showToast('已生成加密备份文件', 'success');
   };
   document.getElementById('qa-export').onclick = () => {
-    confirmDialog('导出数据', '默认导出脱敏数据；如需导出明文，将进行二次密码验证。', false, () => {
-      const content = exportCustomerRows(Store.data.customers || [], false);
-      downloadCSV('客户资料_脱敏.csv', content);
-      showToast('已导出脱敏数据', 'success');
+    promptPassword('导出数据验证', '请输入解锁密码以导出明文数据', async () => {
+      const content = exportCustomerRows(Store.data.customers || [], true);
+      downloadCSV('客户资料_明文.csv', content);
+      Store.addLog('导出数据', '成功', '导出完整明文 CSV');
+      await Store.save();
+      showToast('已导出明文数据，请妥善保管', 'warning');
     });
   };
+  document.getElementById('qa-import').onclick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xls,.xlsx';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const content = await file.text();
+        const rows = parseCSV(content);
+        if (rows.length < 2) {
+          showToast('CSV文件内容为空或格式不正确', 'error');
+          return;
+        }
+        const header = rows[0];
+        const expectedHeader = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注'];
+        if (header.length !== expectedHeader.length || !header.every((h, i) => h.trim() === expectedHeader[i])) {
+          showToast('表头格式不正确，请使用导出数据的表头格式', 'error');
+          return;
+        }
+        const imported = [];
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (row.length === 0 || row.every(c => c.trim() === '')) continue;
+          const customer = {
+            id: uuid(),
+            name: row[0] || '',
+            gender: row[1] || '',
+            age: row[2] ? parseInt(row[2]) : null,
+            phone: row[3] || '',
+            wechat: row[4] || '',
+            email: row[5] || '',
+            province: row[6] || '',
+            city: row[7] || '',
+            district: row[8] || '',
+            address: row[9] || '',
+            source: row[10] || '',
+            level: row[11] || 'C',
+            status: row[12] || '未沟通',
+            product: row[13] || '',
+            budget: row[14] || '',
+            nextFollowDate: row[15] || '',
+            createdAt: row[16] ? parseDateStr(row[16]) || Date.now() : Date.now(),
+            tags: (row[17] || '').split('|').filter(t => t.trim()).map(t => {
+              let tag = (Store.data.tags || []).find(x => x.name === t.trim());
+              if (!tag) {
+                tag = { id: 'tag_' + Date.now(), name: t.trim(), color: '#2563eb' };
+                Store.data.tags.push(tag);
+              }
+              return tag.id;
+            }),
+            remark: row[18] || '',
+            createdBy: 'import',
+            updatedAt: Date.now()
+          };
+          imported.push(customer);
+        }
+        if (imported.length === 0) {
+          showToast('未找到有效数据行', 'warning');
+          return;
+        }
+        confirmDialog('导入数据', `即将导入 ${imported.length} 条客户数据，是否继续？`, false, async () => {
+          Store.data.customers = Store.data.customers.concat(imported);
+          await Store.saveWithLog('导入数据', `成功导入 ${imported.length} 条客户`);
+          showToast(`已成功导入 ${imported.length} 条客户数据`, 'success');
+          refreshUI();
+        });
+      } catch (err) {
+        showToast('导入失败：' + err.message, 'error');
+      }
+    };
+    input.click();
+  };
+
   document.getElementById('qa-sync').onclick = async () => {
     if (!Store.isFolderApiSupported()) {
       showToast('当前浏览器不支持文件夹 API，请使用手动备份', 'warning'); return;
