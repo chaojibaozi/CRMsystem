@@ -2710,6 +2710,7 @@ function resetIdleTimer() {
     if (!Store.unlocked) return;
     Store.unlocked = false; 
     Store.password = null;
+    sessionStorage.removeItem('crm_session_pw'); // 清除会话密码
     document.getElementById('app-view').style.display = 'none';
     document.getElementById('auth-view').style.display = 'block';
     document.getElementById('unlock-password').value = '';
@@ -2736,6 +2737,8 @@ function clearIdleTimer() {
 async function enterApp(password) {
   Store.password = password;
   Store.unlocked = true;
+  // 保存密码到 sessionStorage（页面刷新后可自动恢复登录状态）
+  sessionStorage.setItem('crm_session_pw', password);
   await Store.load();
   // 若文件夹可用，尝试同步（不阻塞）
   if (Store.isFolderApiSupported()) {
@@ -2781,7 +2784,23 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  initAuthPage();
+  // 尝试从 sessionStorage 恢复登录状态（页面刷新后）
+  const savedPassword = sessionStorage.getItem('crm_session_pw');
+  if (savedPassword) {
+    doUnlock(savedPassword).then(ok => {
+      if (ok) {
+        enterApp(savedPassword);
+        return;
+      }
+      // 密码验证失败，清除缓存并显示登录界面
+      sessionStorage.removeItem('crm_session_pw');
+      initAuthPage();
+    }).catch(() => {
+      initAuthPage();
+    });
+  } else {
+    initAuthPage();
+  }
 
   // 解锁按钮
   const btnUnlock = document.getElementById('btn-unlock');
@@ -2872,6 +2891,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-lock').onclick = () => {
     clearIdleTimer(); // 清除计时器
     Store.unlocked = false; Store.password = null;
+    sessionStorage.removeItem('crm_session_pw'); // 清除会话密码
     document.getElementById('app-view').style.display = 'none';
     document.getElementById('auth-view').style.display = 'block';
     document.getElementById('unlock-password').value = '';
