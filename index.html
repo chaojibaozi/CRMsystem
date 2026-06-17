@@ -1994,6 +1994,7 @@ function openCustomerForm(customer) {
         { key: 'email', label: '邮箱', type: 'email', max: 80 },
         { key: 'source', label: '客户来源', type: 'select', options: ['', '老客户介绍', '网络推广', '线下活动', '电话销售', '自然到店', '其他'] },
         { key: 'level', label: '客户等级', type: 'select', options: ['A', 'B', 'C', 'D'] },
+        { key: 'channel', label: '所属渠道', type: 'select', options: ['', 'geo', '360', 'bing'] },
       ]
     },
     {
@@ -2408,7 +2409,7 @@ function renderChannelPage(channel) {
   };
   const channelName = channelNames[channel] || channel;
   
-  const customers = Store.data.customers.filter(c => c.channel === channel);
+  const customers = Store.data.customers.filter(c => c.deleted !== true && c.channel === channel);
   const container = document.getElementById(`customer-form-container-${channel}`);
   if (!container) return;
   
@@ -3788,12 +3789,11 @@ function refreshUI() {
   if (!active) { navigate('dashboard'); return; }
   if (active.id === 'page-dashboard') renderDashboard();
   else if (active.id === 'page-list') { renderFilterSources(); renderCustomerTable(); }
-  else if (active.id === 'page-form') { 
-    // 新增/编辑表单页面保存后，刷新仪表盘统计
-    renderDashboard();
-  }
-  else if (active.id === 'page-detail') renderDashboard(); // 详情页保存后也刷新仪表盘
-  else if (active.id === 'page-tags') renderTagsPage();
+  else if (active.id === 'page-geo') renderChannelPage('geo');
+  else if (active.id === 'page-360') renderChannelPage('360');
+  else if (active.id === 'page-bing') renderChannelPage('bing');
+  else if (active.id === 'page-trash') renderTrashPage();
+  else if (active.id === 'page-settings') renderSettingsPage();
   else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); }
 }
 </script>
