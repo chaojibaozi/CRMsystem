@@ -873,7 +873,9 @@ table.data-table {
       <ul class="nav-list">
         <li class="nav-item active" data-page="dashboard"><span class="nav-icon">■</span>仪表盘</li>
         <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表</li>
-        <li class="nav-item" data-page="new"><span class="nav-icon">+</span>新增客户</li>
+        <li class="nav-item" data-page="geo"><span class="nav-icon">🌍</span>GEO客户</li>
+        <li class="nav-item" data-page="360"><span class="nav-icon">🔄</span>360客户</li>
+        <li class="nav-item" data-page="bing"><span class="nav-icon">🔍</span>Bing客户</li>
         <li class="nav-item" data-page="tags"><span class="nav-icon">#</span>标签管理</li>
         <li class="nav-item" data-page="security"><span class="nav-icon">⚙</span>数据与安全</li>
       </ul>
@@ -1925,16 +1927,36 @@ function openCustomerForm(customer) {
           try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
           await Store.saveWithLog('编辑客户', '客户：' + old.name);
           showToast('客户信息已更新', 'success');
+          closeModal();
+          // 编辑后跳转回客户列表页面（保留当前筛选状态）
+          navigate('list');
+          return;
         } else {
           const newC = { ...safe, id: c.id, createdAt: Date.now(), remarkHistory: [] };
           if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark });
           Store.data.customers.unshift(newC);
+          console.log('保存客户到Store，id:', newC.id, '姓名:', newC.name, '当前总数:', Store.data.customers.length);
           try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
           await Store.saveWithLog('新增客户', '客户：' + newC.name);
           showToast('客户已新增', 'success');
+          console.log('保存完成，Store中客户总数:', Store.data.customers.length);
         }
         closeModal();
-        refreshUI();
+        // 保存后重置筛选条件并跳转到客户列表页面，确保显示新客户
+        listState.page = 1; // 重置到第一页
+        listState.keyword = '';
+        listState.level = '';
+        listState.status = '';
+        listState.source = '';
+        listState.dateStart = '';
+        listState.dateEnd = '';
+        // 确保模态框关闭后再跳转
+        setTimeout(() => {
+          console.log('新增客户后，客户总数:', Store.data.customers.length);
+          navigate('list');
+          // 同时刷新仪表盘统计数据
+          renderDashboard();
+        }, 100);
       };
     }
   });
@@ -1999,6 +2021,7 @@ function renderCustomerTable() {
   if (!tbody) return;
   const data = applyListFilters();
   const total = data.length;
+  console.log('渲染客户列表，数据条数:', total, '筛选条件:', listState);
   const pageCount = Math.max(1, Math.ceil(total / listState.pageSize));
   if (listState.page > pageCount) listState.page = pageCount;
   const start = (listState.page - 1) * listState.pageSize;
@@ -2071,14 +2094,11 @@ function renderCustomerTable() {
         });
       }
       else if (btn.dataset.act === 'del') {
-        confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？操作不可恢复。', true, () => {
-          closeModal();
-          promptPassword('二次验证', '请输入解锁密码以确认删除', async (pw) => {
-            Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
-            await Store.saveWithLog('删除客户', '客户：' + c.name);
-            showToast('已删除', 'success');
-            refreshUI();
-          });
+        confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？此操作不可恢复。', true, async () => {
+          Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
+          await Store.saveWithLog('删除客户', '客户：' + c.name);
+          showToast('已删除', 'success');
+          refreshUI();
         });
       }
     };
@@ -3111,6 +3131,11 @@ function refreshUI() {
   if (!active) { navigate('dashboard'); return; }
   if (active.id === 'page-dashboard') renderDashboard();
   else if (active.id === 'page-list') { renderFilterSources(); renderCustomerTable(); }
+  else if (active.id === 'page-form') { 
+    // 新增/编辑表单页面保存后，刷新仪表盘统计
+    renderDashboard();
+  }
+  else if (active.id === 'page-detail') renderDashboard(); // 详情页保存后也刷新仪表盘
   else if (active.id === 'page-tags') renderTagsPage();
   else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); }
 }
