@@ -984,6 +984,7 @@ table.data-table {
             <button class="btn btn-primary btn-sm" id="btn-apply-filter">筛选</button>
             <button class="btn btn-sm btn-outline" id="btn-reset-filter">重置</button>
             <button class="btn btn-sm" id="btn-new-customer">➕ 新增客户</button>
+            <button class="btn btn-sm btn-outline" id="btn-add-to-channel">📤 添加到</button>
             <button class="btn btn-sm btn-danger" id="btn-batch-delete">🗑 批量删除</button>
           </div>
         </div>
@@ -1023,14 +1024,36 @@ table.data-table {
         </div>
       </section>
 
-      <!-- 新增/编辑客户（在此作为独立页面，也通过弹窗形式） -->
-      <section class="page" id="page-new">
+      <!-- GEO客户 -->
+      <section class="page" id="page-geo">
         <div class="card" style="position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h2 style="font-size:18px;" id="form-title">新增客户</h2>
+            <h2 style="font-size:18px;" id="form-title">GEO客户</h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status">草稿自动保存中...</div>
           </div>
-          <div id="customer-form-container"></div>
+          <div id="customer-form-container-geo"></div>
+        </div>
+      </section>
+
+      <!-- 360客户 -->
+      <section class="page" id="page-360">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;" id="form-title-360">360客户</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-360">草稿自动保存中...</div>
+          </div>
+          <div id="customer-form-container-360"></div>
+        </div>
+      </section>
+
+      <!-- Bing客户 -->
+      <section class="page" id="page-bing">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;" id="form-title-bing">Bing客户</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-bing">草稿自动保存中...</div>
+          </div>
+          <div id="customer-form-container-bing"></div>
         </div>
       </section>
 
@@ -1935,11 +1958,9 @@ function openCustomerForm(customer) {
           const newC = { ...safe, id: c.id, createdAt: Date.now(), remarkHistory: [] };
           if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark });
           Store.data.customers.unshift(newC);
-          console.log('保存客户到Store，id:', newC.id, '姓名:', newC.name, '当前总数:', Store.data.customers.length);
           try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
           await Store.saveWithLog('新增客户', '客户：' + newC.name);
           showToast('客户已新增', 'success');
-          console.log('保存完成，Store中客户总数:', Store.data.customers.length);
         }
         closeModal();
         // 保存后重置筛选条件并跳转到客户列表页面，确保显示新客户
@@ -1950,13 +1971,8 @@ function openCustomerForm(customer) {
         listState.source = '';
         listState.dateStart = '';
         listState.dateEnd = '';
-        // 确保模态框关闭后再跳转
-        setTimeout(() => {
-          console.log('新增客户后，客户总数:', Store.data.customers.length);
-          navigate('list');
-          // 同时刷新仪表盘统计数据
-          renderDashboard();
-        }, 100);
+        navigate('list');
+        renderDashboard();
       };
     }
   });
@@ -2021,7 +2037,6 @@ function renderCustomerTable() {
   if (!tbody) return;
   const data = applyListFilters();
   const total = data.length;
-  console.log('渲染客户列表，数据条数:', total, '筛选条件:', listState);
   const pageCount = Math.max(1, Math.ceil(total / listState.pageSize));
   if (listState.page > pageCount) listState.page = pageCount;
   const start = (listState.page - 1) * listState.pageSize;
@@ -2109,6 +2124,66 @@ function renderCustomerTable() {
   if (info) safeText(info, `共 ${total} 条  第 ${listState.page}/${pageCount} 页`);
   const pn = document.getElementById('page-num');
   if (pn) safeText(pn, `${listState.page} / ${pageCount}`);
+}
+
+function renderChannelPage(channel) {
+  const channelNames = {
+    geo: 'GEO',
+    '360': '360',
+    bing: 'Bing'
+  };
+  const channelName = channelNames[channel] || channel;
+  
+  const customers = Store.data.customers.filter(c => c.channel === channel);
+  const container = document.getElementById(`customer-form-container-${channel}`);
+  if (!container) return;
+  
+  if (customers.length === 0) {
+    container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);">暂无 ${channelName} 渠道客户</div>`;
+    return;
+  }
+  
+  let html = `<table class="data-table" style="width:100%;">
+    <thead>
+      <tr>
+        <th style="width:50px;">序号</th>
+        <th>姓名</th>
+        <th>手机号</th>
+        <th>等级</th>
+        <th>来源</th>
+        <th>状态</th>
+        <th style="width:120px;">操作</th>
+      </tr>
+    </thead>
+    <tbody>`;
+  
+  customers.forEach((c, i) => {
+    html += `<tr>
+      <td>${i + 1}</td>
+      <td><strong>${escapeHTML(c.name || '-')}</strong></td>
+      <td>${escapeHTML(c.phone || '-')}</td>
+      <td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>
+      <td>${escapeHTML(c.source || '-')}</td>
+      <td><span class="badge ${statusClass(c.status)}">${escapeHTML(c.status || '-')}</span></td>
+      <td>
+        <button class="btn btn-sm" data-act="view" data-id="${c.id}">详情</button>
+        <button class="btn btn-sm btn-outline" data-act="edit" data-id="${c.id}">编辑</button>
+      </td>
+    </tr>`;
+  });
+  
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+  
+  container.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      const c = Store.data.customers.find(x => x.id === id);
+      if (!c) return;
+      if (btn.dataset.act === 'view') openCustomerDetail(c);
+      else if (btn.dataset.act === 'edit') openCustomerForm(c);
+    };
+  });
 }
 
 function levelColor(level) {
@@ -2526,7 +2601,9 @@ function navigate(pageName) {
   const titleMap = {
     dashboard: ['仪表盘', '系统总览'],
     list: ['客户列表', '管理所有客户'],
-    'new': ['新增客户', '录入新客户资料'],
+    geo: ['GEO客户', 'GEO渠道客户管理'],
+    '360': ['360客户', '360渠道客户管理'],
+    bing: ['Bing客户', 'Bing渠道客户管理'],
     tags: ['标签管理', '自定义客户分类标签'],
     security: ['数据与安全', '备份、导入、修改密码、操作日志']
   };
@@ -2535,6 +2612,9 @@ function navigate(pageName) {
   safeText(document.getElementById('page-subtitle'), t[1]);
   if (pageName === 'dashboard') renderDashboard();
   else if (pageName === 'list') { renderFilterSources(); renderCustomerTable(); }
+  else if (pageName === 'geo') renderChannelPage('geo');
+  else if (pageName === '360') renderChannelPage('360');
+  else if (pageName === 'bing') renderChannelPage('bing');
   else if (pageName === 'tags') renderTagsPage();
   else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); }
   // 进入列表页面自动隐藏移动端侧边栏
@@ -2802,6 +2882,54 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelector('[data-nav="new"]').onclick = () => {
     // 以弹窗形式（更便捷）打开新增客户表单
     openCustomerForm(null);
+  };
+  
+  // 添加到渠道功能
+  document.getElementById('btn-add-to-channel').onclick = () => {
+    const selectedIds = Array.from(listState.selected);
+    if (selectedIds.length === 0) {
+      showToast('请先选择要添加的客户', 'warning');
+      return;
+    }
+    
+    openModal({
+      title: '添加到渠道',
+      size: 'sm',
+      bodyHTML: `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">
+        已选择 ${selectedIds.length} 位客户，选择要添加到的渠道：
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-block btn-primary" id="channel-geo">🌍 GEO客户</button>
+        <button class="btn btn-block btn-outline" id="channel-360">🔄 360客户</button>
+        <button class="btn btn-block btn-outline" id="channel-bing">🔍 Bing客户</button>
+      </div>`,
+      footer: (f) => {
+        const cancel = document.createElement('button');
+        cancel.className = 'btn btn-sm btn-outline';
+        safeText(cancel, '取消');
+        f.appendChild(cancel);
+        cancel.onclick = closeModal;
+        
+        const handleAdd = async (channel) => {
+          const count = selectedIds.length;
+          selectedIds.forEach(id => {
+            const c = Store.data.customers.find(x => x.id === id);
+            if (c) {
+              c.channel = channel;
+              c.updatedAt = Date.now();
+            }
+          });
+          await Store.saveWithLog('批量添加客户到渠道', `${count} 位客户 → ${channel}`);
+          showToast(`已将 ${count} 位客户添加到渠道`, 'success');
+          closeModal();
+          refreshUI();
+        };
+        
+        document.getElementById('channel-geo').onclick = () => handleAdd('geo');
+        document.getElementById('channel-360').onclick = () => handleAdd('360');
+        document.getElementById('channel-bing').onclick = () => handleAdd('bing');
+      }
+    });
   };
   document.getElementById('qa-backup').onclick = async () => {
     await Store.save();
