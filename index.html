@@ -4052,7 +4052,7 @@ function openCustomerForm(customer) {
 
   const sections = [
     {
-      key: 'basic', title: '基础信息（必填）', open: true,
+      key: 'basic', title: '基础信息（必填）', open: !_currentChannel,
       fields: [
         { key: 'name', label: '姓名', type: 'text', required: true, max: 50 },
         { key: 'gender', label: '性别', type: 'select', options: ['', '男', '女', '其他'] },
@@ -4061,7 +4061,6 @@ function openCustomerForm(customer) {
         { key: 'wechat', label: '微信', type: 'text', max: 50 },
         { key: 'email', label: '邮箱', type: 'email', max: 80 },
         { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
-        { key: 'level', label: '客户等级', type: 'select', options: getLevelOptions() },
         { key: 'channels', label: '所属渠道（可多选）', type: 'checkbox-group', options: ['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu'] },
       ]
     },
@@ -4088,7 +4087,7 @@ function openCustomerForm(customer) {
       ]
     },
     {
-      key: 'remark', title: '沟通备注 / 跟进记录', open: false,
+      key: 'remark', title: '沟通备注 / 跟进记录', open: !!_currentChannel,
       fields: [
         { key: 'remark', label: '新增跟进备注', type: 'textarea', max: 500 }
       ]
@@ -4100,22 +4099,29 @@ function openCustomerForm(customer) {
                  录入时间：${formatDate(c.createdAt)}
                </div>`;
   for (const sec of sections) {
+    const channelLabels = { 'geo': '🌍 GEO客户', '360': '🔄 360客户', 'bing': '🔍 Bing客户', 'baidu': '🔎 百度客户', 'douyin': '🎵 抖音客户', 'xianyu': '🐟 闲鱼客户' };
     html += `<div class="form-section ${sec.open ? 'open' : ''}" data-sec="${sec.key}">
                 <div class="form-section-header">
-                  <span>${escapeHTML(sec.title)}</span>
+                  <span>${escapeHTML(sec.title)}${_currentChannel ? ' <span style="font-size:12px;color:var(--accent);font-weight:400;">' + escapeHTML(channelLabels[_currentChannel] || _currentChannel) + '</span>' : ''}</span>
                   <span class="form-section-toggle">▾</span>
                 </div>
                 <div class="form-section-body"><div class="form-grid">`;
+    // 兼容旧数据：channel 字符串 → channels 数组
+    const currentChannels = c.channels || (c.channel ? [c.channel] : []);
     for (const f of sec.fields) {
+      const readonlyKeys = ['name', 'gender', 'age', 'phone', 'wechat', 'email', 'source', 'product', 'budget', 'website', 'industryLevel1', 'industryLevel2', 'platforms', 'province', 'city', 'district', 'address'];
+      const isReadonly = _currentChannel && readonlyKeys.includes(f.key);
+      const disabledAttr = isReadonly ? ' disabled' : '';
+      const disabledStyle = isReadonly ? 'background:var(--color-neutral-100);color:var(--text-muted);cursor:not-allowed;' : '';
       let val = c[f.key] || '';
+      if (_currentChannel && (f.key === 'status' || f.key === 'nextFollowDate' || f.key === 'level')) {
+        val = getChannelField(c, _currentChannel, f.key) || '';
+      }
       if (f.type === 'date') {
         if (typeof val === 'number') val = dateOnly(val);
         else if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) val = '';
       }
       if (f.type === 'checkbox-group') {
-        const channelLabels = { 'geo': '🌍 GEO客户', '360': '🔄 360客户', 'bing': '🔍 Bing客户', 'baidu': '🔎 百度客户', 'douyin': '🎵 抖音客户', 'xianyu': '🐟 闲鱼客户' };
-        // 兼容旧数据：channel 字符串 → channels 数组
-        const currentChannels = c.channels || (c.channel ? [c.channel] : []);
         html += `<div class="form-group" style="grid-column:1/-1;">
           <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
           <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">`;
@@ -4135,8 +4141,10 @@ function openCustomerForm(customer) {
           <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">`;
         for (const [key, label] of Object.entries(platformLabels)) {
           const checked = currentPlatforms.indexOf(key) !== -1;
-          html += `<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:6px 14px;border-radius:8px;border:1.5px solid ${checked ? 'var(--accent)' : 'var(--border-color)'};background:${checked ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)'};font-size:13px;transition:all 0.15s;user-select:none;" class="platform-checkbox-label" data-opt="${key}" data-checked="${checked}">
-            <input type="checkbox" data-platform="${key}" ${checked ? 'checked' : ''} style="accent-color:var(--accent);width:16px;height:16px;cursor:pointer;">
+          const platDisabled = _currentChannel ? ' disabled' : '';
+          const platStyle = _currentChannel ? 'opacity:0.6;cursor:default;' : '';
+          html += `<label style="display:flex;align-items:center;gap:5px;${platStyle}padding:6px 14px;border-radius:8px;border:1.5px solid ${checked ? 'var(--accent)' : 'var(--border-color)'};background:${checked ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)'};font-size:13px;transition:all 0.15s;user-select:none;" class="platform-checkbox-label" data-opt="${key}" data-checked="${checked}">
+            <input type="checkbox" data-platform="${key}" ${checked ? 'checked' : ''} style="accent-color:var(--accent);width:16px;height:16px;cursor:pointer;"${platDisabled}>
             <span>${label}</span>
           </label>`;
         }
@@ -4145,7 +4153,7 @@ function openCustomerForm(customer) {
         const options = getIndustryLevel1Options();
         html += `<div class="form-group">
           <label class="label">${escapeHTML(f.label)}</label>
-          <select class="select" data-key="${f.key}" id="industry-level1-select">
+          <select class="select" data-key="${f.key}" id="industry-level1-select"${disabledAttr} style="${disabledStyle}">
             <option value="">请选择</option>
             ${options.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}
           </select></div>`;
@@ -4154,14 +4162,14 @@ function openCustomerForm(customer) {
         const options2 = getIndustryLevel2Options(currentL1);
         html += `<div class="form-group">
           <label class="label">${escapeHTML(f.label)}</label>
-          <select class="select" data-key="${f.key}" id="industry-level2-select">
+          <select class="select" data-key="${f.key}" id="industry-level2-select"${disabledAttr} style="${disabledStyle}">
             <option value="">请选择</option>
             ${options2.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}
           </select></div>`;
       } else if (f.type === 'select') {
         html += `<div class="form-group">
           <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
-          <select class="select" data-key="${f.key}">
+          <select class="select" data-key="${f.key}"${disabledAttr} style="${disabledStyle}">
             ${f.options.map(o => {
               const display = o || '请选择';
               return `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(display)}</option>`;
@@ -4170,7 +4178,7 @@ function openCustomerForm(customer) {
       } else if (f.type === 'textarea') {
         html += `<div class="form-group" style="grid-column:1/-1;">
           <label class="label">${escapeHTML(f.label)}</label>
-          <textarea class="textarea" data-key="${f.key}" maxlength="${f.max || 500}" rows="3">${escapeHTML(val)}</textarea></div>`;
+          <textarea class="textarea" data-key="${f.key}" maxlength="${f.max || 500}" rows="3"${disabledAttr} style="${disabledStyle}">${escapeHTML(val)}</textarea></div>`;
         if (f.key === 'remark') {
           html += `<div class="form-group" style="grid-column:1/-1;">
             <label class="label">截图保存</label>
@@ -4183,7 +4191,7 @@ function openCustomerForm(customer) {
       } else {
         html += `<div class="form-group">
           <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
-          <input type="${f.type}" class="input" data-key="${f.key}" value="${escapeHTML(val)}" maxlength="${f.max || 100}"></div>`;
+          <input type="${f.type}" class="input" data-key="${f.key}" value="${escapeHTML(val)}" maxlength="${f.max || 100}"${disabledAttr} style="${disabledStyle}"></div>`;
       }
     }
     // 标签多选（业务信息区块）
@@ -4378,8 +4386,20 @@ function openCustomerForm(customer) {
 
       // 重置
       btnR.onclick = () => {
-        document.querySelectorAll('#modal-box .input, #modal-box .textarea').forEach(el => { el.value = c[el.dataset.key] || ''; });
-        document.querySelectorAll('#modal-box .select').forEach(el => { el.value = c[el.dataset.key] || ''; });
+        document.querySelectorAll('#modal-box .input, #modal-box .textarea').forEach(el => {
+          let v = c[el.dataset.key] || '';
+          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate' || el.dataset.key === 'level')) {
+            v = getChannelField(c, _currentChannel, el.dataset.key) || '';
+          }
+          el.value = v;
+        });
+        document.querySelectorAll('#modal-box .select').forEach(el => {
+          let v = c[el.dataset.key] || '';
+          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate' || el.dataset.key === 'level')) {
+            v = getChannelField(c, _currentChannel, el.dataset.key) || '';
+          }
+          el.value = v;
+        });
         // 还原标签
         const currentTags = c.tags || [];
         document.querySelectorAll('#modal-box .tag-chip[data-tag]').forEach(el => {
@@ -4442,27 +4462,41 @@ function openCustomerForm(customer) {
         if (isEdit) {
           const old = Store.data.customers.find(x => x.id === c.id);
           if (!old) { showToast('客户数据不存在', 'error'); return; }
-          Object.keys(safe).forEach(k => {
-            if (k === 'tags') old.tags = safe.tags;
-            else if (k === 'channels') old.channels = safe.channels;
-            else if (k === 'platforms') old.platforms = safe.platforms;
-            else old[k] = safe[k];
-          });
+          if (_currentChannel) {
+            if (safe.level !== undefined) setChannelField(old, _currentChannel, 'level', safe.level);
+            if (safe.status !== undefined) setChannelField(old, _currentChannel, 'status', safe.status);
+            if (safe.nextFollowDate !== undefined) setChannelField(old, _currentChannel, 'nextFollowDate', safe.nextFollowDate);
+            if (safe.remark && safe.remark !== (getChannelField(c, _currentChannel, 'lastRemark') || '')) {
+              addChannelRemark(old, _currentChannel, safe.remark, formImages.slice());
+            }
+          } else {
+            Object.keys(safe).forEach(k => {
+              if (k === 'tags') old.tags = safe.tags;
+              else if (k === 'channels') old.channels = safe.channels;
+              else if (k === 'platforms') old.platforms = safe.platforms;
+              else old[k] = safe[k];
+            });
+            if (safe.remark && safe.remark !== (c.lastRemark || '')) {
+              old.remarkHistory = old.remarkHistory || [];
+              old.remarkHistory.unshift({ time: Date.now(), text: safe.remark, images: formImages.slice() });
+              old.lastRemark = safe.remark;
+            }
+          }
           // 清理旧 channel 字段，统一用 channels
           if (old.channel !== undefined) { delete old.channel; }
-          if (safe.remark && safe.remark !== (c.lastRemark || '')) {
-            old.remarkHistory = old.remarkHistory || [];
-            old.remarkHistory.unshift({ time: Date.now(), text: safe.remark, images: formImages.slice() });
-            old.lastRemark = safe.remark;
-          }
           old.updatedAt = Date.now();
           // 清空草稿
           try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
           await Store.saveWithLog('编辑客户', '客户：' + old.name);
           showToast('客户信息已更新', 'success');
           closeModal();
-          // 编辑后跳转回客户列表页面（保留当前筛选状态）
-          navigate('list');
+          if (_currentChannel) {
+            const ch = _currentChannel;
+            _currentChannel = null;
+            renderChannelPage(ch);
+          } else {
+            navigate('list');
+          }
           return;
         } else {
           const newC = { ...safe, id: c.id, createdAt: Date.now(), remarkHistory: [], channels: safe.channels || [], platforms: safe.platforms || [] };
@@ -4498,6 +4532,31 @@ let listState = {
   page: 1, pageSize: 10, selected: new Set()
 };
 
+let _currentChannel = null;
+
+function ensureChannelData(c, channel) {
+  if (!c.channelData) c.channelData = {};
+  if (!c.channelData[channel]) c.channelData[channel] = {};
+  return c.channelData[channel];
+}
+
+function getChannelField(c, channel, field) {
+  const cd = c.channelData && c.channelData[channel];
+  if (cd && cd[field] !== undefined && cd[field] !== null && cd[field] !== '') return cd[field];
+  return c[field];
+}
+
+function setChannelField(c, channel, field, value) {
+  ensureChannelData(c, channel)[field] = value;
+}
+
+function addChannelRemark(c, channel, text, images) {
+  const cd = ensureChannelData(c, channel);
+  cd.remarkHistory = cd.remarkHistory || [];
+  cd.remarkHistory.unshift({ time: Date.now(), text, images: images || [] });
+  cd.lastRemark = text;
+}
+
 const channelFilters = {};
 ['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu', 'trash'].forEach(key => {
   channelFilters[key] = { keyword: '', level: '', status: '', source: '', dateStart: '', dateEnd: '', selected: new Set() };
@@ -4507,7 +4566,6 @@ const COLUMN_DEFS = [
   { key: 'name', label: '姓名', sortable: true },
   { key: 'phone', label: '手机号', sortable: true },
   { key: 'wechat', label: '微信' },
-  { key: 'level', label: '等级', sortable: true },
   { key: 'product', label: '意向产品' },
   { key: 'budget', label: '预算范围' },
   { key: 'source', label: '来源', sortable: true },
@@ -4528,6 +4586,8 @@ function getColumnConfig() {
   if (!Array.isArray(config)) {
     config = COLUMN_DEFS.map(d => ({ key: d.key, visible: true }));
   } else {
+    const validKeys = COLUMN_DEFS.map(d => d.key);
+    config = config.filter(c => validKeys.includes(c.key));
     COLUMN_DEFS.forEach(def => {
       if (!config.find(c => c.key === def.key)) {
         config.push({ key: def.key, visible: true });
@@ -4564,7 +4624,7 @@ function renderColumnHeaders(config) {
   return html;
 }
 
-function renderColumnCells(c, config, start, i, masked) {
+function renderColumnCells(c, config, start, i, masked, channel) {
   let html = '';
   const m = masked || c;
   config.forEach(col => {
@@ -4575,14 +4635,16 @@ function renderColumnCells(c, config, start, i, masked) {
     } else if (key === 'phone') {
       html += `<td>${escapeHTML(m.phone || '-')}</td>`;
     } else if (key === 'level') {
-      html += `<td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>`;
+      const lv = channel ? getChannelField(c, channel, 'level') : c.level;
+      html += `<td><span class="badge" style="background:${levelColor(lv)};color:#fff;">${escapeHTML(lv || '-')}</span></td>`;
     } else if (key === 'product') {
       const p = c.product || '-';
       html += `<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(p)}">${escapeHTML(p)}</td>`;
     } else if (key === 'source') {
       html += `<td>${escapeHTML(c.source || '-')}</td>`;
     } else if (key === 'status') {
-      html += `<td><span class="badge ${statusClass(c.status)}">${escapeHTML(c.status || '-')}</span></td>`;
+      const s = channel ? getChannelField(c, channel, 'status') : c.status;
+      html += `<td><span class="badge ${statusClass(s)}">${escapeHTML(s || '-')}</span></td>`;
     } else if (key === 'industry') {
       const display = c.industryLevel1 ? (c.industryLevel2 ? `${escapeHTML(c.industryLevel1)} / ${escapeHTML(c.industryLevel2)}` : escapeHTML(c.industryLevel1)) : '-';
       html += `<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${display}">${display}</td>`;
@@ -4736,8 +4798,8 @@ function applyChannelFilters(suffix, customers) {
       return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
     });
   }
-  if (f.level) customers = customers.filter(c => c.level === f.level);
-  if (f.status) customers = customers.filter(c => c.status === f.status);
+  if (f.level) customers = customers.filter(c => getChannelField(c, suffix, 'level') === f.level);
+  if (f.status) customers = customers.filter(c => getChannelField(c, suffix, 'status') === f.status);
   if (f.source) customers = customers.filter(c => c.source === f.source);
   if (f.dateStart) {
     const t = parseDateStr(f.dateStart);
@@ -5013,7 +5075,7 @@ function renderCustomerTable() {
       const c = Store.data.customers.find(x => x.id === id);
       if (!c) return;
       if (btn.dataset.act === 'view') openCustomerDetail(c);
-      else if (btn.dataset.act === 'edit') openCustomerForm(c);
+      else if (btn.dataset.act === 'edit') { _currentChannel = null; openCustomerForm(c); }
       else if (btn.dataset.act === 'follow') {
         openModal({
           title: '新增跟进记录 - ' + c.name, size: 'sm',
@@ -5142,10 +5204,11 @@ function renderChannelPage(channel) {
     html += `<tr>
       <td><input type="checkbox" class="chk-item" data-id="${c.id}" data-suffix="${channel}" ${checked}></td>
       <td>${i + 1}</td>
-      ${renderColumnCells(c, colConfig)}
+      ${renderColumnCells(c, colConfig, null, null, null, channel)}
       <td>
         <button class="btn btn-sm" data-act="view" data-id="${c.id}">详情</button>
         <button class="btn btn-sm btn-outline" data-act="edit" data-id="${c.id}">编辑</button>
+        <button class="btn btn-sm btn-outline" data-act="follow" data-id="${c.id}">跟进</button>
         <button class="btn btn-sm btn-danger" data-act="del" data-id="${c.id}">删除</button>
       </td>
     </tr>`;
@@ -5165,7 +5228,29 @@ function renderChannelPage(channel) {
       const c = Store.data.customers.find(x => x.id === id);
       if (!c) return;
       if (btn.dataset.act === 'view') openCustomerDetail(c);
-      else if (btn.dataset.act === 'edit') openCustomerForm(c);
+      else if (btn.dataset.act === 'edit') { _currentChannel = channel; openCustomerForm(c); }
+      else if (btn.dataset.act === 'follow') {
+        openModal({
+          title: '新增跟进记录 - ' + c.name, size: 'sm',
+          bodyHTML: `<label class="label">跟进内容</label><textarea class="textarea" id="_follow_note" rows="4" maxlength="500"></textarea>`,
+          footer: (f) => {
+            const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+            const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '保存');
+            f.appendChild(cc); f.appendChild(ok);
+            cc.onclick = closeModal;
+            ok.onclick = async () => {
+              const t = document.getElementById('_follow_note').value.trim();
+              if (!t) { showToast('请输入跟进内容', 'error'); return; }
+              addChannelRemark(c, channel, t);
+              c.updatedAt = Date.now();
+              await Store.saveWithLog('新增跟进记录', '客户：' + c.name);
+              showToast('已保存跟进记录', 'success');
+              closeModal();
+              renderChannelPage(channel);
+            };
+          }
+        });
+      }
       else if (btn.dataset.act === 'del') {
         openModal({
           title: '删除客户',
@@ -9967,6 +10052,12 @@ function refreshUI() {
 
   // 关闭气泡
   document.getElementById('crm-pet-bubble-close').addEventListener('click', function (e) {
+    e.stopPropagation();
+    PET.hideBubble();
+  });
+
+  // 双击气泡 → 关闭当次气泡（不触发猫身点击事件）
+  document.getElementById('crm-pet-bubble').addEventListener('dblclick', function (e) {
     e.stopPropagation();
     PET.hideBubble();
   });
