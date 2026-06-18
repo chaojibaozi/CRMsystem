@@ -124,12 +124,12 @@
   --color-neutral-800: #E2E8F0;
   --color-neutral-900: #F8FAFC;
 
-  --bg-primary:    var(--color-neutral-900);
-  --bg-secondary:  var(--color-neutral-800);
-  --bg-tertiary:   var(--color-neutral-700);
+  --bg-primary:    var(--color-neutral-0);
+  --bg-secondary:  var(--color-neutral-50);
+  --bg-tertiary:   var(--color-neutral-100);
   --border-color:  var(--color-neutral-600);
-  --text-primary:  var(--color-neutral-100);
-  --text-secondary:var(--color-neutral-300);
+  --text-primary:  var(--color-neutral-900);
+  --text-secondary:var(--color-neutral-500);
   --text-muted:    var(--color-neutral-400);
   --accent:        var(--color-primary-400);
   --accent-hover:  var(--color-primary-300);
@@ -143,6 +143,105 @@
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
   --shadow-xl: 0 20px 50px rgba(0,0,0,0.6);
+}
+
+/* ========================================
+   深色模式 — 组件覆盖
+   ======================================== */
+[data-theme="dark"] .sidebar {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .nav-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .nav-item.active {
+  background: rgba(79,70,229,0.2);
+  color: #A5B4FC;
+}
+[data-theme="dark"] .nav-count {
+  background: rgba(255,255,255,0.1);
+}
+[data-theme="dark"] .nav-item.active .nav-count {
+  background: rgba(79,70,229,0.3);
+}
+[data-theme="dark"] .sidebar-user {
+  border-top-color: var(--border-color);
+}
+[data-theme="dark"] .sidebar-header {
+  border-bottom-color: var(--border-color);
+}
+[data-theme="dark"] .topbar {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .card {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .stat-card {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .alert-panel {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .chart-card {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .bi-section {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .bi-section-title {
+  border-bottom-color: var(--border-color);
+}
+[data-theme="dark"] .bi-kpi-card {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .bi-analysis-card {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .bi-card {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .quick-action-btn {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .filter-bar {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .table-wrap {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .data-table th {
+  background: rgba(255,255,255,0.04);
+  border-bottom-color: var(--border-color);
+}
+[data-theme="dark"] .data-table tbody tr:nth-child(even) {
+  background: rgba(255,255,255,0.03);
+}
+[data-theme="dark"] .data-table tbody tr:hover td {
+  background: rgba(79,70,229,0.1);
+}
+[data-theme="dark"] .modal {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .bi-report-preview {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .bi-predict-card {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .input,
+[data-theme="dark"] .select,
+[data-theme="dark"] .textarea {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .auth-input-group {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .bi-alert-item {
+  background: rgba(255,255,255,0.03);
+}
+[data-theme="dark"] .bi-alert-item:hover {
+  background: rgba(255,255,255,0.06);
 }
 
 /* ========================================
@@ -403,6 +502,55 @@ input[type="checkbox"]:checked {
   from { opacity: 0; transform: translateY(20px) scale(0.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* ── 锁屏浮层 ── */
+.lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: lockOverlayIn 0.3s ease-out;
+}
+@keyframes lockOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.lock-dialog {
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+  animation: lockDialogIn 0.35s var(--ease-spring);
+}
+[data-theme="dark"] .lock-dialog {
+  background: #1e293b;
+}
+@keyframes lockDialogIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lock-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-color);
+}
+.lock-dialog .auth-group { margin-bottom: var(--space-3); }
+.lock-dialog .error-text { font-size: 12px; margin-top: 4px; }
+.lock-dialog .gesture-container { margin: 0 auto; }
+.lock-dialog .gesture-canvas-wrap { width: 220px; height: 220px; margin: 0 auto; }
+.lock-dialog .gesture-canvas-wrap canvas { width: 220px; height: 220px; }
+.lock-dialog .gesture-hint { font-size: 13px; }
+.lock-dialog .gesture-actions { margin-top: 8px; }
 .auth-logo {
   text-align: center;
   margin-bottom: var(--space-4);
@@ -561,32 +709,6 @@ input[type="checkbox"]:checked {
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: var(--color-neutral-400);
 }
-
-/* 全局滚动条 — 与导航栏一致的细滚动条，hover/滚动时才显示 */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
-*:hover {
-  scrollbar-color: var(--color-neutral-300) transparent;
-}
-*::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-*::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 2px;
-}
-*:hover::-webkit-scrollbar-thumb {
-  background: var(--color-neutral-300);
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: var(--color-neutral-400);
-}
 .sidebar-header {
   padding: 0 var(--space-4) 10px;
   border-bottom: 1px solid var(--color-neutral-100);
@@ -612,7 +734,7 @@ input[type="checkbox"]:checked {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-neutral-400);
+  color: var(--text-muted);
   padding: 12px var(--space-4) 2px;
   display: block;
 }
@@ -1675,12 +1797,11 @@ table.data-table {
   border-radius: var(--radius-xl);
   max-width: 900px;
   width: 100%;
-  max-height: 92vh;
-  overflow-y: auto;
   box-shadow: var(--shadow-xl);
   transform: scale(0.95) translateY(10px);
   opacity: 0;
   transition: transform 0.3s var(--ease-spring), opacity 0.25s var(--ease-out);
+  overflow: hidden;                 /* 裁剪子元素的滚动条至圆角边界 */
 }
 .modal-overlay.show .modal {
   transform: scale(1) translateY(0);
@@ -1688,6 +1809,32 @@ table.data-table {
 }
 .modal.modal-sm { max-width: 440px; }
 .modal.modal-md { max-width: 700px; }
+
+/* Modal 内层滚动容器 — 实际处理溢出的部分 */
+.modal-scroll {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+/* Modal 细滚动条 - 和导航栏一样细，鼠标滚轮滚动时显示，停止后隐藏 */
+.modal-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+.modal-scroll.scrolling::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+}
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
 .modal-header {
   padding: 10px 14px;
   border-bottom: 1px solid var(--border-color);
@@ -1716,13 +1863,6 @@ table.data-table {
   transform: rotate(90deg);
 }
 .modal-body { padding: 14px; }
-.modal::-webkit-scrollbar { width: 4px; }
-.modal::-webkit-scrollbar-track { background: transparent; }
-.modal::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
-.modal:hover::-webkit-scrollbar-thumb { background: var(--color-neutral-300); }
-.modal::-webkit-scrollbar-thumb:hover { background: var(--color-neutral-400); }
-.modal { scrollbar-width: thin; scrollbar-color: transparent transparent; }
-.modal:hover { scrollbar-color: var(--color-neutral-300) transparent; }
 .modal-footer {
   padding: 10px 14px;
   border-top: 1px solid var(--border-color);
@@ -2247,6 +2387,12 @@ table.data-table {
         <div class="auth-group">
           <label class="label required">用户名</label>
           <input type="text" id="unlock-username" class="input" placeholder="请输入用户名" autocomplete="off">
+          <div style="margin-top:6px;font-size:12px;color:var(--text-muted);">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;width:fit-content;">
+              <input type="checkbox" id="chk-remember-username" style="accent-color:var(--color-primary);">
+              记住用户名
+            </label>
+          </div>
         </div>
         <div class="auth-group">
           <label class="label required">密码</label>
@@ -2695,10 +2841,14 @@ table.data-table {
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
             可通过以下任意一种方式验证身份后重置密码：
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
             <button class="btn btn-warning" id="btn-reset-pw-by-sq-settings">通过密保问题重置</button>
             <button class="btn" id="btn-reset-pw-by-cur-pw-settings">验证当前密码重置</button>
             <button class="btn" id="btn-reset-pw-by-gesture-settings">验证手势重置</button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+            <button class="btn" id="btn-gesture-setup-settings" style="min-width:160px;">设置手势密码</button>
+            <span id="gesture-setup-settings-hint" style="font-size:12px;color:var(--text-muted);">设置后可在解锁时使用手势辅助验证</span>
           </div>
         </div>
 
@@ -2898,15 +3048,65 @@ table.data-table {
   </div>
 </div>
 
+  <!-- 锁屏浮层 -->
+  <div id="lock-overlay" class="lock-overlay" style="display:none;">
+    <div class="lock-dialog">
+      <div class="lock-dialog-header">
+        <img class="auth-logo-icon" src="logo213.jpg" alt="Logo" style="width:36px;height:36px;border-radius:var(--radius-sm);">
+        <div>
+          <div style="font-weight:700;font-size:15px;">系统已锁定</div>
+          <div style="font-size:12px;color:var(--text-muted);" id="lock-username-display"></div>
+        </div>
+      </div>
+
+      <!-- 密码/手势切换 -->
+      <div class="auth-gesture-toggle" id="lock-toggle" style="margin-bottom:12px;">
+        <button class="toggle-btn active" id="btn-lock-pw-mode">密码解锁</button>
+        <button class="toggle-btn" id="btn-lock-gesture-mode">手势解锁</button>
+      </div>
+
+      <!-- 密码解锁 -->
+      <div id="lock-pw-form">
+        <div class="auth-group">
+          <label class="label required">密码</label>
+          <input type="password" id="lock-password" class="input" placeholder="请输入密码" autocomplete="off">
+          <div class="error-text" id="lock-error">密码错误</div>
+        </div>
+        <div style="margin-bottom:12px;font-size:12px;color:var(--text-muted);" id="lock-attempt-info"></div>
+        <button class="btn btn-primary btn-lg" style="display:block;width:100%;text-align:center;" id="btn-lock-unlock">解锁系统</button>
+      </div>
+
+      <!-- 手势解锁 -->
+      <div id="lock-gesture-form" style="display:none;">
+        <div class="gesture-container">
+          <div class="gesture-canvas-wrap" id="lock-gesture-canvas-wrap">
+            <canvas id="lock-gesture-canvas" width="240" height="240"></canvas>
+          </div>
+          <div class="gesture-hint" id="lock-gesture-hint">请输入手势密码</div>
+          <div class="gesture-status" id="lock-gesture-status"></div>
+          <div class="gesture-actions">
+            <button class="btn btn-sm" id="btn-lock-gesture-reset">重新绘制</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;text-align:center;">
+        <button class="btn btn-sm btn-outline" id="btn-lock-logout">退出登录</button>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- 通用弹窗容器 -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">弹窗</div>
-      <button class="modal-close" id="modal-close">×</button>
+    <div class="modal-scroll">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">弹窗</div>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
     </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-footer" id="modal-footer"></div>
   </div>
 </div>
 
@@ -3066,26 +3266,33 @@ async function deriveKey(password, saltBytes, usage) {
   );
 }
 
-// 密码 XOR 混淆存入 sessionStorage（防止 DevTools 直接读取明文）
-const _PW_MASK = 'CrmS3cur1tyX0rK3y!';
-function _obfuscatePw(pw) {
-  const mask = _PW_MASK;
-  let result = '';
-  for (let i = 0; i < pw.length; i++) {
-    result += String.fromCharCode(pw.charCodeAt(i) ^ mask.charCodeAt(i % mask.length));
+// 密码 XOR 混淆存入 sessionStorage（会话级随机掩码，不硬编码）
+function _getSessionPwMask() {
+  const key = 'crm_session_pw_mask';
+  let maskB64 = sessionStorage.getItem(key);
+  if (!maskB64) {
+    maskB64 = bytesToBase64(crypto.getRandomValues(new Uint8Array(32)));
+    sessionStorage.setItem(key, maskB64);
   }
-  return btoa(result);
+  return base64ToBytes(maskB64);
+}
+function _obfuscatePw(pw) {
+  try {
+    const mask = _getSessionPwMask();
+    const bytes = strToBytes(pw);
+    const obf = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) obf[i] = bytes[i] ^ mask[i % mask.length];
+    return bytesToBase64(obf);
+  } catch (e) { return ''; }
 }
 function _deobfuscatePw(encoded) {
   try {
-    const decoded = atob(encoded);
-    const mask = _PW_MASK;
-    let result = '';
-    for (let i = 0; i < decoded.length; i++) {
-      result += String.fromCharCode(decoded.charCodeAt(i) ^ mask.charCodeAt(i % mask.length));
-    }
-    return result;
-  } catch(e) { return ''; }
+    const mask = _getSessionPwMask();
+    const obf = base64ToBytes(encoded);
+    const bytes = new Uint8Array(obf.length);
+    for (let i = 0; i < obf.length; i++) bytes[i] = obf[i] ^ mask[i % mask.length];
+    return bytesToStr(bytes);
+  } catch (e) { return ''; }
 }
 
 // 生成密码校验哈希：使用存储的随机 salt（首次生成后持久化到 localStorage）
@@ -3184,20 +3391,23 @@ const Store = {
   // 运行态内存：解锁成功后保存
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
-  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] }, // 明文内存
+  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '' }, // 明文内存
   settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
   folderName: '',
   lastSyncTime: 0,
   _dirty: false,           // 脏数据标记：有未保存变更时为 true
+  _saving: false,          // 保存中标记：防止并发竞态
+  _pendingSave: null,      // 保存锁队列：保存中时缓存最新请求
+  _expectedHash: null,     // 缓存的密码校验哈希（登录后计算，promptPassword 复用）
 
   /* --- 通用读写 localStorage（加密） --- */
   async load() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] };
+        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '' };
         return;
       }
       const plain = await decryptData(raw, this.password);
@@ -3234,8 +3444,32 @@ const Store = {
       throw new Error('数据解密失败，密码可能错误或数据已损坏');
     }
   },
-  async save() {
-    // 生成备份：保留最近 3 个版本
+  async save(excludeAvatar) {
+    // 保存锁：防止自动保存与手动保存竞态
+    if (this._saving) {
+      this._pendingSave = true;
+      return;
+    }
+    this._saving = true;
+    try {
+      // 序列化时（自动保存）排除头像数据，降低每次全量加密的 payload
+      const dataForSave = excludeAvatar ? { ...this.data, avatar: '' } : this.data;
+      const plaintext = JSON.stringify(dataForSave);
+      const enc = await encryptData(plaintext, this.password);
+      localStorage.setItem(STORAGE_KEY, enc);
+      this.syncToFolder(enc);
+      this._dirty = false;
+    } finally {
+      this._saving = false;
+      if (this._pendingSave) {
+        this._pendingSave = false;
+        return this.save(excludeAvatar);
+      }
+    }
+  },
+
+  // 保存版本快照：仅在用户主动操作时调用（不随自动保存触发）
+  _saveVersionSnapshot() {
     const snapshot = JSON.parse(JSON.stringify({
       customers: this.data.customers,
       tags: this.data.tags,
@@ -3248,12 +3482,6 @@ const Store = {
       this.data.versions.unshift(snapshot);
       if (this.data.versions.length > 3) this.data.versions.length = 3;
     }
-    const plaintext = JSON.stringify(this.data);
-    const enc = await encryptData(plaintext, this.password);
-    localStorage.setItem(STORAGE_KEY, enc);
-    // 同步到文件夹
-    this.syncToFolder(enc);
-    this._dirty = false;
   },
 
   // 标记数据已变更（供自动保存轮询使用）
@@ -3341,12 +3569,17 @@ const Store = {
   },
   async syncToFolder(encryptedData) {
     if (!this.folderHandle) { this.updateSyncUI(); return; }
+    // 错误冷却：上次失败后 5 分钟内不重复 Toast
+    const now = Date.now();
+    if (this._lastSyncErrorTime && now - this._lastSyncErrorTime < 300000) return;
     try {
       const enc = encryptedData || localStorage.getItem(STORAGE_KEY);
       if (!enc) return;
       await this.writeFileToFolder(enc);
+      this._lastSyncErrorTime = 0;
       this.updateSyncUI();
     } catch (e) {
+      this._lastSyncErrorTime = now;
       showToast('文件夹同步失败：' + e.message, 'warning');
     }
   },
@@ -3429,7 +3662,10 @@ const Store = {
   },
   saveWithLog(type, detail) {
     this.addLog(type, '成功', detail);
-    return this.save();
+    this._saveVersionSnapshot();
+    const p = this.save();
+    updateNavCounts();
+    return p;
   }
 };
 
@@ -3557,9 +3793,10 @@ function promptPassword(title, message, onOk) {
       cancel.onclick = closeModal;
       const doOk = async () => {
         const val = document.getElementById('_pw').value;
-        const expected = await passwordHash(Store.password);
+        // 使用缓存的预期哈希，避免重复 deriveKey
+        if (!Store._expectedHash) Store._expectedHash = await passwordHash(Store.password);
         const actual = await passwordHash(val);
-        if (actual !== expected) {
+        if (actual !== Store._expectedHash) {
           document.getElementById('_pw_err').style.display = 'block';
           return;
         }
@@ -3967,7 +4204,6 @@ function openCustomerForm(customer) {
         listState.dateStart = '';
         listState.dateEnd = '';
         navigate('list');
-        renderDashboard();
       };
     }
   });
@@ -6485,6 +6721,18 @@ function renderSettingsPage() {
   const btnGesture = document.getElementById('btn-reset-pw-by-gesture-settings');
   if (btnGesture) btnGesture.disabled = !(Store.data.gesturePattern && Store.data.gesturePattern.length > 0);
 
+  // 更新手势密码设置按钮
+  const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
+  const btnGestureSetup = document.getElementById('btn-gesture-setup-settings');
+  const gestureHint = document.getElementById('gesture-setup-settings-hint');
+  if (btnGestureSetup) {
+    btnGestureSetup.textContent = hasGesture ? '重新设置手势密码' : '设置手势密码';
+    btnGestureSetup.className = hasGesture ? 'btn btn-outline' : 'btn';
+  }
+  if (gestureHint) {
+    gestureHint.textContent = hasGesture ? '已设置解锁手势，可重新绘制替换' : '设置后可在解锁时使用手势辅助验证';
+  }
+
   // 渲染跟进提醒频率设置
   const followupDays = Store.settings.followupDays || 3;
   const desc = document.getElementById('followup-frequency-desc');
@@ -6855,7 +7103,7 @@ function navigate(pageName) {
   else if (pageName === 'xianyu') renderChannelPage('xianyu');
   else if (pageName === 'trash') renderTrashPage();
   else if (pageName === 'settings') renderSettingsPage();
-  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initGestureSettingOnce) window.initGestureSettingOnce(); }
+  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initGestureSettingOnce) window.initGestureSettingOnce(); if(typeof renderSettingsPage === 'function') renderSettingsPage(); }
   // 进入列表页面自动隐藏移动端侧边栏
   if (window.innerWidth < 768) {
     const sb = document.getElementById('sidebar'); if (sb) sb.classList.remove('show');
@@ -6960,15 +7208,10 @@ function resetIdleTimer() {
       try { await Store.save(); } catch (e) {}
     }
     stopAutoSave();
-    Store.unlocked = false; 
-    Store.password = null;
-    sessionStorage.removeItem('crm_session_pw'); // 清除会话密码
-    document.getElementById('app-view').style.display = 'none';
-    document.getElementById('auth-view').style.display = 'flex';
-    document.getElementById('unlock-password').value = '';
-    const unEl2 = document.getElementById('unlock-username');
-    if (unEl2) unEl2.value = '';
-    showToast('系统已自动登出，请重新登录', 'warning');
+    Store.unlocked = false;
+    // 保留 sessionStorage 中的密码，以便手势解锁时恢复
+    window.showLockOverlay();
+    showToast('系统已自动锁定，请验证密码解锁', 'warning');
   }, IDLE_TIMEOUT_MS);
 }
 
@@ -6989,15 +7232,16 @@ function clearIdleTimer() {
 }
 
 let autoSaveTimer = null;
-const AUTO_SAVE_INTERVAL_MS = 3000; // 3 秒自动保存间隔
+const AUTO_SAVE_INTERVAL_MS = 3000; // 3 秒自动保存间隔（仅在有脏数据时触发，且排除头像 base64）
 
 function startAutoSave() {
-  if (autoSaveTimer) return; // 已启动则跳过
+  if (autoSaveTimer) return;
   autoSaveTimer = setInterval(async () => {
     if (!Store.unlocked) return;
+    if (!Store._dirty) return;
     try {
-      await Store.save();
-      // 更新同步状态指示（静默，不弹 toast）
+      // 自动保存排除头像数据以降低 payload
+      await Store.save(true);
       Store.updateSyncUI();
     } catch (e) {
       console.warn('[自动保存] 保存失败:', e.message);
@@ -7032,7 +7276,7 @@ function updateSidebarUser() {
   }
 }
 
-// 头像上传处理：读取文件 → 裁剪为 200x220 圆角矩形 → base64 存储
+// 头像上传处理：读取文件 → 裁剪为 120×132 圆角矩形 → base64 存储
 function handleAvatarUpload(file) {
   if (!file || !file.type.startsWith('image/')) {
     showToast('请选择图片文件', 'error');
@@ -7046,16 +7290,16 @@ function handleAvatarUpload(file) {
   reader.onload = function(e) {
     const img = new Image();
     img.onload = function() {
-      // 裁剪为 200x220（圆角矩形，居中裁剪）
+      // 裁剪为 120×132 压缩头像（降低 base64 payload 对每次全量加密的影响）
       const canvas = document.createElement('canvas');
-      const W = 200, H = 220;
+      const W = 120, H = 132;
       canvas.width = W;
       canvas.height = H;
       const ctx = canvas.getContext('2d');
       // 圆角裁剪
       ctx.save();
       ctx.beginPath();
-      ctx.roundRect(0, 0, W, H, 12);
+      ctx.roundRect(0, 0, W, H, 10);
       ctx.clip();
       // 等比缩放并居中裁剪
       const scale = Math.max(W / img.width, H / img.height);
@@ -7065,10 +7309,12 @@ function handleAvatarUpload(file) {
       const sy = (img.height - sh) / 2;
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
       ctx.restore();
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
       Store.data.avatar = dataUrl;
       Store.markDirty();
       updateSidebarUser();
+      // 头像变更立即显式保存（自动保存不包含头像数据，需确保头像落盘）
+      Store.save().catch(e => console.warn('[头像保存] 失败:', e.message));
       showToast('头像已更新', 'success');
     };
     img.onerror = function() { showToast('图片加载失败', 'error'); };
@@ -7083,6 +7329,8 @@ async function enterApp(password) {
   // 保存密码到 sessionStorage（XOR 混淆，非明文直存，防止 DevTools 直接读取）
   sessionStorage.setItem('crm_session_pw', _obfuscatePw(password));
   await Store.load();
+  // 预计算并缓存密码校验哈希，避免后续 promptPassword 中重复 deriveKey
+  passwordHash(password).then(h => { Store._expectedHash = h; }).catch(() => {});
   // 若文件夹可用，尝试同步（不阻塞）
   if (Store.isFolderApiSupported()) {
     try { await Store.mergeFromFolder(); } catch (e) {}
@@ -7126,6 +7374,15 @@ function initAuthPage() {
   document.getElementById('unlock-password').value = '';
   const unlockUsernameEl = document.getElementById('unlock-username');
   if (unlockUsernameEl) unlockUsernameEl.value = '';
+  // 记住用户名：自动填充
+  const rememberedUsername = localStorage.getItem('crm_remembered_username');
+  const chkRemember = document.getElementById('chk-remember-username');
+  if (rememberedUsername && unlockUsernameEl && chkRemember) {
+    unlockUsernameEl.value = rememberedUsername;
+    chkRemember.checked = true;
+  } else if (chkRemember) {
+    chkRemember.checked = false;
+  }
   const hasData = !!localStorage.getItem(STORAGE_KEY);
   if (hasData) {
     document.getElementById('view-unlock').style.display = 'block';
@@ -7154,6 +7411,8 @@ function initAuthPage() {
             localStorage.removeItem('crm_hash_salt');
             localStorage.removeItem('crm_has_sq');
             sessionStorage.removeItem('crm_session_pw');
+            sessionStorage.removeItem('crm_session_pw_mask');
+            localStorage.removeItem('crm_remembered_username');
             Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] };
             Store.unlocked = false;
             Store._dirty = false;
@@ -7189,8 +7448,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // 尝试从 sessionStorage 恢复登录状态（页面刷新后）
-  // 密码经 XOR 混淆后存储，防止 DevTools 直接读取明文
+  // 尝试从 sessionStorage 恢复登录状态（密码经会话级随机掩码混淆）
   const savedObfuscated = sessionStorage.getItem('crm_session_pw');
   if (savedObfuscated) {
     const savedPassword = _deobfuscatePw(savedObfuscated);
@@ -7222,14 +7480,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const ok = await doUnlock(pw);
     if (ok) {
       // 解密成功后，验证用户名是否匹配
-      Store.password = pw; // 先设置密码，load() 需要用它解密
+      // 必须先设置 Store.password，否则 Store.load() 内部用 null 解密会失败
+      Store.password = pw;
       try {
         await Store.load(); // 临时加载数据以检查用户名
       } catch (e) {
         Store.password = null;
-        document.getElementById('unlock-error').style.display = 'block';
-        safeText(document.getElementById('attempt-info'), '数据加载失败');
-        showToast('数据解密失败，请检查密码', 'error');
+        showToast('数据加载失败，请重试', 'error');
         return;
       }
       if (Store.data.username && Store.data.username !== username) {
@@ -7242,6 +7499,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       unlockFailCount = 0;
+      // 记住用户名
+      const chkRem = document.getElementById('chk-remember-username');
+      if (chkRem && chkRem.checked) {
+        localStorage.setItem('crm_remembered_username', username);
+      } else {
+        localStorage.removeItem('crm_remembered_username');
+      }
       enterApp(pw);
     } else {
       unlockFailCount++;
@@ -7339,15 +7603,144 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   // 手动锁屏
   document.getElementById('btn-lock').onclick = () => {
-    clearIdleTimer(); // 清除计时器
+    clearIdleTimer();
+    Store.unlocked = false;
+    // 保留 sessionStorage 中的密码，以便手势解锁时恢复
+    showLockOverlay();
+  };
+
+  // ── 锁屏浮层逻辑 ──────────────────────────────────────────────
+  let lockFailCount = 0;
+  let lockGestureApi = null;
+
+  function showLockOverlay() {
+    lockFailCount = 0;
+    document.getElementById('lock-password').value = '';
+    document.getElementById('lock-error').style.display = 'none';
+    safeText(document.getElementById('lock-attempt-info'), '');
+    // 显示当前用户名
+    safeText(document.getElementById('lock-username-display'), '用户：' + (Store.data.username || '未知'));
+    // 默认密码模式
+    document.getElementById('btn-lock-pw-mode').classList.add('active');
+    document.getElementById('btn-lock-gesture-mode').classList.remove('active');
+    document.getElementById('lock-pw-form').style.display = 'block';
+    document.getElementById('lock-gesture-form').style.display = 'none';
+    // 确保 auth-view 隐藏，app-view 保持显示（虚化背景）
+    document.getElementById('auth-view').style.display = 'none';
+    document.getElementById('app-view').style.display = 'block';
+    document.getElementById('lock-overlay').style.display = 'flex';
+    document.getElementById('lock-password').focus();
+  }
+  window.showLockOverlay = showLockOverlay; // 暴露给 top-level resetIdleTimer 使用
+
+  function hideLockOverlay() {
+    document.getElementById('lock-overlay').style.display = 'none';
+  }
+
+  // 锁屏密码解锁
+  document.getElementById('btn-lock-unlock').onclick = async () => {
+    const pw = document.getElementById('lock-password').value;
+    if (!pw) { showToast('请输入密码', 'error'); return; }
+    const ok = await doUnlock(pw);
+    if (ok) {
+      lockFailCount = 0;
+      hideLockOverlay();
+      enterApp(pw);
+    } else {
+      lockFailCount++;
+      document.getElementById('lock-error').style.display = 'block';
+      safeText(document.getElementById('lock-attempt-info'), '连续错误 ' + lockFailCount + '/5 次');
+      if (lockFailCount >= 5) {
+        // 锁定后退出到完整登录页
+        hideLockOverlay();
+        showToast('密码错误次数过多，请重新登录', 'error');
+        initAuthPage();
+      }
+    }
+  };
+
+  // 回车键快速解锁
+  document.getElementById('lock-password').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btn-lock-unlock').click();
+  });
+
+  // 锁屏手势模式切换
+  document.getElementById('btn-lock-pw-mode').onclick = () => {
+    document.getElementById('btn-lock-pw-mode').classList.add('active');
+    document.getElementById('btn-lock-gesture-mode').classList.remove('active');
+    document.getElementById('lock-pw-form').style.display = 'block';
+    document.getElementById('lock-gesture-form').style.display = 'none';
+    document.getElementById('lock-password').focus();
+  };
+
+  document.getElementById('btn-lock-gesture-mode').onclick = () => {
+    const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
+    if (!hasGesture) {
+      showToast('请先在"数据与安全"中设置解锁手势', 'warning');
+      return;
+    }
+    document.getElementById('btn-lock-gesture-mode').classList.add('active');
+    document.getElementById('btn-lock-pw-mode').classList.remove('active');
+    document.getElementById('lock-pw-form').style.display = 'none';
+    document.getElementById('lock-gesture-form').style.display = 'block';
+    initLockGestureMode();
+  };
+
+  function initLockGestureMode() {
+    // 使用双重 rAF 确保 canvas 从 display:none 切换到 display:block 后完成布局
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        lockGestureApi = initGestureCanvas('lock-gesture-canvas', 'unlock');
+        if (lockGestureApi) {
+          const saved = Store.data.gesturePattern;
+          gestureState.onComplete = (pattern, points) => {
+            if (!pattern) return;
+            const statusEl = document.getElementById('lock-gesture-status');
+            if (pattern === saved) {
+            statusEl.className = 'gesture-status success';
+            statusEl.textContent = '手势验证成功，正在解锁...';
+            setTimeout(() => {
+              // 手势正确：恢复密码（从 sessionStorage 读取混淆后的密码）
+              const obfPw = sessionStorage.getItem('crm_session_pw');
+              if (obfPw) {
+                Store.password = _deobfuscatePw(obfPw);
+                Store.unlocked = true;
+                hideLockOverlay();
+                refreshUI();
+                showToast('欢迎回来', 'success');
+              } else {
+                // sessionStorage 丢失，回退到完整登录
+                hideLockOverlay();
+                Store.unlocked = false; Store.password = null;
+                initAuthPage();
+                showToast('会话已过期，请重新登录', 'warning');
+              }
+            }, 600);
+            } else {
+              statusEl.className = 'gesture-status error';
+              statusEl.textContent = '手势错误，请重试';
+              if (lockGestureApi) lockGestureApi.reset();
+            }
+          };
+        }
+      });
+    });
+  }
+
+  // 锁屏手势重新绘制
+  document.getElementById('btn-lock-gesture-reset').onclick = () => {
+    if (lockGestureApi) lockGestureApi.reset();
+    document.getElementById('lock-gesture-status').textContent = '';
+    document.getElementById('lock-gesture-status').className = 'gesture-status';
+  };
+
+  // 锁屏退出登录
+  document.getElementById('btn-lock-logout').onclick = () => {
+    hideLockOverlay();
+    stopAutoSave();
     Store.unlocked = false; Store.password = null;
-    sessionStorage.removeItem('crm_session_pw'); // 清除会话密码
-    document.getElementById('app-view').style.display = 'none';
-    document.getElementById('auth-view').style.display = 'flex';
-    document.getElementById('unlock-password').value = '';
-    const unEl = document.getElementById('unlock-username');
-    if (unEl) unEl.value = '';
-    showToast('已手动锁屏', 'warning');
+    sessionStorage.removeItem('crm_session_pw');
+    initAuthPage();
   };
 
   // 侧边栏登出按钮（与锁屏行为一致）
@@ -7359,7 +7752,7 @@ document.addEventListener('DOMContentLoaded', function () {
       Store.unlocked = false; Store.password = null;
       sessionStorage.removeItem('crm_session_pw');
       document.getElementById('app-view').style.display = 'none';
-      document.getElementById('auth-view').style.display = 'flex';
+      document.getElementById('auth-view').style.display = 'block';
       document.getElementById('unlock-password').value = '';
       document.getElementById('unlock-username').value = '';
       showToast('已登出系统', 'info');
@@ -7784,8 +8177,10 @@ document.addEventListener('DOMContentLoaded', function () {
           // 验证原密码
           const ok_verify = await doUnlock(oldPw);
           if (!ok_verify) { showToast('原密码错误', 'error'); return; }
-          // 以新密码重新加密保存
+          // 以新密码重新加密保存，并同步 sessionStorage 使刷新后仍可恢复
           Store.password = np;
+          Store._expectedHash = null; // 失效旧缓存
+          sessionStorage.setItem('crm_session_pw', _obfuscatePw(np));
           Store.addLog('修改密码', '成功', '用户修改了解锁密码');
           await Store.save();
           closeModal();
@@ -7814,6 +8209,17 @@ document.addEventListener('DOMContentLoaded', function () {
   if (exportBtn) exportBtn.onclick = exportBIReportCSV;
 
   // 注：自动锁屏监控已在 setupIdleDetection 中统一处理
+
+  // ── Modal 滚动条显隐：鼠标滚轮滚动时显示，停止 500ms 后隐藏 ──
+  const _modalScroll = document.querySelector('.modal-scroll');
+  let _modalScrollTimer = null;
+  _modalScroll.addEventListener('scroll', () => {
+    _modalScroll.classList.add('scrolling');
+    clearTimeout(_modalScrollTimer);
+    _modalScrollTimer = setTimeout(() => {
+      _modalScroll.classList.remove('scrolling');
+    }, 500);
+  });
 });
 
 // 窗口大小改变时重新渲染BI图表
@@ -7943,7 +8349,7 @@ function refreshUI() {
       align-items: center;
       gap: 4px;
     }
-    [data-theme="dark"] #crm-pet-bubble-title { color: #94a3b8; }
+    [data-theme="dark"] #crm-pet-bubble-title { color: #cbd5e1; }
     #crm-pet-bubble-text { font-size: 13px; }
     #crm-pet-bubble-close {
       position: absolute;
@@ -7997,6 +8403,7 @@ function refreshUI() {
       white-space: nowrap;
       flex-shrink: 0;
     }
+    [data-theme="dark"] .pet-customer-days { color: #94a3b8; }
     .pet-customer-days.urgent { color: #ef4444; font-weight: 600; }
     .pet-customer-days.warn   { color: #f59e0b; }
     .pet-bubble-footer {
@@ -8007,52 +8414,24 @@ function refreshUI() {
       color: #94a3b8;
       text-align: center;
     }
-    [data-theme="dark"] .pet-bubble-footer { border-top-color: #334155; color: #64748b; }
+    [data-theme="dark"] .pet-bubble-footer { border-top-color: #334155; color: #94a3b8; }
 
-    /* ── 缩小（mini）模式 ── */
-    #crm-pet-widget.mini #crm-pet-bubble { display: none !important; }
-    #crm-pet-widget.mini #crm-pet-body {
-      width: 36px;
-      height: 36px;
+    /* ── 缩小（shrunken）模式 ── */
+    #crm-pet-widget.shrunken {
+      transform: scale(0.5);
+      transform-origin: bottom right;
     }
-    #crm-pet-widget.mini #crm-pet-svg {
-      width: 36px;
-      height: 36px;
+    #crm-pet-widget.shrunken #crm-pet-bubble {
+      transform: scale(2);
+      transform-origin: bottom right;
     }
-    #crm-pet-widget.mini #crm-pet-badge {
-      top: -4px; right: -4px;
-      min-width: 14px; height: 14px;
-      font-size: 9px;
-      padding: 0 3px;
+    /* 缩小时阴影减淡 */
+    #crm-pet-widget.shrunken {
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.12));
     }
-    #crm-pet-widget.mini #crm-pet-status-dot {
-      width: 7px; height: 7px;
-      top: 1px; right: 1px;
+    #crm-pet-widget.shrunken:hover {
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.18));
     }
-    @keyframes petMiniIn {
-      from { transform: scale(1.15); opacity: 0.7; }
-      to   { transform: scale(1); opacity: 1; }
-    }
-    #crm-pet-widget.mini #crm-pet-body {
-      animation: petMiniIn 0.22s cubic-bezier(0.34,1.56,0.64,1) both;
-    }
-    /* mini 模式提示 tooltip */
-    #crm-pet-widget.mini::after {
-      content: attr(data-mini-tip);
-      position: absolute;
-      bottom: 40px;
-      right: 0;
-      background: rgba(30,41,59,0.82);
-      color: #fff;
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    #crm-pet-widget.mini:hover::after { opacity: 1; }
 
     /* 猫咪状态标记 */
     #crm-pet-status-dot {
@@ -8097,7 +8476,7 @@ function refreshUI() {
       50%      { transform: scale(1.4); opacity: 0.7; }
     }
     @keyframes petTailWag {
-      0%,100% { transform-origin: bottom left; transform: rotate(0deg); }
+      0%,100% { transform: rotate(0deg); }
       25%      { transform: rotate(12deg); }
       75%      { transform: rotate(-12deg); }
     }
@@ -8121,9 +8500,11 @@ function refreshUI() {
     }
 
     /* 动画应用 */
+    /* 尾巴变换原点：尾部连接身体处 */
+    #pet-tail { transform-origin: 100% 100%; }
     #crm-pet-svg.idle #pet-tail { animation: petTailWag 1.8s ease-in-out infinite; }
     #crm-pet-svg.idle #pet-body-group { animation: petBodyBounce 3s ease-in-out infinite; }
-    #crm-pet-svg.idle #pet-ear-l, #crm-pet-svg.idle #pet-ear-r { animation: petEarTwitch 4s ease-in-out infinite; }
+    #crm-pet-svg.idle #pet-ear-l, #crm-pet-svg.idle #pet-ear-r { animation: petEarTwitch 4s ease-in-out infinite; transform-origin: 50% 100%; }
     #crm-pet-svg.alert #pet-tail { animation: petTailWag 0.8s ease-in-out infinite; }
     #crm-pet-svg.alert #pet-body-group { animation: petBodyBounce 0.6s ease-in-out infinite; }
     #crm-pet-svg.happy #pet-tail { animation: petTailWag 0.5s ease-in-out infinite; }
@@ -8132,6 +8513,122 @@ function refreshUI() {
     #crm-pet-svg.sleep .pet-zzz { animation: petZzz 2s ease-out infinite; }
     #crm-pet-svg.sleep .pet-zzz:nth-child(2) { animation-delay: 0.7s; }
     #crm-pet-svg.sleep .pet-zzz:nth-child(3) { animation-delay: 1.4s; }
+
+    /* ========== 新增：状态过渡与增强动画 ========== */
+
+    /* 状态切换过渡：SVG 整体渐入 */
+    #crm-pet-svg {
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  opacity 0.3s ease;
+    }
+
+    /* idle → alert 时：猫头微微前倾 */
+    #crm-pet-svg.alert #pet-body-group {
+      animation: petAlert 0.6s ease-in-out infinite;
+    }
+
+    /* idle → happy 时：猫身轻跳 */
+    #crm-pet-svg.happy #pet-body-group {
+      animation: petHappyBounce 0.4s ease-in-out infinite;
+    }
+
+    /* idle → sleep 过渡：优雅下降 */
+    #crm-pet-svg.sleep {
+      transform: translateY(4px);
+      opacity: 0.85;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+    }
+
+    /* 睡眠 → idle 唤醒过渡 */
+    #crm-pet-svg.sleep.waking {
+      transform: translateY(0);
+      opacity: 1;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    }
+
+    /* 瞳孔追踪偏移 */
+    .pupil-group {
+      transition: transform 80ms ease-out;
+      transform: translate(var(--pupil-x, 0px), var(--pupil-y, 0px));
+    }
+    .highlight-group {
+      transition: transform 80ms ease-out;
+      transform: translate(var(--highlight-x, 0px), var(--highlight-y, 0px));
+    }
+
+    /* ========== 新增关键帧 ========== */
+    @keyframes petAlert {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+
+    @keyframes petHappyBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      25% { transform: translateY(-3px) scale(1.02); }
+      50% { transform: translateY(0) scale(1); }
+      75% { transform: translateY(-1.5px) scale(1.01); }
+    }
+
+    /* 尾巴甩动（更动态） */
+    @keyframes petTailSwing {
+      0%   { transform: rotate(-8deg); }
+      25%  { transform: rotate(12deg); }
+      50%  { transform: rotate(-5deg); }
+      75%  { transform: rotate(10deg); }
+      100% { transform: rotate(-8deg); }
+    }
+
+    /* 耳朵抽动 */
+    @keyframes petEarAlert {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-5deg); }
+      40% { transform: rotate(8deg); }
+      60% { transform: rotate(-3deg); }
+      80% { transform: rotate(5deg); }
+    }
+
+    #crm-pet-svg.alert #pet-ear-l { animation: petEarAlert 1s ease-in-out infinite; transform-origin: 50% 100%; }
+    #crm-pet-svg.alert #pet-ear-r { animation: petEarAlert 1s ease-in-out infinite; animation-delay: 0.15s; transform-origin: 50% 100%; }
+
+    /* 阴影呼吸 */
+    #pet-shadow {
+      transition: rx 0.3s ease, ry 0.3s ease;
+    }
+
+    #crm-pet-svg.happy #pet-shadow {
+      animation: shadowBounce 0.4s ease-in-out infinite;
+    }
+
+    @keyframes shadowBounce {
+      0%, 100% { rx: 30; ry: 4; opacity: 0.08; }
+      50% { rx: 25; ry: 2.5; opacity: 0.04; }
+    }
+
+    /* 猫在 shrunken 模式时尾巴保持动画 */
+    #crm-pet-widget.shrunken #pet-tail {
+      animation: petTailWag 1.8s ease-in-out infinite !important;
+    }
+
+    /* ========== 悬停反馈 ========== */
+    #crm-pet-svg.hovered #pet-body-group {
+      animation-duration: 1.5s !important;
+    }
+    #crm-pet-svg.hovered #pet-tail {
+      animation-duration: 1s !important;
+    }
+
+    /* ========== 气泡文字入场增强 ========== */
+    #crm-pet-bubble.show #crm-pet-bubble-title {
+      animation: titleSlideIn 0.25s ease-out 0.08s both;
+    }
+    #crm-pet-bubble.show #crm-pet-bubble-text {
+      animation: titleSlideIn 0.25s ease-out 0.15s both;
+    }
+
+    @keyframes titleSlideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
     /* 点击涟漪 */
     @keyframes petRipple {
@@ -8170,78 +8667,123 @@ function refreshUI() {
   // ── SVG 猫咪绘制 ──────────────────────────────────────────────
   function buildCatSVG() {
     return `
-    <svg id="crm-pet-svg" class="idle" viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
-      <!-- 尾巴（在身体后面渲染） -->
-      <path id="pet-tail"
-        d="M26 60 Q10 58 12 46 Q14 38 22 42"
-        stroke="#e8a87c" stroke-width="5" stroke-linecap="round" fill="none"/>
-      <!-- 身体+头部整体组 -->
-      <g id="pet-body-group">
+    <svg id="crm-pet-svg" class="idle" viewBox="0 0 84 84" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- 银渐层身体渐变 -->
+        <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#CFD8DC"/>
+          <stop offset="100%" stop-color="#90A4AE"/>
+        </linearGradient>
+        <!-- 头部渐变 -->
+        <radialGradient id="headGrad" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#ECEFF1"/>
+          <stop offset="70%" stop-color="#B0BEC5"/>
+          <stop offset="100%" stop-color="#78909C"/>
+        </radialGradient>
+        <!-- 耳内渐变 -->
+        <linearGradient id="earInnerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#F8BBD0"/>
+          <stop offset="100%" stop-color="#F06292"/>
+        </linearGradient>
+        <!-- 肚皮渐变 -->
+        <linearGradient id="bellyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FFFFFF"/>
+          <stop offset="100%" stop-color="#ECEFF1"/>
+        </linearGradient>
+        <!-- 阴影滤镜 -->
+        <filter id="shadowFilter" x="-10%" y="-10%" width="130%" height="130%">
+          <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.12)"/>
+        </filter>
+      </defs>
+
+      <!-- 底部阴影 -->
+      <ellipse cx="42" cy="76" rx="30" ry="4" fill="rgba(0,0,0,0.08)" id="pet-shadow"/>
+
+      <!-- 身体 + 头部 + 尾巴 -->
+      <g id="pet-body-group" filter="url(#shadowFilter)">
+        <!-- 尾巴（在身体下面渲染） -->
+        <path id="pet-tail"
+          d="M26 60 Q10 56 12 44 Q14 36 22 40"
+          stroke="#78909C" stroke-width="5" stroke-linecap="round" fill="none"/>
         <!-- 身体 -->
-        <ellipse id="pet-body" cx="42" cy="58" rx="18" ry="14" fill="#f5c98a"/>
+        <ellipse cx="42" cy="58" rx="18" ry="14" fill="url(#bodyGrad)"/>
         <!-- 肚皮 -->
-        <ellipse cx="42" cy="60" rx="11" ry="9" fill="#fde8c8"/>
+        <ellipse cx="42" cy="60" rx="11" ry="9" fill="url(#bellyGrad)"/>
+
         <!-- 头部 -->
-        <ellipse id="pet-head" cx="42" cy="36" rx="18" ry="16" fill="#f5c98a"/>
+        <ellipse cx="42" cy="36" rx="18" ry="16" fill="url(#headGrad)"/>
+
         <!-- 左耳 -->
-        <polygon id="pet-ear-l" points="26,24 24,10 35,20" fill="#f5c98a"/>
-        <polygon points="27,22 26,13 34,21" fill="#f4a0b0"/>
+        <polygon id="pet-ear-l" points="26,24 24,10 35,20" fill="#90A4AE" stroke="#78909C" stroke-width="0.5"/>
+        <polygon points="27,22 26,13 34,21" fill="url(#earInnerGrad)"/>
         <!-- 右耳 -->
-        <polygon id="pet-ear-r" points="58,24 56,10 45,20" fill="#f5c98a"/>
-        <polygon points="57,22 54,13 46,21" fill="#f4a0b0"/>
-        <!-- 眼睛（默认睁开） -->
-        <g id="pet-eyes-open">
-          <ellipse cx="36" cy="36" rx="4" ry="4.5" fill="#fff"/>
-          <ellipse cx="48" cy="36" rx="4" ry="4.5" fill="#fff"/>
-          <circle cx="36.8" cy="36.5" r="2.8" fill="#4a3728"/>
-          <circle cx="48.8" cy="36.5" r="2.8" fill="#4a3728"/>
-          <circle cx="37.8" cy="35.5" r="1" fill="#fff"/>
-          <circle cx="49.8" cy="35.5" r="1" fill="#fff"/>
-        </g>
-        <!-- 眼睛（睡眠弧形） -->
-        <g id="pet-eyes-sleep" display="none">
-          <path d="M32 37 Q36 33 40 37" stroke="#4a3728" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-          <path d="M44 37 Q48 33 52 37" stroke="#4a3728" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-        </g>
-        <!-- 眼睛（高兴弧形） -->
-        <g id="pet-eyes-happy" display="none">
-          <path d="M32 35 Q36 39 40 35" stroke="#4a3728" stroke-width="2" fill="none" stroke-linecap="round"/>
-          <path d="M44 35 Q48 39 52 35" stroke="#4a3728" stroke-width="2" fill="none" stroke-linecap="round"/>
-        </g>
-        <!-- 眼睛（警觉大眼） -->
-        <g id="pet-eyes-alert" display="none">
+        <polygon id="pet-ear-r" points="58,24 56,10 45,20" fill="#90A4AE" stroke="#78909C" stroke-width="0.5"/>
+        <polygon points="57,22 54,13 46,21" fill="url(#earInnerGrad)"/>
+
+        <!-- 眼睛（默认睁开，支持追踪） -->
+        <g id="pet-eyes-open" class="pet-eyes-tracking">
           <ellipse cx="36" cy="36" rx="5" ry="5.5" fill="#fff"/>
           <ellipse cx="48" cy="36" rx="5" ry="5.5" fill="#fff"/>
-          <circle cx="36" cy="36.5" r="3.2" fill="#4a3728"/>
-          <circle cx="48" cy="36.5" r="3.2" fill="#4a3728"/>
-          <circle cx="37.2" cy="35.2" r="1.1" fill="#fff"/>
-          <circle cx="49.2" cy="35.2" r="1.1" fill="#fff"/>
+          <g class="pupil-group">
+            <circle cx="36.8" cy="36.5" r="2.8" fill="#1A237E"/>
+            <circle cx="48.8" cy="36.5" r="2.8" fill="#1A237E"/>
+          </g>
+          <g class="highlight-group">
+            <circle cx="38.5" cy="35" r="1" fill="#fff"/>
+            <circle cx="50.5" cy="35" r="1" fill="#fff"/>
+          </g>
         </g>
+
+        <!-- 眼睛（睡眠弧形） -->
+        <g id="pet-eyes-sleep" display="none">
+          <path d="M31 37 Q36 32 41 37" stroke="#78909C" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M43 37 Q48 32 53 37" stroke="#78909C" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <!-- 眼睛（高兴弯月） -->
+        <g id="pet-eyes-happy" display="none">
+          <path d="M31 35 Q36 40 41 35" stroke="#1A237E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M43 35 Q48 40 53 35" stroke="#1A237E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <!-- 眼睛（警觉大眼） -->
+        <g id="pet-eyes-alert" display="none">
+          <ellipse cx="36" cy="36" rx="6" ry="6.5" fill="#fff"/>
+          <ellipse cx="48" cy="36" rx="6" ry="6.5" fill="#fff"/>
+          <circle cx="36" cy="36.5" r="3.8" fill="#1A237E"/>
+          <circle cx="48" cy="36.5" r="3.8" fill="#1A237E"/>
+          <circle cx="37.5" cy="34.8" r="1.3" fill="#fff"/>
+          <circle cx="49.5" cy="34.8" r="1.3" fill="#fff"/>
+        </g>
+
         <!-- 鼻子 -->
-        <ellipse cx="42" cy="42" rx="2" ry="1.4" fill="#f4829a"/>
+        <ellipse cx="42" cy="42" rx="2" ry="1.5" fill="#EF9A9A"/>
         <!-- 嘴 -->
-        <path id="pet-mouth-normal" d="M42 43.4 Q38 46 37 45" stroke="#d97070" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-        <path id="pet-mouth-normal2" d="M42 43.4 Q46 46 47 45" stroke="#d97070" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M42 43.5 Q38 46.5 37 45.5" stroke="#EF9A9A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M42 43.5 Q46 46.5 47 45.5" stroke="#EF9A9A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+
         <!-- 腮红 -->
-        <ellipse cx="32" cy="42" rx="4" ry="2.5" fill="#f9b8c8" opacity="0.55"/>
-        <ellipse cx="52" cy="42" rx="4" ry="2.5" fill="#f9b8c8" opacity="0.55"/>
+        <ellipse cx="31" cy="42" rx="4" ry="2.5" fill="#F8BBD0" opacity="0.5"/>
+        <ellipse cx="53" cy="42" rx="4" ry="2.5" fill="#F8BBD0" opacity="0.5"/>
+
         <!-- 胡须 -->
-        <line x1="20" y1="41" x2="33" y2="42" stroke="#b0895a" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
-        <line x1="20" y1="44" x2="33" y2="43.5" stroke="#b0895a" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
-        <line x1="51" y1="42" x2="64" y2="41" stroke="#b0895a" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
-        <line x1="51" y1="43.5" x2="64" y2="44" stroke="#b0895a" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+        <line x1="19" y1="41" x2="33" y2="42" stroke="#B0BEC5" stroke-width="0.8" stroke-linecap="round"/>
+        <line x1="19" y1="44" x2="33" y2="43.5" stroke="#B0BEC5" stroke-width="0.8" stroke-linecap="round"/>
+        <line x1="51" y1="42" x2="65" y2="41" stroke="#B0BEC5" stroke-width="0.8" stroke-linecap="round"/>
+        <line x1="51" y1="43.5" x2="65" y2="44" stroke="#B0BEC5" stroke-width="0.8" stroke-linecap="round"/>
+
         <!-- 四肢 -->
-        <ellipse cx="30" cy="70" rx="7" ry="5" fill="#f5c98a"/>
-        <ellipse cx="54" cy="70" rx="7" ry="5" fill="#f5c98a"/>
-        <ellipse cx="30" cy="72" rx="5.5" ry="3.5" fill="#fde8c8"/>
-        <ellipse cx="54" cy="72" rx="5.5" ry="3.5" fill="#fde8c8"/>
-        <!-- 睡眠 Zzz -->
-        <text class="pet-zzz" x="60" y="25" font-size="9" fill="#60a5fa" font-weight="700" opacity="0">z</text>
-        <text class="pet-zzz" x="63" y="18" font-size="11" fill="#93c5fd" font-weight="700" opacity="0">z</text>
-        <text class="pet-zzz" x="67" y="10" font-size="13" fill="#bfdbfe" font-weight="700" opacity="0">Z</text>
+        <ellipse cx="30" cy="70" rx="7" ry="5" fill="url(#bodyGrad)"/>
+        <ellipse cx="54" cy="70" rx="7" ry="5" fill="url(#bodyGrad)"/>
+        <ellipse cx="30" cy="72" rx="5.5" ry="3.5" fill="url(#bellyGrad)"/>
+        <ellipse cx="54" cy="72" rx="5.5" ry="3.5" fill="url(#bellyGrad)"/>
+
+        <!-- 睡眠 Zzz 文字 -->
+        <text class="pet-zzz" x="60" y="25" font-size="9" fill="#60A5FA" font-weight="700" opacity="0">z</text>
+        <text class="pet-zzz" x="63" y="18" font-size="11" fill="#93C5FD" font-weight="700" opacity="0">z</text>
+        <text class="pet-zzz" x="67" y="10" font-size="13" fill="#BFDBFE" font-weight="700" opacity="0">Z</text>
       </g>
-    </svg>
-    `;
+    </svg>`;
   }
 
   // ── 状态机 ────────────────────────────────────────────────────
@@ -8258,8 +8800,41 @@ function refreshUI() {
     dragOffY: 0,
 
     setState(s) {
-      this.state = s;
       const svg = document.getElementById('crm-pet-svg');
+
+      // ── 睡眠 → 唤醒过渡 ──
+      if (this.state === 'sleep' && s !== 'sleep') {
+        if (svg) {
+          svg.classList.add('waking');
+          setTimeout(() => svg.classList.remove('waking'), 500);
+        }
+      }
+
+      // ── 新状态快速闪一下 ──
+      if (s === 'alert' && this.state !== 'alert') {
+        if (svg) {
+          svg.style.transition = 'transform 0.1s ease';
+          svg.style.transform = 'scale(1.05)';
+          setTimeout(() => {
+            svg.style.transform = 'scale(1)';
+            setTimeout(() => svg.style.transition = '', 300);
+          }, 100);
+        }
+      }
+
+      // ── 从 alert/happy 进入 sleep 的下降过渡 ──
+      if (s === 'sleep' && this.state !== 'sleep' && svg) {
+        svg.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+        svg.style.transform = 'translateY(4px)';
+        svg.style.opacity = '0.85';
+        setTimeout(() => {
+          svg.style.transition = '';
+          svg.style.transform = '';
+          svg.style.opacity = '';
+        }, 550);
+      }
+
+      this.state = s;
       if (!svg) return;
       svg.className.baseVal = s;
 
@@ -8436,6 +9011,30 @@ function refreshUI() {
     }
   };
 
+  // ── 悬停反馈 ────────────────────────────────────────────────
+  (function addHoverEffect() {
+    const body = document.getElementById('crm-pet-body');
+    if (!body) return;
+
+    body.addEventListener('mouseenter', function() {
+      const svg = document.getElementById('crm-pet-svg');
+      if (!svg || svg.classList.contains('sleep')) return;
+
+      svg.style.transition = 'transform 0.2s ease';
+      svg.style.transform = 'scale(1.06)';
+      svg.classList.add('hovered');
+    });
+
+    body.addEventListener('mouseleave', function() {
+      const svg = document.getElementById('crm-pet-svg');
+      if (!svg) return;
+
+      svg.style.transform = 'scale(1)';
+      svg.classList.remove('hovered');
+      setTimeout(() => svg.style.transition = '', 300);
+    });
+  })();
+
   // ── 双击缩小 / 展开 ──────────────────────────────────────────
   let petClickTimer = null;
   let petClickCount = 0;
@@ -8447,23 +9046,35 @@ function refreshUI() {
 
     petClickTimer = setTimeout(() => {
       if (petClickCount >= 2) {
-        // 双击：切换 mini 模式
+        // 双击：在正常和缩小之间切换
         const widget = document.getElementById('crm-pet-widget');
-        const isMini = widget.classList.contains('mini');
-        if (isMini) {
-          widget.classList.remove('mini');
-          widget.removeAttribute('data-mini-tip');
+        const isShrunken = widget.classList.contains('shrunken');
+        if (isShrunken) {
+          // 变回正常大小：弹簧弹回
+          widget.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          widget.classList.remove('shrunken');
+          widget.style.transform = '';
+          setTimeout(() => widget.style.transition = '', 400);
           PET.lastInteract = Date.now();
-          // 展开后自动弹出提醒
           setTimeout(() => PET.check(), 200);
         } else {
+          // 缩小 50%：平滑收缩（变换原点统一为 bottom right）
+          widget.style.transformOrigin = 'bottom right';
+          widget.style.transition = 'transform 0.25s ease';
+          widget.style.transform = 'scale(0.5)';
           PET.hideBubble();
-          widget.classList.add('mini');
-          widget.setAttribute('data-mini-tip', '双击展开');
+          setTimeout(() => {
+            widget.classList.add('shrunken');
+            widget.style.transform = '';
+            setTimeout(() => {
+              widget.style.transition = '';
+              widget.style.transformOrigin = '';
+            }, 300);
+          }, 200);
         }
       } else {
         // 单击：涟漪 + 开关气泡
-        if (!document.getElementById('crm-pet-widget').classList.contains('mini')) {
+        if (!document.getElementById('crm-pet-widget').classList.contains('shrunken')) {
           const ripple = document.createElement('div');
           ripple.className = 'pet-ripple';
           this.appendChild(ripple);
@@ -8511,6 +9122,11 @@ function refreshUI() {
     function onUp() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+
+      // 弹性回弹效果
+      petWidget.style.transition = 'right 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), bottom 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      setTimeout(() => petWidget.style.transition = '', 400);
+
       setTimeout(() => { PET.isDragging = false; }, 100);
     }
     document.addEventListener('mousemove', onMove);
@@ -8569,6 +9185,86 @@ function refreshUI() {
 
   // 暴露给全局，方便调试
   window.CRMPet = PET;
+})();
+
+// ── 猫咪眼睛追踪模块 ──
+(function initEyeTracking() {
+  'use strict';
+
+  const TRACK_RADIUS = 200;   // 最大追踪距离 px
+  const PUPIL_MAX = 3;         // 瞳孔最大偏移量 px
+  const HIGHLIGHT_MAX = 1.2;   // 高光最大偏移量 px
+  const SMOOTH = 0.1;          // 平滑系数
+
+  let targetX = 0, targetY = 0;
+  let currentX = 0, currentY = 0;
+  let rafId = null;
+  let isRunning = false;
+
+  function onMouseMove(e) {
+    const widget = document.getElementById('crm-pet-widget');
+    if (!widget) return;
+    const rect = widget.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const factor = Math.min(dist / TRACK_RADIUS, 1);
+
+    const angle = Math.atan2(dy, dx);
+    targetX = Math.cos(angle) * factor * PUPIL_MAX;
+    targetY = Math.sin(angle) * factor * PUPIL_MAX;
+  }
+
+  function tick() {
+    if (!isRunning) return;
+
+    // 平滑趋近
+    currentX += (targetX - currentX) * SMOOTH;
+    currentY += (targetY - currentY) * SMOOTH;
+
+    // 更新 CSS 变量
+    const eyes = document.querySelector('.pet-eyes-tracking');
+    if (eyes) {
+      eyes.style.setProperty('--pupil-x', `${currentX}px`);
+      eyes.style.setProperty('--pupil-y', `${currentY}px`);
+      eyes.style.setProperty('--highlight-x', `${-currentX * 0.3}px`);
+      eyes.style.setProperty('--highlight-y', `${-currentY * 0.3}px`);
+    }
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  // 睡眠时停止追踪（省电）
+  const origSetState = PET.setState.bind(PET);
+  PET.setState = function(s) {
+    origSetState(s);
+    if (s === 'sleep') {
+      isRunning = false;
+      if (rafId) cancelAnimationFrame(rafId);
+      // 瞳孔归位
+      const eyes = document.querySelector('.pet-eyes-tracking');
+      if (eyes) {
+        eyes.style.setProperty('--pupil-x', '0px');
+        eyes.style.setProperty('--pupil-y', '0px');
+      }
+    } else {
+      if (!isRunning) {
+        isRunning = true;
+        rafId = requestAnimationFrame(tick);
+      }
+    }
+  };
+
+  // 启动追踪
+  document.addEventListener('mousemove', onMouseMove, { passive: true });
+  isRunning = true;
+  rafId = requestAnimationFrame(tick);
+
+  // 暴露停止接口（可选）
+  window.__eyeTracking = { stop: () => { isRunning = false; if(rafId) cancelAnimationFrame(rafId); } };
 })();
 
 /* ================================================================
@@ -8813,6 +9509,7 @@ function refreshUI() {
     Store.save().then(() => {
       showToast('解锁手势已保存', 'success');
       initGestureSetting();
+      if (typeof renderSettingsPage === 'function') renderSettingsPage();
     });
   };
 
@@ -8832,6 +9529,7 @@ function refreshUI() {
       Store.save().then(() => {
         showToast('解锁手势已清除', 'success');
         initGestureSetting();
+        if (typeof renderSettingsPage === 'function') renderSettingsPage();
       });
     });
   };
@@ -9301,6 +9999,85 @@ function refreshUI() {
               statusEl.className = 'gesture-status error';
               statusEl.textContent = '手势错误，请重试';
             }
+          };
+        }
+      }, 200);
+    };
+  }
+
+  // ── 账户设置：手势密码设置 ─────────────────────────────────
+  const btnGestureSetupSettings = document.getElementById('btn-gesture-setup-settings');
+  if (btnGestureSetupSettings) {
+    btnGestureSetupSettings.onclick = () => {
+      openModal({
+        title: '设置解锁手势',
+        size: 'sm',
+        bodyHTML: `
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+            绘制至少连接4个点的手势图案作为解锁手势：
+          </div>
+          <div class="gesture-container">
+            <div class="gesture-canvas-wrap" id="settings-gesture-setup-canvas-wrap" style="width:240px;height:240px;margin:0 auto;">
+              <canvas id="settings-gesture-setup-canvas" width="240" height="240"></canvas>
+            </div>
+            <div class="gesture-hint" id="settings-gesture-setup-hint">请绘制解锁手势（连接至少4个点）</div>
+            <div class="gesture-status" id="settings-gesture-setup-status"></div>
+          </div>
+        `,
+        footer: (f) => {
+          const btnReset = document.createElement('button');
+          btnReset.className = 'btn btn-sm';
+          btnReset.textContent = '重新绘制';
+          const btnSave = document.createElement('button');
+          btnSave.className = 'btn btn-sm btn-primary';
+          btnSave.textContent = '保存手势';
+          btnSave.disabled = true;
+          btnSave.id = 'btn-settings-gesture-save';
+          f.appendChild(btnReset);
+          f.appendChild(btnSave);
+
+          btnReset.onclick = () => {
+            if (gestureSetApi) gestureSetApi.reset();
+            document.getElementById('settings-gesture-setup-status').textContent = '';
+            document.getElementById('settings-gesture-setup-status').className = 'gesture-status';
+            btnSave.disabled = true;
+          };
+
+          btnSave.onclick = () => {
+            const pattern = gestureSetApi ? gestureSetApi.getPattern() : '';
+            if (!pattern || pattern.split('-').length < 4) {
+              showToast('请先绘制有效手势（至少4个点）', 'error');
+              return;
+            }
+            Store.data.gesturePattern = pattern;
+            Store.markDirty();
+            Store.save().then(() => {
+              showToast('解锁手势已保存', 'success');
+              closeModal();
+              // 同步更新所有关联模块
+              renderSettingsPage();
+              initGestureSetting();
+            });
+          };
+        },
+      });
+
+      // 初始化手势画布
+      setTimeout(() => {
+        gestureSetApi = initGestureCanvas('settings-gesture-setup-canvas', 'set');
+        if (gestureSetApi) {
+          gestureState.onComplete = (pattern, points) => {
+            const statusEl = document.getElementById('settings-gesture-setup-status');
+            const saveBtn = document.getElementById('btn-settings-gesture-save');
+            if (points.length < 4) {
+              statusEl.className = 'gesture-status error';
+              statusEl.textContent = '至少连接4个点，当前：' + points.length;
+              if (saveBtn) saveBtn.disabled = true;
+              return;
+            }
+            statusEl.className = 'gesture-status success';
+            statusEl.textContent = '手势已记录：' + pattern;
+            if (saveBtn) saveBtn.disabled = false;
           };
         }
       }, 200);
