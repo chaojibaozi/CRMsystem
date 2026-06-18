@@ -7,51 +7,142 @@
 <title>客户关系管理系统 - 本地加密存储版</title>
 <style>
 /* ========================================
-   全局样式变量：支持浅色 / 深色主题切换（紧凑布局版）
+   全局样式变量：支持浅色 / 深色主题切换（高端化改造版）
+   基于 Design Token 体系：7级主色、语义色、中性色、4级阴影/圆角、7级间距
    ======================================== */
 :root {
-  --bg-primary: #f5f7fa;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #eef2f7;
-  --border-color: #e1e8ed;
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-  --text-muted: #6b7280;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-light: #dbeafe;
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --danger-hover: #b91c1c;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-lg: 0 6px 20px rgba(0,0,0,0.12);
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* ── 主色（Indigo 专业·信任） ── */
+  --color-primary-50:  #EEF2FF;
+  --color-primary-100: #E0E7FF;
+  --color-primary-200: #C7D2FE;
+  --color-primary-300: #A5B4FC;
+  --color-primary-400: #818CF8;
+  --color-primary-500: #6366F1;
+  --color-primary-600: #4F46E5;
+  --color-primary-700: #4338CA;
+  --color-primary-800: #3730A3;
+  --color-primary-900: #312E81;
+
+  /* ── 强调色（Amber 精品·升级） ── */
+  --color-accent-50:  #FFFBEB;
+  --color-accent-100: #FEF3C7;
+  --color-accent-200: #FDE68A;
+  --color-accent-400: #F59E0B;
+  --color-accent-600: #D97706;
+
+  /* ── 语义色 ── */
+  --color-success-50:  #ECFDF5;
+  --color-success-100: #D1FAE5;
+  --color-success-600: #059669;
+  --color-success:      #059669;
+  --color-warning-50:  #FFFBEB;
+  --color-warning-100: #FEF3C7;
+  --color-warning-600: #D97706;
+  --color-warning:      #D97706;
+  --color-error-50:    #FEF2F2;
+  --color-error-100:   #FEE2E2;
+  --color-error-600:   #DC2626;
+  --color-error:        #DC2626;
+  --color-info-50:     #EFF6FF;
+  --color-info-100:    #DBEAFE;
+  --color-info-600:    #2563EB;
+  --color-info:         #2563EB;
+
+  /* ── 中性色 ── */
+  --color-neutral-0:   #FFFFFF;
+  --color-neutral-50:  #F9FAFB;
+  --color-neutral-100: #F3F4F6;
+  --color-neutral-200: #E5E7EB;
+  --color-neutral-300: #D1D5DB;
+  --color-neutral-400: #9CA3AF;
+  --color-neutral-500: #6B7280;
+  --color-neutral-600: #4B5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1F2937;
+  --color-neutral-900: #111827;
+
+  /* ── 兼容旧变量名（内部映射） ── */
+  --bg-primary:    var(--color-neutral-50);
+  --bg-secondary:  var(--color-neutral-0);
+  --bg-tertiary:   var(--color-neutral-100);
+  --border-color:  var(--color-neutral-200);
+  --text-primary:  var(--color-neutral-800);
+  --text-secondary:var(--color-neutral-600);
+  --text-muted:    var(--color-neutral-400);
+  --accent:        var(--color-primary-600);
+  --accent-hover:  var(--color-primary-700);
+  --accent-light:  var(--color-primary-100);
+  --success:       var(--color-success-600);
+  --warning:       var(--color-warning-600);
+  --danger:        var(--color-error-600);
+  --danger-hover:  #B91C1C;
+
+  /* ── 阴影系统（4 级） ── */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.04);
+  --shadow-lg:  0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+  --shadow-xl:  0 20px 25px -5px rgba(0,0,0,0.10), 0 8px 10px -6px rgba(0,0,0,0.04);
+
+  /* ── 圆角系统（4 级） ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* ── 间距系统（4px 基准 7 级） ── */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 10px;
+  --space-4: 14px;
+  --space-5: 18px;
+  --space-6: 28px;
+  --space-7: 40px;
+
+  /* ── 字体系统 ── */
+  --font-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Consolas', 'Courier New', monospace;
+
+  /* ── 动画 ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── 紧凑模式兼容 ── */
   --compact-pad: 8px;
   --compact-gap: 6px;
 }
 
 [data-theme="dark"] {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --border-color: #334155;
-  --text-primary: #f1f5f9;
-  --text-secondary: #e2e8f0;
-  --text-muted: #b0c0d0;
-  --accent: #3b82f6;
-  --accent-hover: #60a5fa;
-  --accent-light: #1e3a8a;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --danger-hover: #f87171;
+  --color-neutral-0:   #0F172A;
+  --color-neutral-50:  #1E293B;
+  --color-neutral-100: #1E293B;
+  --color-neutral-200: #334155;
+  --color-neutral-300: #475569;
+  --color-neutral-400: #64748B;
+  --color-neutral-500: #94A3B8;
+  --color-neutral-600: #94A3B8;
+  --color-neutral-700: #CBD5E1;
+  --color-neutral-800: #E2E8F0;
+  --color-neutral-900: #F8FAFC;
+
+  --bg-primary:    var(--color-neutral-900);
+  --bg-secondary:  var(--color-neutral-800);
+  --bg-tertiary:   var(--color-neutral-700);
+  --border-color:  var(--color-neutral-600);
+  --text-primary:  var(--color-neutral-100);
+  --text-secondary:var(--color-neutral-300);
+  --text-muted:    var(--color-neutral-400);
+  --accent:        var(--color-primary-400);
+  --accent-hover:  var(--color-primary-300);
+  --accent-light:  var(--color-primary-900);
+  --success:       #22C55E;
+  --warning:       #F59E0B;
+  --danger:        #EF4444;
+  --danger-hover:  #F87171;
+
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+  --shadow-xl: 0 20px 50px rgba(0,0,0,0.6);
 }
 
 /* ========================================
@@ -60,98 +151,144 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.5;
   transition: background-color 0.3s, color 0.3s;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-button { font-family: inherit; cursor: pointer; border: none; outline: none; font-size: 13px; }
-input, select, textarea { font-family: inherit; outline: none; font-size: 13px; }
+button { font-family: inherit; cursor: pointer; border: none; outline: none; font-size: 14px; }
+input, select, textarea { font-family: inherit; outline: none; font-size: 14px; }
 a { color: var(--accent); text-decoration: none; }
 
 /* ========================================
-   通用组件（紧凑）
+   通用组件（高端化改造）
    ======================================== */
 .btn {
-  padding: 5px 12px;
+  padding: 8px 18px;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 180ms var(--ease-out);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  border: 1px solid transparent;
-  background: var(--bg-tertiary);
+  gap: 6px;
+  border: 1.5px solid transparent;
+  background: var(--color-neutral-100);
   color: var(--text-primary);
-  height: 28px;
+  height: 36px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  user-select: none;
+  letter-spacing: 0.01em;
 }
 .btn:hover:not(:disabled) { 
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: var(--color-neutral-200);
 }
 .btn:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(0.97);
 }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
-.btn-danger { background: var(--danger); color: white; }
-.btn-danger:hover:not(:disabled) { background: var(--danger-hover); box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
-.btn-success { background: var(--success); color: white; }
-.btn-warning { background: var(--warning); color: white; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { 
+  background: var(--color-primary-600); 
+  color: #fff; 
+  border-color: var(--color-primary-600);
+  box-shadow: 0 1px 2px rgba(79,70,229,0.2);
+}
+.btn-primary:hover:not(:disabled) { 
+  background: var(--color-primary-700); 
+  border-color: var(--color-primary-700);
+  box-shadow: 0 4px 12px rgba(79,70,229,0.35);
+  transform: translateY(-1px);
+}
+.btn-primary:active:not(:disabled) { transform: scale(0.97) translateY(0); }
+.btn-danger { 
+  background: var(--color-error-600); 
+  color: white; 
+  border-color: var(--color-error-600);
+}
+.btn-danger:hover:not(:disabled) { 
+  background: #B91C1C; 
+  border-color: #B91C1C;
+  box-shadow: 0 4px 12px rgba(220,38,38,0.3); 
+}
+.btn-success { background: var(--color-success-600); color: white; border-color: var(--color-success-600); }
+.btn-success:hover:not(:disabled) { background: #047857; box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
+.btn-warning { background: var(--color-warning-600); color: white; border-color: var(--color-warning-600); }
 .btn-outline {
   background: transparent;
-  border-color: var(--border-color);
+  border-color: var(--color-neutral-300);
   color: var(--text-primary);
 }
 .btn-outline:hover:not(:disabled) { 
-  border-color: var(--accent); 
-  color: var(--accent);
-  background: rgba(37,99,235,0.05);
+  border-color: var(--color-primary-400); 
+  color: var(--color-primary-600);
+  background: var(--color-primary-50);
 }
-.btn-sm { padding: 3px 8px; font-size: 12px; height: 24px; }
-.btn-lg { padding: 8px 20px; font-size: 14px; height: 36px; }
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover:not(:disabled) { 
+  background: var(--color-neutral-100); 
+  color: var(--text-primary);
+}
+.btn-sm { padding: 4px 12px; font-size: 12px; height: 28px; }
+.btn-lg { padding: 10px 24px; font-size: 15px; height: 42px; }
+
+/* 按钮 loading 状态 */
+.btn--loading { position: relative; color: transparent !important; pointer-events: none; }
+.btn--loading::after {
+  content: ''; position: absolute;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
+}
+.btn-outline.btn--loading::after { border-color: rgba(79,70,229,0.2); border-top-color: var(--color-primary-600); }
+.btn-ghost.btn--loading::after { border-color: rgba(0,0,0,0.1); border-top-color: var(--text-secondary); }
 
 .input, .select, .textarea {
   width: 100%;
-  padding: 5px 8px;
-  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  border: 1.5px solid var(--color-neutral-300);
   border-radius: var(--radius-sm);
-  background: var(--bg-secondary);
+  background: var(--color-neutral-0);
   color: var(--text-primary);
-  font-size: 13px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  height: 28px;
+  font-size: 14px;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+  height: 36px;
+  line-height: 1.4;
 }
-.textarea { min-height: 70px; height: auto; resize: vertical; padding: 5px 8px; line-height: 1.5; }
+.textarea { min-height: 80px; height: auto; resize: vertical; padding: 10px 12px; line-height: 1.6; }
 .input:focus, .select:focus, .textarea:focus {
-  border-color: var(--accent);
+  border-color: var(--color-primary-400);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
 }
-.input.valid { border-color: var(--success); }
-.input.invalid { border-color: var(--danger); }
+.input.valid { border-color: var(--color-success-600); }
+.input.invalid { border-color: var(--color-error-600); box-shadow: 0 0 0 3px var(--color-error-50); }
 
 /* Checkbox 动画 */
 input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary-600);
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.2s var(--ease-spring);
 }
 input[type="checkbox"]:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 input[type="checkbox"]:checked {
-  animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: checkPop 0.3s var(--ease-spring);
 }
 @keyframes checkPop {
   0% { transform: scale(1); }
@@ -161,10 +298,11 @@ input[type="checkbox"]:checked {
 
 .label {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   color: var(--text-secondary);
+  letter-spacing: 0.01em;
 }
 .label.required::after {
   content: " *";
@@ -174,211 +312,425 @@ input[type="checkbox"]:checked {
 .input.invalid + .error-text { display: block; }
 
 .badge {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 500;
-  background: var(--accent-light);
-  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
 }
-.badge-success { background: #dcfce7; color: var(--success); }
-.badge-warning { background: #fef3c7; color: var(--warning); }
-.badge-danger { background: #fee2e2; color: var(--danger); }
-[data-theme="dark"] .badge-success { background: rgba(34,197,94,0.2); }
-[data-theme="dark"] .badge-warning { background: rgba(245,158,11,0.2); }
-[data-theme="dark"] .badge-danger { background: rgba(239,68,68,0.2); }
+.badge-success { background: var(--color-success-100); color: var(--color-success-600); }
+.badge-warning { background: var(--color-warning-100); color: var(--color-warning-600); }
+.badge-danger { background: var(--color-error-100); color: var(--color-error-600); }
+.badge--a { background: #ECFDF5; color: #065F46; }
+.badge--b { background: #EFF6FF; color: #1E40AF; }
+.badge--c { background: #FFFBEB; color: #92400E; }
+.badge--d { background: #FEF2F2; color: #991B1B; }
+[data-theme="dark"] .badge-success { background: rgba(5,150,105,0.2); }
+[data-theme="dark"] .badge-warning { background: rgba(217,119,6,0.2); }
+[data-theme="dark"] .badge-danger { background: rgba(220,38,38,0.2); }
+[data-theme="dark"] .badge--a { background: rgba(5,150,105,0.2); color: #6EE7B7; }
+[data-theme="dark"] .badge--b { background: rgba(37,99,235,0.2); color: #93C5FD; }
+[data-theme="dark"] .badge--c { background: rgba(217,119,6,0.2); color: #FCD34D; }
+[data-theme="dark"] .badge--d { background: rgba(220,38,38,0.2); color: #FCA5A5; }
 
 .card {
-  background: var(--bg-secondary);
+  background: var(--color-neutral-0);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: var(--space-5);
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-neutral-200);
+  transition: box-shadow 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 /* ========================================
-   解锁页 / 初始化页（紧凑）
+   解锁页 / 初始化页（高端化重做）
    ======================================== */
 .auth-wrap {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--bg-primary), var(--bg-tertiary));
-  padding: 16px;
+  background: linear-gradient(135deg, #312E81 0%, #4338CA 40%, #4F46E5 70%, #6366F1 100%);
+  padding: var(--space-4);
+  position: relative;
+  overflow: hidden;
+}
+.auth-wrap::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  top: -200px;
+  right: -100px;
+}
+.auth-wrap::after {
+  content: '';
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+  bottom: -150px;
+  left: -80px;
 }
 .auth-card {
   width: 100%;
-  max-width: 380px;
-  background: var(--bg-secondary);
+  max-width: 336px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: var(--radius-lg);
-  padding: 24px 24px;
-  box-shadow: var(--shadow-lg);
+  padding: var(--space-5) var(--space-5);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  position: relative;
+  z-index: 1;
+  animation: authCardIn 0.5s var(--ease-spring);
+}
+[data-theme="dark"] .auth-card {
+  background: rgba(15,23,42,0.92);
+}
+@keyframes authCardIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .auth-logo {
   text-align: center;
-  margin-bottom: 18px;
+  margin-bottom: var(--space-4);
 }
 .auth-logo-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
-  margin: 0 auto 8px;
+  margin: 0 auto var(--space-2);
   display: block;
   object-fit: contain;
   background: white;
+  box-shadow: 0 4px 16px rgba(79,70,229,0.2);
 }
-.auth-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
-.auth-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-.auth-group { margin-bottom: 12px; }
+.auth-title { 
+  font-size: 19px; 
+  font-weight: 700; 
+  color: var(--color-neutral-800); 
+  letter-spacing: -0.01em;
+}
+.auth-subtitle { 
+  font-size: 12px; 
+  color: var(--color-neutral-500); 
+  margin-top: var(--space-1); 
+}
+.auth-group { margin-bottom: var(--space-3); }
 .auth-info {
-  background: var(--bg-tertiary);
-  padding: 8px 10px;
+  background: var(--color-primary-50);
+  border-left: 3px solid var(--color-primary-500);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
+  color: var(--color-neutral-600);
+  margin-bottom: var(--space-3);
   line-height: 1.5;
 }
+[data-theme="dark"] .auth-info { background: rgba(79,70,229,0.15); }
 .auth-footer {
   text-align: center;
-  margin-top: 16px;
+  margin-top: var(--space-4);
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--color-neutral-500);
 }
-.auth-link { color: var(--accent); cursor: pointer; }
+.auth-link { color: var(--color-primary-600); cursor: pointer; font-weight: 500; font-size: 12px; }
 .auth-link:hover { text-decoration: underline; }
 .auth-locked {
-  background: #fee2e2;
-  color: var(--danger);
-  padding: 8px;
+  background: var(--color-error-50);
+  color: var(--color-error-600);
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   font-weight: 500;
   font-size: 12px;
+  border: 1px solid var(--color-error-100);
 }
-[data-theme="dark"] .auth-locked { background: rgba(239,68,68,0.15); }
+[data-theme="dark"] .auth-locked { background: rgba(220,38,38,0.15); }
+
+/* 解锁输入组 */
+.auth-input-group {
+  display: flex;
+  align-items: center;
+  background: var(--color-neutral-0);
+  border: 1.5px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.auth-input-group:focus-within {
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+.auth-input-group input {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  font-family: var(--font-mono);
+  letter-spacing: 2px;
+}
+.auth-input-group input::placeholder { color: var(--color-neutral-400); font-size: 13px; }
+.auth-unlock-btn {
+  padding: 10px 16px;
+  background: var(--color-primary-600);
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 18px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-unlock-btn:hover { background: var(--color-primary-700); }
+
+/* 登录界面缩小：覆盖全局 .label / .input / .btn-lg */
+.auth-card .label { font-size: 12px; margin-bottom: 4px; }
+.auth-card .input, .auth-card .select {
+  padding: 7px 10px;
+  font-size: 13px;
+}
+.auth-card .btn-lg { padding: 8px 20px; font-size: 14px; height: 36px; }
+.auth-card .btn-primary { font-size: 14px; }
+.auth-card .btn { font-size: 13px; padding: 7px 14px; }
+.auth-gesture-toggle { margin-bottom: 12px; }
+.auth-gesture-toggle .toggle-btn { padding: 5px 12px; font-size: 12px; }
+
+/* 解锁成功动画 */
+@keyframes unlockSuccess {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.auth-card.unlocking {
+  animation: unlockSuccess 400ms ease-out forwards;
+}
 
 /* ========================================
-   主应用布局（紧凑）
+   主应用布局（高端化）
    ======================================== */
 .app-container { display: flex; min-height: 100vh; }
 .sidebar {
-  width: 180px;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-  padding: 12px 0;
+  width: 220px;
+  background: var(--color-neutral-0);
+  border-right: 1px solid var(--color-neutral-200);
+  padding: var(--space-4) 0;
   flex-shrink: 0;
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
   z-index: 100;
-  transition: transform 0.3s;
+  transition: transform 0.3s var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+.sidebar:hover::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
 }
 .sidebar-header {
-  padding: 0 14px 12px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 var(--space-4) 10px;
+  border-bottom: 1px solid var(--color-neutral-100);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
 }
 .sidebar-logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   display: block;
   object-fit: contain;
   background: white;
+  box-shadow: 0 2px 8px rgba(79,70,229,0.15);
 }
-.sidebar-title { font-size: 13px; font-weight: 600; }
-.sidebar-subtitle { font-size: 10px; color: var(--text-muted); }
-.nav-list { list-style: none; padding: 8px; }
+.sidebar-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.sidebar-subtitle { font-size: 11px; color: var(--text-muted); }
+
+/* 导航分组 */
+.nav-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-neutral-400);
+  padding: 12px var(--space-4) 2px;
+  display: block;
+}
+.nav-list { list-style: none; padding: 0 var(--space-2); }
 .nav-item {
-  padding: 7px 10px;
-  margin-bottom: 2px;
+  padding: 7px 12px;
+  margin-bottom: 1px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
   color: var(--text-secondary);
   font-size: 13px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out);
   user-select: none;
   position: relative;
+  font-weight: 500;
 }
 .nav-item:hover { 
-  background: var(--bg-tertiary); 
+  background: var(--color-neutral-100); 
   color: var(--text-primary);
-  transform: translateX(4px);
 }
 .nav-item.active {
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+  font-weight: 600;
 }
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 60%;
-  background: white;
-  border-radius: 0 2px 2px 0;
-}
-.nav-icon { font-size: 14px; width: 16px; text-align: center; }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
 .nav-count {
   margin-left: auto;
-  font-size: 10px;
-  font-weight: 600;
-  background: var(--bg-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--color-neutral-100);
   color: var(--text-muted);
-  padding: 1px 6px;
-  border-radius: 8px;
-  min-width: 18px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  min-width: 22px;
   text-align: center;
   line-height: 1.6;
   transition: background 0.2s, color 0.2s;
 }
 .nav-item.active .nav-count {
-  background: rgba(255,255,255,0.25);
-  color: #fff;
+  background: var(--color-primary-200);
+  color: var(--color-primary-700);
+}
+
+/* 侧边栏底部用户区 */
+.sidebar-user {
+  margin-top: auto;
+  padding: 10px 12px;
+  border-top: 1px solid var(--color-neutral-100);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-user-avatar {
+  width: 32px;
+  height: 35px;
+  border-radius: 6px;
+  background: var(--color-primary-100);
+  background-size: cover;
+  background-position: center;
+  color: var(--color-primary-600);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+  overflow: hidden;
+  position: relative;
+}
+.sidebar-user-avatar:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+}
+.sidebar-user-info {
+  flex: 1;
+  min-width: 0;
+}
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.sidebar-user-role {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+.sidebar-logout-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s var(--ease-out);
+  flex-shrink: 0;
+}
+.sidebar-logout-btn:hover {
+  background: var(--color-danger-50);
+  color: var(--danger);
 }
 
 .main-content {
   flex: 1;
-  margin-left: 180px;
-  padding: 16px;
+  margin-left: 220px;
+  padding: var(--space-4);
   min-width: 0;
 }
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  background: var(--bg-secondary);
-  padding: 8px 14px;
+  margin-bottom: var(--space-3);
+  background: var(--color-neutral-0);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-neutral-200);
 }
-.topbar-left h1 { font-size: 16px; font-weight: 600; }
-.topbar-left p { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.topbar-left h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.topbar-left p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .topbar-right { display: flex; align-items: center; gap: 8px; }
 .sync-status {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
-  background: var(--bg-tertiary);
-  padding: 4px 8px;
+  background: var(--color-neutral-100);
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  font-weight: 500;
 }
 .sync-status.syncing { color: var(--warning); }
 .sync-status.online { color: var(--success); }
@@ -387,8 +739,8 @@ input[type="checkbox"]:checked {
 .page { 
   display: none; 
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(12px);
+  transition: opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out);
 }
 .page.active { 
   display: block;
@@ -401,20 +753,63 @@ input[type="checkbox"]:checked {
    ======================================== */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 .stat-card {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  border: 1px solid var(--color-neutral-200);
   box-shadow: var(--shadow-sm);
+  transition: all 220ms var(--ease-out);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
-.stat-label { font-size: 12px; color: var(--text-secondary); }
-.stat-value { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
-.stat-change { font-size: 11px; margin-top: 4px; color: var(--text-muted); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary-400), var(--color-primary-600));
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-out);
+}
+.stat-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  border-color: var(--color-primary-200);
+}
+.stat-card:hover::before { opacity: 1; }
+.stat-label { 
+  font-size: 13px; 
+  font-weight: 500;
+  color: var(--text-secondary); 
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.stat-value { 
+  font-size: 32px; 
+  font-weight: 700; 
+  color: var(--text-primary); 
+  margin-top: var(--space-2);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.stat-change { 
+  font-size: 12px; 
+  margin-top: var(--space-2); 
+  color: var(--text-muted); 
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
 
 /* 仪表盘统计浮层 */
 .stat-popup-overlay {
@@ -512,17 +907,21 @@ input[type="checkbox"]:checked {
 .alert-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 14px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 .alert-panel {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+  box-shadow: var(--shadow-sm);
 }
-.alert-panel:hover { border-color: var(--accent); }
+.alert-panel:hover { 
+  border-color: var(--color-primary-200); 
+  box-shadow: var(--shadow-md);
+}
 .alert-panel-header {
   display: flex;
   align-items: center;
@@ -759,23 +1158,29 @@ input[type="checkbox"]:checked {
 .charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 .chart-card {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  border: 1px solid var(--border-color);
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  border: 1px solid var(--color-neutral-200);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+}
+.chart-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-200);
 }
 .chart-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: var(--space-3);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  letter-spacing: -0.01em;
 }
 .chart-legend {
   font-size: 11px;
@@ -802,24 +1207,25 @@ input[type="checkbox"]:checked {
 }
 
 .bi-section {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  padding: 20px 22px;
-  border: 1px solid var(--border-color);
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  border: 1px solid var(--color-neutral-200);
   box-shadow: var(--shadow-sm);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 .bi-section-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-neutral-100);
   cursor: default;
+  letter-spacing: -0.01em;
 }
 .bi-section-title .bi-collapse-btn {
   margin-left: auto;
@@ -877,19 +1283,20 @@ input[type="checkbox"]:checked {
 .bi-kpi-row {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
 }
 .bi-kpi-card {
-  background: var(--bg-primary);
-  border-radius: 12px;
-  padding: 14px 12px;
-  border: 1px solid var(--border-color);
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-3);
+  border: 1px solid var(--color-neutral-200);
   text-align: center;
-  transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.22s var(--ease-spring), box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
   position: relative;
   overflow: hidden;
   animation: biKpiFadeUp 0.45s ease both;
+  box-shadow: var(--shadow-sm);
 }
 .bi-kpi-card::before {
   content: '';
@@ -907,19 +1314,19 @@ input[type="checkbox"]:checked {
 .bi-kpi-card:hover::before { opacity: 1; }
 .bi-kpi-card:hover {
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-300);
 }
-.bi-kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.4; letter-spacing: 0.3px; }
+.bi-kpi-label { font-size: 12px; color: var(--text-muted); margin-bottom: var(--space-2); line-height: 1.4; letter-spacing: 0.02em; text-transform: uppercase; }
 .bi-kpi-value {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
-.bi-kpi-sub { font-size: 10px; color: var(--text-muted); margin-top: 5px; }
+.bi-kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: var(--space-2); }
 .bi-kpi-card[data-accent="success"] .bi-kpi-value { color: #16a34a; }
 .bi-kpi-card[data-accent="danger"]  .bi-kpi-value { color: #dc2626; }
 .bi-kpi-card[data-accent="warn"]    .bi-kpi-value { color: #d97706; }
@@ -963,26 +1370,27 @@ input[type="checkbox"]:checked {
   gap: 12px;
 }
 .bi-analysis-card {
-  background: var(--bg-primary);
-  border-radius: 10px;
-  padding: 14px 16px;
-  border: 1px solid var(--border-color);
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  border: 1px solid var(--color-neutral-200);
   animation: biCardIn 0.4s ease both;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
   position: relative;
+  box-shadow: var(--shadow-sm);
 }
 .bi-analysis-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
-  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-200);
 }
 .bi-analysis-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-secondary);
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
-  letter-spacing: 0.2px;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-neutral-100);
+  letter-spacing: 0.01em;
   position: relative;
 }
 .bi-analysis-list {
@@ -1028,35 +1436,37 @@ input[type="checkbox"]:checked {
 .bi-chart-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  gap: var(--space-4);
 }
 .bi-card {
-  background: var(--bg-primary);
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid var(--border-color);
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  border: 1px solid var(--color-neutral-200);
   grid-column: span 2;
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+  transition: box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
   animation: biCardIn 0.45s ease both;
   position: relative;
+  box-shadow: var(--shadow-sm);
 }
 .bi-card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.09);
-  border-color: var(--accent);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-200);
+  transform: translateY(-2px);
 }
 .bi-card-wide { grid-column: span 4; }
 .bi-card-title {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 14px;
+  margin-bottom: var(--space-4);
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-neutral-100);
   position: relative;
+  letter-spacing: -0.01em;
 }
 .bi-card-title .bi-drag-handle {
   position: absolute;
@@ -1094,33 +1504,38 @@ input[type="checkbox"]:checked {
 
 .quick-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-3);
 }
 .quick-action-btn {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: var(--color-neutral-0);
+  border: 1.5px solid var(--color-neutral-200);
   border-radius: var(--radius-md);
-  padding: 12px 8px;
+  padding: var(--space-4) var(--space-3);
   text-align: center;
-  transition: all 0.15s;
+  transition: all 0.18s var(--ease-out);
   box-shadow: var(--shadow-sm);
   color: var(--text-primary);
   cursor: pointer;
+  font-size: 14px;
 }
-.quick-action-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
-.quick-action-icon { font-size: 18px; margin-bottom: 4px; }
-.quick-action-text { font-size: 12px; }
+.quick-action-btn:hover { 
+  border-color: var(--color-primary-400); 
+  transform: translateY(-2px); 
+  box-shadow: var(--shadow-md);
+}
+.quick-action-icon { font-size: 22px; margin-bottom: var(--space-2); }
+.quick-action-text { font-size: 13px; font-weight: 500; }
 
 /* ========================================
    列表页（紧凑）
    ======================================== */
 .filter-bar {
-  background: var(--bg-secondary);
+  background: var(--color-neutral-0);
   border-radius: var(--radius-md);
-  padding: 10px 12px;
-  margin-bottom: 10px;
-  border: 1px solid var(--border-color);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--color-neutral-200);
   box-shadow: var(--shadow-sm);
 }
 .filter-grid {
@@ -1133,62 +1548,77 @@ input[type="checkbox"]:checked {
 .filter-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .table-wrap {
-  background: var(--bg-secondary);
+  background: var(--color-neutral-0);
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-neutral-200);
   box-shadow: var(--shadow-sm);
   overflow-x: auto;
 }
 table.data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 800px;
 }
 .data-table th, .data-table td {
-  padding: 6px 10px;
+  padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 12px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  font-size: 13px;
   white-space: nowrap;
   transition: background 0.15s;
 }
 .data-table th {
-  background: var(--bg-tertiary);
+  background: var(--color-neutral-50);
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
   user-select: none;
   position: sticky;
   top: 0;
-  transition: color 0.2s, background 0.2s;
+  z-index: 1;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--color-neutral-200);
 }
-.data-table th:hover { color: var(--accent); }
+.data-table th:hover { color: var(--color-primary-600); }
 .data-table tbody tr {
-  transition: background 0.15s, transform 0.15s;
+  transition: background 0.15s var(--ease-out);
+}
+.data-table tbody tr:nth-child(even) {
+  background: var(--color-neutral-50);
 }
 .data-table tbody tr:hover td { 
-  background: var(--bg-tertiary); 
+  background: var(--color-primary-50); 
 }
 .data-table tbody tr:hover {
-  transform: scale(1.005);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   position: relative;
   z-index: 1;
 }
 .data-table td input[type="checkbox"] { cursor: pointer; }
-.table-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+.table-actions { 
+  display: flex; 
+  gap: 2px; 
+  flex-wrap: wrap; 
+  opacity: 0;
+  transition: opacity 0.15s var(--ease-out);
+}
+.data-table tbody tr:hover .table-actions { opacity: 1; }
 
 .pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background: var(--bg-tertiary);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-50);
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-3);
+  border-top: 1px solid var(--color-neutral-100);
 }
-.pagination-info { font-size: 12px; color: var(--text-secondary); }
-.pagination-controls { display: flex; gap: 4px; align-items: center; }
+.pagination-info { font-size: 13px; color: var(--text-secondary); }
+.pagination-controls { display: flex; gap: var(--space-1); align-items: center; }
 
 /* ========================================
    弹窗（紧凑）
@@ -1215,16 +1645,16 @@ table.data-table {
   opacity: 0;
 }
 .modal {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-xl);
   max-width: 900px;
   width: 100%;
   max-height: 92vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-xl);
   transform: scale(0.95) translateY(10px);
   opacity: 0;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s var(--ease-spring), opacity 0.25s var(--ease-out);
 }
 .modal-overlay.show .modal {
   transform: scale(1) translateY(0);
@@ -1281,24 +1711,25 @@ table.data-table {
    表单分组（折叠式，紧凑）
    ======================================== */
 .form-section {
-  margin-bottom: 8px;
-  border: 1px solid var(--border-color);
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--color-neutral-200);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
 .form-section-header {
-  padding: 8px 12px;
-  background: var(--bg-tertiary);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-50);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
   user-select: none;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
+  transition: background 0.15s var(--ease-out);
 }
-.form-section-header:hover { background: var(--bg-primary); }
-.form-section-body { padding: 10px 12px; display: none; }
+.form-section-header:hover { background: var(--color-neutral-100); }
+.form-section-body { padding: var(--space-4); display: none; }
 .form-section.open .form-section-body { display: block; }
 .form-section.open .form-section-toggle { transform: rotate(180deg); }
 .form-section-toggle { transition: transform 0.15s; }
@@ -1360,12 +1791,12 @@ table.data-table {
   flex-wrap: wrap;
   gap: 8px;
 }
-.detail-title { font-size: 16px; font-weight: 600; }
-.detail-actions { display: flex; gap: 6px; }
+.detail-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.detail-actions { display: flex; gap: var(--space-2); }
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 6px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-2) var(--space-5);
 }
 .detail-item {
   padding: 6px 0;
@@ -1449,11 +1880,28 @@ table.data-table {
 /* 报表区域 */
 .bi-report-section { margin-top: 14px; }
 .bi-report-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.bi-report-preview { background: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color); padding: 12px; max-height: 320px; overflow: auto; font-size: 12px; white-space: pre-wrap; font-family: 'Consolas','Courier New',monospace; line-height: 1.6; }
+.bi-report-preview { 
+  background: var(--color-neutral-0); 
+  border-radius: var(--radius-md); 
+  border: 1px solid var(--color-neutral-200); 
+  padding: var(--space-4); 
+  max-height: 360px; 
+  overflow: auto; 
+  font-size: 13px; 
+  white-space: pre-wrap; 
+  font-family: var(--font-mono); 
+  line-height: 1.7; 
+}
 
 /* 趋势预判 */
 .bi-predict-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px; }
-.bi-predict-card { background: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color); padding: 12px; }
+.bi-predict-card { 
+  background: var(--color-neutral-0); 
+  border-radius: var(--radius-md); 
+  border: 1px solid var(--color-neutral-200); 
+  padding: var(--space-4); 
+  box-shadow: var(--shadow-sm);
+}
 .bi-predict-title { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
 .bi-predict-value { font-size: 20px; font-weight: 700; color: var(--text-primary); }
 .bi-predict-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
@@ -1466,9 +1914,9 @@ table.data-table {
    ======================================== */
 .security-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 .security-item-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
 .security-item-value { font-size: 13px; font-weight: 500; color: var(--text-primary); word-break: break-all; }
@@ -1508,18 +1956,22 @@ table.data-table {
   pointer-events: none;
 }
 .toast {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  padding: 8px 14px;
+  background: var(--color-neutral-800);
+  color: #fff;
+  padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  border-left: 3px solid var(--accent);
-  min-width: 180px;
-  animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow-lg);
+  border-left: 3px solid var(--color-primary-400);
+  min-width: 200px;
+  animation: toastIn 0.3s var(--ease-spring);
   pointer-events: auto;
-  font-size: 13px;
+  font-size: 14px;
   opacity: 0;
   transform: translateX(100%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 500;
 }
 .toast.show {
   opacity: 1;
@@ -1599,26 +2051,33 @@ table.data-table {
   .pagination { flex-direction: column; align-items: flex-start; }
 }
 
-/* 主题切换按钮（紧凑） */
+/* 主题切换按钮（高端化） */
 .theme-toggle {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: var(--color-neutral-100);
+  border: 1.5px solid var(--color-neutral-200);
   border-radius: var(--radius-sm);
-  padding: 4px 10px;
-  font-size: 12px;
+  padding: 6px 14px;
+  font-size: 13px;
   color: var(--text-primary);
   cursor: pointer;
-  height: 28px;
+  height: 34px;
+  transition: all 0.18s var(--ease-out);
+  font-weight: 500;
+}
+.theme-toggle:hover {
+  background: var(--color-neutral-200);
+  border-color: var(--color-primary-200);
 }
 
-/* 空状态（紧凑） */
+/* 空状态（高端化） */
 .empty-state {
-  padding: 40px 16px;
+  padding: var(--space-7) var(--space-4);
   text-align: center;
   color: var(--text-muted);
 }
-.empty-state-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.4; }
-.empty-state-text { font-size: 13px; }
+.empty-state-icon { font-size: 48px; margin-bottom: var(--space-4); opacity: 0.3; }
+.empty-state-text { font-size: 15px; color: var(--color-neutral-500); margin-bottom: var(--space-1); }
+.empty-state-sub { font-size: 13px; color: var(--color-neutral-400); max-width: 300px; margin: 0 auto var(--space-4); }
 
 /* 进度条（紧凑） */
 .progress-bar {
@@ -1628,10 +2087,75 @@ table.data-table {
   overflow: hidden;
   margin-top: 4px;
 }
-.progress-fill {
+/* 9点手势解锁 */
+.gesture-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+.gesture-canvas-wrap {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  border: 1.5px solid var(--border-color);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+.gesture-canvas-wrap canvas {
+  width: 100%;
   height: 100%;
-  background: var(--accent);
-  transition: width 0.2s;
+}
+.gesture-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.gesture-status {
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 20px;
+  text-align: center;
+}
+.gesture-status.success { color: var(--color-success); }
+.gesture-status.error { color: var(--color-danger); }
+.gesture-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+/* 解锁界面手势入口 */
+.auth-gesture-toggle {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.auth-gesture-toggle .toggle-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  transition: all 0.18s;
+}
+.auth-gesture-toggle .toggle-btn.active {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-700);
+  font-weight: 500;
+}
+[data-theme="dark"] .auth-gesture-toggle .toggle-btn.active {
+  background: rgba(99,102,241,0.15);
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-300);
 }
 </style>
 </head>
@@ -1678,39 +2202,74 @@ table.data-table {
       <div id="lockout-warning" class="auth-locked" style="display:none;">
         系统已锁定，请 <span id="lockout-countdown">60</span> 秒后重试
       </div>
-      <div class="auth-group">
-        <label class="label required">解锁密码</label>
-        <input type="password" id="unlock-password" class="input" placeholder="请输入解锁密码" autocomplete="off">
-        <div class="error-text" id="unlock-error">密码错误</div>
+
+      <!-- 密码/手势切换 -->
+      <div class="auth-gesture-toggle" id="unlock-toggle">
+        <button class="toggle-btn active" id="btn-unlock-pw-mode">密码登录</button>
+        <button class="toggle-btn" id="btn-unlock-gesture-mode">手势登录</button>
       </div>
-      <div style="margin-bottom:12px;font-size:12px;color:var(--text-muted);" id="attempt-info"></div>
-      <button class="btn btn-primary btn-lg" style="width:100%;" id="btn-unlock">解锁系统</button>
+
+      <!-- 密码登录表单 -->
+      <div id="unlock-pw-form">
+        <div class="auth-group">
+          <label class="label required">用户名</label>
+          <input type="text" id="unlock-username" class="input" placeholder="请输入用户名" autocomplete="off">
+        </div>
+        <div class="auth-group">
+          <label class="label required">密码</label>
+          <input type="password" id="unlock-password" class="input" placeholder="请输入密码" autocomplete="off">
+          <div class="error-text" id="unlock-error">用户名或密码错误</div>
+        </div>
+        <div style="margin-bottom:12px;font-size:12px;color:var(--text-muted);" id="attempt-info"></div>
+        <button class="btn btn-primary btn-lg" style="display:block;width:100%;text-align:center;" id="btn-unlock">解锁系统</button>
+      </div>
+
+      <!-- 手势登录表单 -->
+      <div id="unlock-gesture-form" style="display:none;">
+        <div class="gesture-container">
+          <div class="gesture-canvas-wrap" id="unlock-gesture-canvas-wrap">
+            <canvas id="unlock-gesture-canvas" width="240" height="240"></canvas>
+          </div>
+          <div class="gesture-hint" id="unlock-gesture-hint">请输入手势密码</div>
+          <div class="gesture-status" id="unlock-gesture-status"></div>
+          <div class="gesture-actions">
+            <button class="btn btn-sm" id="btn-unlock-gesture-reset">重新绘制</button>
+          </div>
+        </div>
+      </div>
+
       <div class="auth-footer">
         忘记密码？<span class="auth-link" id="btn-forgot">强制清空并重置</span>
+        <br><span class="auth-link" id="btn-sq-hint" style="color:var(--color-danger);font-size:12px;margin-top:4px;display:inline-block;cursor:pointer;">设置密保问题以重置密码</span>
       </div>
     </div>
 
-    <!-- 初始化视图 -->
+    <!-- 初始化（注册）视图 -->
     <div id="view-init" style="display:none;">
       <div class="auth-info">
-        首次使用，请设置解锁密码。密码用于派生加密密钥，密码丢失无法找回，将导致所有数据不可恢复。
+        首次使用，请注册账户。用户名和密码用于身份验证，密码同时用于派生加密密钥。密码丢失无法找回，将导致所有数据不可恢复。
       </div>
       <div class="auth-group">
-        <label class="label required">设置解锁密码（至少6位）</label>
+        <label class="label required">用户名</label>
+        <input type="text" id="init-username" class="input" placeholder="请输入用户名（至少2个字符）" autocomplete="off">
+      </div>
+      <div class="auth-group">
+        <label class="label required">设置密码（至少6位）</label>
         <input type="password" id="init-password" class="input" placeholder="至少6位，建议字母+数字组合" autocomplete="off">
       </div>
       <div class="auth-group">
         <label class="label required">再次输入密码</label>
         <input type="password" id="init-password2" class="input" placeholder="请再次输入相同密码" autocomplete="off">
-        <div class="error-text" id="init-error">两次密码不一致</div>
+        <div class="error-text" id="init-error" style="display:none;">两次密码不一致</div>
+        <div class="success-text" id="init-match" style="display:none;font-size:12px;color:var(--color-success);margin-top:4px;">✓ 两次密码一致</div>
       </div>
-      <div style="margin-bottom:16px;background:var(--bg-tertiary);padding:12px;border-radius:var(--radius-sm);font-size:12px;line-height:1.6;">
+      <div style="margin-bottom:12px;background:var(--bg-tertiary);padding:12px;border-radius:var(--radius-sm);font-size:12px;line-height:1.6;">
         <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
           <input type="checkbox" id="init-privacy" style="margin-top:3px;">
           <span>我已阅读并确认：<strong>所有数据仅存储在我本地设备，不会上传任何服务器</strong>；我理解密码丢失将导致数据无法恢复。</span>
         </label>
       </div>
-      <button class="btn btn-primary btn-lg" style="width:100%;" id="btn-init">初始化并进入系统</button>
+      <button class="btn btn-primary btn-lg" style="width:100%;" id="btn-init">注册并进入系统</button>
       <div class="auth-footer">
         已有数据？<span class="auth-link" id="btn-back-unlock">返回解锁</span>
       </div>
@@ -1726,13 +2285,17 @@ table.data-table {
       <div class="sidebar-header">
         <img class="sidebar-logo" src="logo213.jpg" alt="Logo">
         <div>
-          <div class="sidebar-title">客户管理</div>
-          <div class="sidebar-subtitle">v1.0 本地加密</div>
+          <div class="sidebar-title">CRM Pro</div>
+          <div class="sidebar-subtitle">本地加密 · 隐私优先</div>
         </div>
       </div>
+      <span class="nav-group-label">概览</span>
       <ul class="nav-list">
         <li class="nav-item active" data-page="dashboard"><span class="nav-icon">■</span>仪表盘</li>
         <li class="nav-item" data-page="bi"><span class="nav-icon">📊</span>BI看板</li>
+      </ul>
+      <span class="nav-group-label">客户管理</span>
+      <ul class="nav-list">
         <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表</li>
         <li class="nav-item" data-page="geo"><span class="nav-icon">🌍</span>GEO客户<span class="nav-count" id="nav-count-geo">0</span></li>
         <li class="nav-item" data-page="360"><span class="nav-icon">🔄</span>360客户<span class="nav-count" id="nav-count-360">0</span></li>
@@ -1741,9 +2304,22 @@ table.data-table {
         <li class="nav-item" data-page="douyin"><span class="nav-icon">🎵</span>抖音客户<span class="nav-count" id="nav-count-douyin">0</span></li>
         <li class="nav-item" data-page="xianyu"><span class="nav-icon">🐟</span>闲鱼客户<span class="nav-count" id="nav-count-xianyu">0</span></li>
         <li class="nav-item" data-page="trash"><span class="nav-icon">🗑️</span>作废客户<span class="nav-count" id="nav-count-trash">0</span></li>
-        <li class="nav-item" data-page="security"><span class="nav-icon">⚙</span>数据与安全</li>
-        <li class="nav-item" data-page="settings"><span class="nav-icon">🔧</span>设置</li>
       </ul>
+      <span class="nav-group-label">系统管理</span>
+      <ul class="nav-list">
+        <li class="nav-item" data-page="security"><span class="nav-icon">⚙</span>数据与安全</li>
+        <li class="nav-item" data-page="settings"><span class="nav-icon">🔧</span>账户设置</li>
+      </ul>
+      <!-- 用户信息 & 登出 -->
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebar-user-avatar" title="点击修改头像">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebar-user-name">本地用户</div>
+          <div class="sidebar-user-role">管理员</div>
+        </div>
+        <button class="sidebar-logout-btn" id="btn-sidebar-logout" title="登出">⏻</button>
+      </div>
+      <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
     </aside>
 
     <!-- 主内容 -->
@@ -1777,7 +2353,7 @@ table.data-table {
           </div>
         </div>
         <div class="card">
-          <div style="font-size:16px;font-weight:600;margin-bottom:16px;">快捷操作</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:10px;">快捷操作</div>
           <div class="quick-actions">
             <button class="quick-action-btn" data-nav="new">
               <div class="quick-action-icon">➕</div>
@@ -1998,7 +2574,7 @@ table.data-table {
       <!-- GEO客户 -->
       <section class="page" id="page-geo">
         <div class="card" style="position:relative;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;" id="form-title">GEO客户</h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status">草稿自动保存中...</div>
           </div>
@@ -2009,7 +2585,7 @@ table.data-table {
       <!-- 360客户 -->
       <section class="page" id="page-360">
         <div class="card" style="position:relative;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;" id="form-title-360">360客户</h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-360">草稿自动保存中...</div>
           </div>
@@ -2020,7 +2596,7 @@ table.data-table {
       <!-- Bing客户 -->
       <section class="page" id="page-bing">
         <div class="card" style="position:relative;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;" id="form-title-bing">Bing客户</h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-bing">草稿自动保存中...</div>
           </div>
@@ -2031,7 +2607,7 @@ table.data-table {
       <!-- 百度客户 -->
       <section class="page" id="page-baidu">
         <div class="card" style="position:relative;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;" id="form-title-baidu">百度客户</h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-baidu">草稿自动保存中...</div>
           </div>
@@ -2042,7 +2618,7 @@ table.data-table {
       <!-- 抖音客户 -->
       <section class="page" id="page-douyin">
         <div class="card" style="position:relative;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;" id="form-title-douyin">抖音客户</h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-douyin">草稿自动保存中...</div>
           </div>
@@ -2053,7 +2629,7 @@ table.data-table {
       <!-- 闲鱼客户 -->
       <section class="page" id="page-xianyu">
         <div class="card" style="position:relative;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;" id="form-title-xianyu">闲鱼客户</h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-xianyu">草稿自动保存中...</div>
           </div>
@@ -2064,7 +2640,7 @@ table.data-table {
       <!-- 作废客户 -->
       <section class="page" id="page-trash">
         <div class="card" style="position:relative;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;" id="form-title-trash">作废客户</h2>
             <div style="font-size:12px;color:var(--text-muted);">已作废的客户列表</div>
           </div>
@@ -2079,11 +2655,23 @@ table.data-table {
         </div>
       </section>
 
-      <!-- 设置中心 -->
+      <!-- 账户设置 -->
       <section class="page" id="page-settings">
-        <div class="card" style="margin-bottom:16px;">
-          <h2 style="font-size:18px;margin-bottom:16px;">📋 跟进提醒设置</h2>
-          <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
+        <div class="card" style="margin-bottom:12px;">
+          <h2 style="font-size:18px;margin-bottom:10px;">🔒 重置登录密码</h2>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            可通过以下任意一种方式验证身份后重置密码：
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-warning" id="btn-reset-pw-by-sq-settings">通过密保问题重置</button>
+            <button class="btn" id="btn-reset-pw-by-cur-pw-settings">验证当前密码重置</button>
+            <button class="btn" id="btn-reset-pw-by-gesture-settings">验证手势重置</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px;">
+          <h2 style="font-size:18px;margin-bottom:10px;">📋 跟进提醒设置</h2>
+          <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
             设置新增客户未跟进的提醒频率，系统将在指定天数后提醒您跟进新客户。
           </div>
           <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -2097,34 +2685,34 @@ table.data-table {
           </div>
         </div>
 
-        <div class="card" style="margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;">⭐ 客户等级管理</h2>
             <button class="btn btn-primary btn-sm" id="btn-new-level">➕ 新增等级</button>
           </div>
-          <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
+          <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
             自定义客户等级分类及对应颜色，修改等级名称将同步更新所有关联客户。删除等级不会影响已关联客户的历史数据（等级如被使用则无法删除）。
           </div>
           <div id="level-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
         </div>
 
-        <div class="card" style="margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;">📋 客户来源管理</h2>
             <button class="btn btn-primary btn-sm" id="btn-new-source">➕ 新增来源</button>
           </div>
-          <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
+          <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
             自定义客户来源分类，修改来源名称将同步更新所有关联客户。删除来源不会影响已关联客户的历史数据（来源如被使用则无法删除）。
           </div>
           <div id="source-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
         </div>
 
-        <div class="card" style="margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;">🏷️ 自定义标签管理</h2>
             <button class="btn btn-primary btn-sm" id="btn-new-tag">➕ 新增标签</button>
           </div>
-          <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
+          <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
             标签用于客户分类，可自定义颜色。删除标签不会影响已关联客户的历史数据（标签如被使用则无法删除）。
           </div>
           <div id="tag-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
@@ -2133,8 +2721,8 @@ table.data-table {
 
       <!-- 数据与安全中心 -->
       <section class="page" id="page-security">
-        <div class="card" style="margin-bottom:16px;">
-          <h2 style="font-size:18px;margin-bottom:16px;">存储状态</h2>
+        <div class="card" style="margin-bottom:12px;">
+          <h2 style="font-size:18px;margin-bottom:10px;">存储状态</h2>
           <div class="security-grid">
             <div>
               <div class="security-item-label">本地存储文件夹</div>
@@ -2162,8 +2750,8 @@ table.data-table {
           <div style="margin-top:12px;font-size:12px;color:var(--text-muted);" id="folder-api-hint"></div>
         </div>
 
-        <div class="card" style="margin-bottom:16px;">
-          <h2 style="font-size:18px;margin-bottom:16px;">数据操作</h2>
+        <div class="card" style="margin-bottom:12px;">
+          <h2 style="font-size:18px;margin-bottom:10px;">数据操作</h2>
           <div class="security-actions">
             <button class="btn btn-primary" id="btn-export-encrypted">导出加密备份</button>
             <button class="btn" id="btn-import-encrypted">导入加密备份</button>
@@ -2174,13 +2762,93 @@ table.data-table {
           </div>
         </div>
 
-        <div class="card" style="margin-bottom:16px;">
-          <h2 style="font-size:18px;margin-bottom:16px;">密码管理</h2>
-          <button class="btn" id="btn-change-password">修改解锁密码</button>
+        <div class="card" style="margin-bottom:12px;">
+          <h2 style="font-size:18px;margin-bottom:10px;">密码管理</h2>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <button class="btn" id="btn-change-password">修改解锁密码</button>
+          </div>
+          <h3 style="font-size:15px;margin-bottom:8px;">解锁手势</h3>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+            设置9点解锁手势后，下次登录可先验证手势，再输入密码解锁。手势以加密方式存储。
+          </div>
+          <div id="gesture-setting-area">
+            <!-- 未设置手势时显示 -->
+            <div id="gesture-not-set" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 0;">
+              <div class="gesture-canvas-wrap" id="gesture-set-canvas-wrap" style="width:240px;height:240px;">
+                <canvas id="gesture-set-canvas" width="240" height="240"></canvas>
+              </div>
+              <div class="gesture-hint" id="gesture-set-hint">请绘制解锁手势（连接至少4个点）</div>
+              <div class="gesture-status" id="gesture-set-status"></div>
+              <div class="gesture-actions">
+                <button class="btn btn-sm" id="btn-gesture-reset">重新绘制</button>
+                <button class="btn btn-sm btn-primary" id="btn-gesture-save" disabled>保存手势</button>
+              </div>
+            </div>
+            <!-- 已设置手势时显示 -->
+            <div id="gesture-has-set" style="display:none;">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:12px;">
+                <div style="font-size:13px;color:var(--text-secondary);flex:1;">
+                  <span style="font-weight:500;color:var(--text-primary);">手势已设置</span><br>
+                  解锁时可在密码登录和手势登录之间切换。
+                </div>
+                <button class="btn btn-sm btn-outline" id="btn-gesture-clear">清除手势</button>
+                <button class="btn btn-sm" id="btn-gesture-reset-all">重新设置</button>
+              </div>
+            </div>
+          </div>
+          <hr style="margin:20px 0;border:none;border-top:1px solid var(--border-color);">
+          <h3 style="font-size:15px;margin-bottom:8px;">通过手势重置密码</h3>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+            若已设置解锁手势，可通过验证手势来重置登录密码。
+          </div>
+          <button class="btn btn-warning btn-sm" id="btn-reset-pw-by-gesture" disabled>通过手势重置密码</button>
+          <hr style="margin:20px 0;border:none;border-top:1px solid var(--border-color);">
+          <h3 style="font-size:15px;margin-bottom:8px;">密保问题</h3>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+            设置2个密保问题和答案，忘记密码时可通过验证密保问题重置密码。问题和答案均加密存储。
+          </div>
+          <div id="security-questions-area">
+            <!-- 未设置时显示设置表单 -->
+            <div id="sq-not-set" style="display:none;">
+              <div class="auth-group" style="margin-bottom:10px;">
+                <label class="label">密保问题 1</label>
+                <input type="text" id="sq-q1" class="input" placeholder="例如：我小学的名称是？">
+              </div>
+              <div class="auth-group" style="margin-bottom:10px;">
+                <label class="label">答案 1</label>
+                <input type="text" id="sq-a1" class="input" placeholder="请输入答案">
+              </div>
+              <div class="auth-group" style="margin-bottom:10px;">
+                <label class="label">密保问题 2</label>
+                <input type="text" id="sq-q2" class="input" placeholder="例如：我的出生地是？">
+              </div>
+              <div class="auth-group" style="margin-bottom:12px;">
+                <label class="label">答案 2</label>
+                <input type="text" id="sq-a2" class="input" placeholder="请输入答案">
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-sm" id="btn-sq-cancel">取消</button>
+                <button class="btn btn-sm btn-primary" id="btn-sq-save">保存密保问题</button>
+              </div>
+            </div>
+            <!-- 已设置时显示状态 -->
+            <div id="sq-has-set" style="display:none;">
+              <div style="padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:12px;">
+                <div style="font-size:13px;color:var(--text-secondary);">
+                  <span style="font-weight:500;color:var(--text-primary);">密保问题已设置</span><br>
+                  忘记密码时可通过验证密保问题重置密码。
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-sm btn-outline" id="btn-sq-clear">清除密保问题</button>
+                <button class="btn btn-sm" id="btn-sq-edit">修改密保问题</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;">操作审计日志</h2>
             <div style="display:flex;gap:8px;align-items:center;">
               <select class="select" id="log-filter-type" style="width:auto;">
@@ -2483,7 +3151,7 @@ const Store = {
   // 运行态内存：解锁成功后保存
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
-  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [] }, // 明文内存
+  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '' }, // 明文内存
   settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
@@ -2496,17 +3164,19 @@ const Store = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [] };
+        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '' };
         return;
       }
       const plain = await decryptData(raw, this.password);
       const parsed = JSON.parse(plain);
-      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [] }, parsed);
+      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] }, parsed);
       // 确保关键字段存在
       if (!Array.isArray(this.data.customers)) this.data.customers = [];
       if (!Array.isArray(this.data.tags)) this.data.tags = [];
       if (!Array.isArray(this.data.logs)) this.data.logs = [];
       if (!Array.isArray(this.data.versions)) this.data.versions = [];
+      if (typeof this.data.username !== 'string') this.data.username = '';
+      if (typeof this.data.avatar !== 'string') this.data.avatar = '';
       if (!Array.isArray(this.data.customerLevels) || this.data.customerLevels.length === 0) {
         this.data.customerLevels = getDefaultLevels();
       }
@@ -5776,6 +6446,12 @@ function openImageViewer(dataUrl) {
    模块 12：设置中心 / 标签管理 / 数据安全中心
    ================================================================ */
 function renderSettingsPage() {
+  // 更新重置密码按钮状态
+  const btnSq = document.getElementById('btn-reset-pw-by-sq-settings');
+  if (btnSq) btnSq.disabled = !(Array.isArray(Store.data.securityQuestions) && Store.data.securityQuestions.length === 2);
+  const btnGesture = document.getElementById('btn-reset-pw-by-gesture-settings');
+  if (btnGesture) btnGesture.disabled = !(Store.data.gesturePattern && Store.data.gesturePattern.length > 0);
+
   // 渲染跟进提醒频率设置
   const followupDays = Store.settings.followupDays || 3;
   const desc = document.getElementById('followup-frequency-desc');
@@ -6146,7 +6822,7 @@ function navigate(pageName) {
   else if (pageName === 'xianyu') renderChannelPage('xianyu');
   else if (pageName === 'trash') renderTrashPage();
   else if (pageName === 'settings') renderSettingsPage();
-  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); }
+  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initGestureSettingOnce) window.initGestureSettingOnce(); }
   // 进入列表页面自动隐藏移动端侧边栏
   if (window.innerWidth < 768) {
     const sb = document.getElementById('sidebar'); if (sb) sb.classList.remove('show');
@@ -6257,6 +6933,8 @@ function resetIdleTimer() {
     document.getElementById('app-view').style.display = 'none';
     document.getElementById('auth-view').style.display = 'block';
     document.getElementById('unlock-password').value = '';
+    const unEl2 = document.getElementById('unlock-username');
+    if (unEl2) unEl2.value = '';
     showToast('系统已自动登出，请重新登录', 'warning');
   }, IDLE_TIMEOUT_MS);
 }
@@ -6301,6 +6979,71 @@ function stopAutoSave() {
   }
 }
 
+// 更新侧边栏用户信息（头像 + 用户名）
+function updateSidebarUser() {
+  const username = Store.data.username || '本地用户';
+  const avatar = Store.data.avatar;
+  const nameEl = document.getElementById('sidebar-user-name');
+  const avatarEl = document.getElementById('sidebar-user-avatar');
+  if (nameEl) nameEl.textContent = username;
+  if (avatarEl) {
+    if (avatar) {
+      avatarEl.innerHTML = '';
+      avatarEl.style.backgroundImage = 'url(' + avatar + ')';
+      avatarEl.style.backgroundSize = 'cover';
+      avatarEl.style.backgroundPosition = 'center';
+    } else {
+      avatarEl.textContent = (username[0] || 'U').toUpperCase();
+      avatarEl.style.backgroundImage = '';
+    }
+  }
+}
+
+// 头像上传处理：读取文件 → 裁剪为 200x220 圆角矩形 → base64 存储
+function handleAvatarUpload(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    showToast('请选择图片文件', 'error');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('图片大小不能超过 5MB', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // 裁剪为 200x220（圆角矩形，居中裁剪）
+      const canvas = document.createElement('canvas');
+      const W = 200, H = 220;
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      // 圆角裁剪
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(0, 0, W, H, 12);
+      ctx.clip();
+      // 等比缩放并居中裁剪
+      const scale = Math.max(W / img.width, H / img.height);
+      const sw = W / scale;
+      const sh = H / scale;
+      const sx = (img.width - sw) / 2;
+      const sy = (img.height - sh) / 2;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+      ctx.restore();
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      Store.data.avatar = dataUrl;
+      Store.markDirty();
+      updateSidebarUser();
+      showToast('头像已更新', 'success');
+    };
+    img.onerror = function() { showToast('图片加载失败', 'error'); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 async function enterApp(password) {
   Store.password = password;
   Store.unlocked = true;
@@ -6312,6 +7055,12 @@ async function enterApp(password) {
     try { await Store.mergeFromFolder(); } catch (e) {}
   }
   ensureSeedData();
+  // 更新侧边栏用户信息
+  updateSidebarUser();
+  // 同步密保问题标志位
+  const hasSQ = Array.isArray(Store.data.securityQuestions) && Store.data.securityQuestions.length === 2;
+  if (hasSQ) localStorage.setItem('crm_has_sq', '1');
+  else localStorage.removeItem('crm_has_sq');
   // 保存一次（记录解锁日志 + 同步到文件夹）
   Store.addLog('解锁系统', '成功', '用户登录');
   await Store.save();
@@ -6340,14 +7089,61 @@ async function enterApp(password) {
 function initAuthPage() {
   document.getElementById('app-view').style.display = 'none';
   document.getElementById('auth-view').style.display = 'flex';
+  // 清空输入
+  document.getElementById('unlock-password').value = '';
+  const unlockUsernameEl = document.getElementById('unlock-username');
+  if (unlockUsernameEl) unlockUsernameEl.value = '';
   const hasData = !!localStorage.getItem(STORAGE_KEY);
   if (hasData) {
     document.getElementById('view-unlock').style.display = 'block';
     document.getElementById('view-init').style.display = 'none';
+    // 检查是否设置了密保问题（通过明文标志位）
+    const hasSQ = localStorage.getItem('crm_has_sq') === '1';
+    const btnForgot = document.getElementById('btn-forgot');
+    const btnSqHint = document.getElementById('btn-sq-hint');
+    if (btnForgot) {
+      if (hasSQ) {
+        btnForgot.style.color = 'var(--color-danger)';
+        btnForgot.textContent = '通过密保问题重置密码';
+        btnForgot.onclick = () => { if(window.openResetBySecurityQuestionsDialog) window.openResetBySecurityQuestionsDialog(); };
+        if (btnSqHint) btnSqHint.style.display = 'none';
+      } else {
+        btnForgot.style.color = '';
+        btnForgot.textContent = '强制清空并重置';
+        if (btnSqHint) btnSqHint.style.display = 'inline-block';
+        // 恢复 DOMContentLoaded 中绑定的原始重置逻辑
+        btnForgot.onclick = () => {
+          confirmDialog('重置系统', '忘记密码将清空全部本地加密数据（不可逆），确定要重置吗？', true, () => {
+            stopAutoSave();
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(SETTINGS_KEY);
+            localStorage.removeItem(DRAFT_KEY);
+            localStorage.removeItem('crm_hash_salt');
+            localStorage.removeItem('crm_has_sq');
+            sessionStorage.removeItem('crm_session_pw');
+            Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] };
+            Store.unlocked = false;
+            Store._dirty = false;
+            showToast('数据已清空，请重新初始化', 'success');
+            setTimeout(initAuthPage, 300);
+          });
+        };
+      }
+    }
+    // 密保提示红字点击事件：如果已设密保则打开密保验证，未设密保则提示
+    if (btnSqHint) {
+      btnSqHint.onclick = () => {
+        if (localStorage.getItem('crm_has_sq') === '1') {
+          if (window.openResetBySecurityQuestionsDialog) window.openResetBySecurityQuestionsDialog();
+        } else {
+          showToast('请先登录后在"账户设置"中设置密保问题', 'warning');
+        }
+      };
+    }
   } else {
     document.getElementById('view-unlock').style.display = 'none';
     document.getElementById('view-init').style.display = 'block';
-    showToast('首次使用，请设置解锁密码', 'success');
+    showToast('首次使用，请注册账户', 'success');
   }
 }
 
@@ -6382,13 +7178,27 @@ document.addEventListener('DOMContentLoaded', function () {
   // 解锁按钮
   const btnUnlock = document.getElementById('btn-unlock');
   btnUnlock.onclick = async () => {
+    const username = document.getElementById('unlock-username').value.trim();
     const pw = document.getElementById('unlock-password').value;
-    if (!pw) { showToast('请输入解锁密码', 'error'); return; }
+    if (!username) { showToast('请输入用户名', 'error'); return; }
+    if (!pw) { showToast('请输入密码', 'error'); return; }
     if (document.getElementById('lockout-warning') && document.getElementById('lockout-warning').style.display === 'block') {
       return; // 锁定冷却中
     }
+    // 先验证密码（密码正确才能解密数据）
     const ok = await doUnlock(pw);
     if (ok) {
+      // 解密成功后，验证用户名是否匹配
+      await Store.load(); // 临时加载数据以检查用户名
+      if (Store.data.username && Store.data.username !== username) {
+        Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] };
+        Store.password = null;
+        unlockFailCount++;
+        document.getElementById('unlock-error').style.display = 'block';
+        safeText(document.getElementById('attempt-info'), `用户名或密码错误 (${unlockFailCount}/5)`);
+        showToast('用户名或密码错误', 'error');
+        return;
+      }
       unlockFailCount = 0;
       enterApp(pw);
     } else {
@@ -6414,28 +7224,18 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('unlock-password').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') btnUnlock.click();
   });
+  document.getElementById('unlock-username').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('unlock-password').focus();
+  });
 
-  // 忘记密码 - 清空重置
-  document.getElementById('btn-forgot').onclick = () => {
-    confirmDialog('重置系统', '忘记密码将清空全部本地加密数据（不可逆），确定要重置吗？', true, () => {
-      stopAutoSave();
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(SETTINGS_KEY);
-      localStorage.removeItem(DRAFT_KEY);
-      localStorage.removeItem('crm_hash_salt');
-      sessionStorage.removeItem('crm_session_pw');
-      Store.data = { customers: [], tags: [], logs: [], versions: [] };
-      Store.unlocked = false;
-      Store._dirty = false;
-      showToast('数据已清空，请重新初始化', 'success');
-      setTimeout(initAuthPage, 300);
-    });
-  };
+  // 忘记密码事件由 initAuthPage() 根据密保状态动态绑定，此处不再覆盖
 
   // 初始化按钮
   document.getElementById('btn-init').onclick = async () => {
+    const username = document.getElementById('init-username').value.trim();
     const pw = document.getElementById('init-password').value;
     const pw2 = document.getElementById('init-password2').value;
+    if (!username || username.length < 2) { showToast('用户名至少 2 个字符', 'error'); return; }
     if (!pw || pw.length < 6) { showToast('密码长度至少 6 位', 'error'); return; }
     if (pw !== pw2) {
       document.getElementById('init-error').style.display = 'block';
@@ -6446,11 +7246,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // 首次保存空数据以派生密钥
     Store.password = pw;
-    Store.data = { customers: [], tags: [], logs: [], versions: [] };
-    Store.addLog('初始化系统', '成功', '首次设置密码');
+    Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: username, avatar: '', gesturePattern: '', securityQuestions: [] };
+    Store.addLog('初始化系统', '成功', '注册账户：' + username);
     await Store.save();
     enterApp(pw);
   };
+  // 注册页面：密码二次输入实时比对
+  const initPw = document.getElementById('init-password');
+  const initPw2 = document.getElementById('init-password2');
+  const initError = document.getElementById('init-error');
+  const initMatch = document.getElementById('init-match');
+  if (initPw && initPw2) {
+    const checkPwMatch = () => {
+      const v1 = initPw.value;
+      const v2 = initPw2.value;
+      if (!v2) {
+        initError.style.display = 'none';
+        initMatch.style.display = 'none';
+        return;
+      }
+      if (v1 === v2 && v1.length >= 6) {
+        initError.style.display = 'none';
+        initMatch.style.display = 'block';
+      } else {
+        initMatch.style.display = 'none';
+        if (v2) initError.style.display = 'block';
+        else initError.style.display = 'none';
+      }
+    };
+    initPw.oninput = checkPwMatch;
+    initPw2.oninput = checkPwMatch;
+  }
+
   document.getElementById('btn-back-unlock').onclick = () => {
     document.getElementById('view-init').style.display = 'none';
     document.getElementById('view-unlock').style.display = 'block';
@@ -6476,8 +7303,40 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('app-view').style.display = 'none';
     document.getElementById('auth-view').style.display = 'block';
     document.getElementById('unlock-password').value = '';
+    const unEl = document.getElementById('unlock-username');
+    if (unEl) unEl.value = '';
     showToast('已手动锁屏', 'warning');
   };
+
+  // 侧边栏登出按钮（与锁屏行为一致）
+  const btnSidebarLogout = document.getElementById('btn-sidebar-logout');
+  if (btnSidebarLogout) {
+    btnSidebarLogout.onclick = () => {
+      clearIdleTimer();
+      stopAutoSave();
+      Store.unlocked = false; Store.password = null;
+      sessionStorage.removeItem('crm_session_pw');
+      document.getElementById('app-view').style.display = 'none';
+      document.getElementById('auth-view').style.display = 'block';
+      document.getElementById('unlock-password').value = '';
+      document.getElementById('unlock-username').value = '';
+      showToast('已登出系统', 'info');
+    };
+  }
+
+  // 头像点击 → 触发文件选择 → 上传裁剪
+  const avatarEl = document.getElementById('sidebar-user-avatar');
+  const avatarInput = document.getElementById('avatar-file-input');
+  if (avatarEl && avatarInput) {
+    avatarEl.style.cursor = 'pointer';
+    avatarEl.onclick = () => avatarInput.click();
+    avatarInput.onchange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleAvatarUpload(e.target.files[0]);
+        e.target.value = ''; // 重置，允许重复选择同一文件
+      }
+    };
+  }
 
   // 快捷操作
   document.querySelector('[data-nav="new"]').onclick = () => {
@@ -6845,7 +7704,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-reset-data').onclick = () => {
     confirmDialog('清空全部数据', '将清空所有客户、标签和操作日志，不可逆。是否继续？', true, () => {
       promptPassword('二次验证', '请输入解锁密码以清空全部数据', async () => {
-        Store.data = { customers: [], tags: [], logs: [], versions: [] };
+        Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: Store.data.username || '', avatar: Store.data.avatar || '', gesturePattern: '' };
         // 同时清除文件夹同步文件
         if (Store.folderHandle) {
           try {
@@ -7663,6 +8522,744 @@ function refreshUI() {
 
   // 暴露给全局，方便调试
   window.CRMPet = PET;
+})();
+
+/* ================================================================
+   手势解锁模块（9点手势）
+   ================================================================ */
+(function initGestureModule() {
+  'use strict';
+
+  // 9点坐标：[col, row]，索引 0-8 对应 3x3 网格
+  // Canvas 240x240，点直径 20，边距 40，点间距 80
+  const DOT_RADIUS = 10;
+  const DOT_SPACING = 80;
+  const MARGIN = 40;
+  const POINTS = [
+    { x: MARGIN, y: MARGIN },           // 0: 左上
+    { x: MARGIN + DOT_SPACING, y: MARGIN }, // 1: 上中
+    { x: MARGIN + DOT_SPACING * 2, y: MARGIN }, // 2: 右上
+    { x: MARGIN, y: MARGIN + DOT_SPACING }, // 3: 左中
+    { x: MARGIN + DOT_SPACING, y: MARGIN + DOT_SPACING }, // 4: 中心
+    { x: MARGIN + DOT_SPACING * 2, y: MARGIN + DOT_SPACING }, // 5: 右中
+    { x: MARGIN, y: MARGIN + DOT_SPACING * 2 }, // 6: 左下
+    { x: MARGIN + DOT_SPACING, y: MARGIN + DOT_SPACING * 2 }, // 7: 下中
+    { x: MARGIN + DOT_SPACING * 2, y: MARGIN + DOT_SPACING * 2 }, // 8: 右下
+  ];
+
+  // 当前绘制的手势状态
+  let gestureState = {
+    canvas: null,
+    ctx: null,
+    points: [],       // 已经过的点索引
+    currentPath: [],  // 当前路径点（用于绘制连线）
+    isDrawing: false,
+    wrapEl: null,
+    mode: 'set',      // 'set' = 设置手势, 'unlock' = 解锁手势
+  };
+
+  // 获取两点之间的距离
+  function dist(a, b) {
+    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+  }
+
+  // 查找最近的未经过点
+  function findNearestPoint(x, y, usedPoints) {
+    let minDist = DOT_SPACING * 0.6; // 阈值：点间距的60%
+    let found = -1;
+    for (let i = 0; i < POINTS.length; i++) {
+      if (usedPoints.indexOf(i) >= 0) continue;
+      const d = dist({ x, y }, POINTS[i]);
+      if (d < minDist) {
+        minDist = d;
+        found = i;
+      }
+    }
+    return found;
+  }
+
+  // 绘制9点网格和路径
+  function drawGesture() {
+    const { ctx, points, currentPath, canvas } = gestureState;
+    if (!ctx || !canvas) return;
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // 绘制连线
+    ctx.strokeStyle = 'var(--color-primary-500, #6366f1)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (points.length >= 2) {
+      ctx.beginPath();
+      ctx.moveTo(POINTS[points[0]].x, POINTS[points[0]].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(POINTS[points[i]].x, POINTS[points[i]].y);
+      }
+      // 如果有当前鼠标/触摸位置，绘制到当前位置的线
+      if (currentPath.length > 0) {
+        const last = POINTS[points[points.length - 1]];
+        ctx.lineTo(currentPath[0].x, currentPath[0].y);
+      }
+      ctx.stroke();
+    } else if (currentPath.length > 0 && points.length === 1) {
+      ctx.beginPath();
+      ctx.moveTo(POINTS[points[0]].x, POINTS[points[0]].y);
+      ctx.lineTo(currentPath[0].x, currentPath[0].y);
+      ctx.stroke();
+    }
+
+    // 绘制9个点
+    for (let i = 0; i < POINTS.length; i++) {
+      const p = POINTS[i];
+      const isUsed = points.indexOf(i) >= 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, DOT_RADIUS, 0, Math.PI * 2);
+      if (isUsed) {
+        ctx.fillStyle = 'var(--color-primary-500, #6366f1)';
+      } else {
+        ctx.fillStyle = 'var(--border-color, #d1d5db)';
+      }
+      ctx.fill();
+      ctx.strokeStyle = isUsed ? 'var(--color-primary-600, #4f46e5)' : 'var(--color-neutral-300, #d1d5db)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  // 序列化手势路径（去重后的点序列）
+  function serializeGesture(points) {
+    if (!points || points.length < 4) return '';
+    // 返回点序列字符串，如 "0-1-2-5-8"
+    return points.join('-');
+  }
+
+  // 初始化手势Canvas
+  function initGestureCanvas(canvasId, mode) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    const ctx = canvas.getContext('2d');
+    const wrapEl = canvas.parentElement;
+
+    gestureState = {
+      canvas, ctx, points: [], currentPath: [],
+      isDrawing: false, wrapEl, mode,
+    };
+
+    // 绘制初始状态
+    drawGesture();
+
+    // 鼠标事件
+    const getPos = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
+      };
+    };
+
+    const onStart = (pos) => {
+      const idx = findNearestPoint(pos.x, pos.y, []);
+      if (idx >= 0) {
+        gestureState.isDrawing = true;
+        gestureState.points = [idx];
+        gestureState.currentPath = [{ x: pos.x, y: pos.y }];
+        drawGesture();
+      }
+    };
+
+    const onMove = (pos) => {
+      if (!gestureState.isDrawing) return;
+      gestureState.currentPath = [{ x: pos.x, y: pos.y }];
+      const idx = findNearestPoint(pos.x, pos.y, gestureState.points);
+      if (idx >= 0) {
+        gestureState.points.push(idx);
+      }
+      drawGesture();
+    };
+
+    const onEnd = () => {
+      if (!gestureState.isDrawing) return;
+      gestureState.isDrawing = false;
+      gestureState.currentPath = [];
+      drawGesture();
+
+      // 回调：手势绘制完成
+      if (typeof gestureState.onComplete === 'function') {
+        gestureState.onComplete(serializeGesture(gestureState.points), gestureState.points);
+      }
+    };
+
+    canvas.onmousedown = (e) => { e.preventDefault(); onStart(getPos(e)); };
+    canvas.onmousemove = (e) => { if (gestureState.isDrawing) onMove(getPos(e)); };
+    canvas.onmouseup = () => onEnd();
+    canvas.onmouseleave = () => { if (gestureState.isDrawing) onEnd(); };
+
+    // 触摸事件
+    canvas.ontouchstart = (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      onStart(getPos(touch));
+    };
+    canvas.ontouchmove = (e) => {
+      e.preventDefault();
+      if (gestureState.isDrawing) {
+        const touch = e.touches[0];
+        onMove(getPos(touch));
+      }
+    };
+    canvas.ontouchend = (e) => { e.preventDefault(); onEnd(); };
+
+    return {
+      reset: () => {
+        gestureState.points = [];
+        gestureState.currentPath = [];
+        gestureState.isDrawing = false;
+        drawGesture();
+      },
+      getPattern: () => serializeGesture(gestureState.points),
+      getPoints: () => gestureState.points.slice(),
+    };
+  }
+
+  // ── 设置手势 ────────────────────────────────────────────────
+  let gestureSetApi = null;
+
+  function initGestureSetting() {
+    const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
+    document.getElementById('gesture-not-set').style.display = hasGesture ? 'none' : 'flex';
+    document.getElementById('gesture-has-set').style.display = hasGesture ? 'block' : 'none';
+    document.getElementById('btn-reset-pw-by-gesture').disabled = !hasGesture;
+
+    if (!hasGesture) {
+      // 初始化设置Canvas
+      setTimeout(() => {
+        gestureSetApi = initGestureCanvas('gesture-set-canvas', 'set');
+        if (gestureSetApi) {
+          gestureState.onComplete = (pattern, points) => {
+            if (points.length < 4) {
+              document.getElementById('gesture-set-status').className = 'gesture-status error';
+              document.getElementById('gesture-set-status').textContent = '至少连接4个点，当前：' + points.length;
+              document.getElementById('btn-gesture-save').disabled = true;
+              return;
+            }
+            document.getElementById('gesture-set-status').className = 'gesture-status success';
+            document.getElementById('gesture-set-status').textContent = '手势已记录：' + pattern;
+            document.getElementById('btn-gesture-save').disabled = false;
+          };
+        }
+      }, 100);
+    }
+  }
+
+  // 保存手势
+  document.getElementById('btn-gesture-save').onclick = () => {
+    const pattern = gestureSetApi ? gestureSetApi.getPattern() : '';
+    if (!pattern || pattern.split('-').length < 4) {
+      showToast('请先绘制有效手势（至少4个点）', 'error');
+      return;
+    }
+    Store.data.gesturePattern = pattern;
+    Store.markDirty();
+    Store.save().then(() => {
+      showToast('解锁手势已保存', 'success');
+      initGestureSetting();
+    });
+  };
+
+  // 重新绘制
+  document.getElementById('btn-gesture-reset').onclick = () => {
+    if (gestureSetApi) gestureSetApi.reset();
+    document.getElementById('gesture-set-status').textContent = '';
+    document.getElementById('gesture-set-status').className = 'gesture-status';
+    document.getElementById('btn-gesture-save').disabled = true;
+  };
+
+  // 清除手势
+  document.getElementById('btn-gesture-clear').onclick = () => {
+    confirmDialog('清除解锁手势', '清除后只能通过密码登录，是否继续？', false, () => {
+      Store.data.gesturePattern = '';
+      Store.markDirty();
+      Store.save().then(() => {
+        showToast('解锁手势已清除', 'success');
+        initGestureSetting();
+      });
+    });
+  };
+
+  // 重新设置手势
+  document.getElementById('btn-gesture-reset-all').onclick = () => {
+    document.getElementById('gesture-not-set').style.display = 'flex';
+    document.getElementById('gesture-has-set').style.display = 'none';
+    setTimeout(() => initGestureSetting(), 50);
+  };
+
+  // ── 手势登录 ────────────────────────────────────────────────
+  let gestureUnlockApi = null;
+
+  function initUnlockGestureMode() {
+    setTimeout(() => {
+      gestureUnlockApi = initGestureCanvas('unlock-gesture-canvas', 'unlock');
+      if (gestureUnlockApi) {
+        gestureState.onComplete = (pattern, points) => {
+          if (!pattern) return;
+          const saved = Store.data.gesturePattern;
+          const statusEl = document.getElementById('unlock-gesture-status');
+          if (pattern === saved) {
+            statusEl.className = 'gesture-status success';
+            statusEl.textContent = '手势验证成功，请输入密码';
+            // 自动填充用户名并切换到密码模式
+            const unEl = document.getElementById('unlock-username');
+            if (unEl && Store.data.username) unEl.value = Store.data.username;
+            setTimeout(() => {
+              document.getElementById('btn-unlock-pw-mode').click();
+              document.getElementById('unlock-password').focus();
+            }, 800);
+          } else {
+            statusEl.className = 'gesture-status error';
+            statusEl.textContent = '手势错误，请重试';
+            if (gestureUnlockApi) gestureUnlockApi.reset();
+          }
+        };
+      }
+    }, 100);
+  }
+
+  // 切换解锁模式（密码/手势）
+  document.getElementById('btn-unlock-pw-mode').onclick = () => {
+    document.getElementById('btn-unlock-pw-mode').classList.add('active');
+    document.getElementById('btn-unlock-gesture-mode').classList.remove('active');
+    document.getElementById('unlock-pw-form').style.display = 'block';
+    document.getElementById('unlock-gesture-form').style.display = 'none';
+  };
+
+  document.getElementById('btn-unlock-gesture-mode').onclick = () => {
+    const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
+    if (!hasGesture) {
+      showToast('请先在"数据与安全"中设置解锁手势', 'warning');
+      return;
+    }
+    document.getElementById('btn-unlock-gesture-mode').classList.add('active');
+    document.getElementById('btn-unlock-pw-mode').classList.remove('active');
+    document.getElementById('unlock-pw-form').style.display = 'none';
+    document.getElementById('unlock-gesture-form').style.display = 'block';
+    initUnlockGestureMode();
+  };
+
+  // 重新绘制（解锁时）
+  const btnUnlockGestureReset = document.getElementById('btn-unlock-gesture-reset');
+  if (btnUnlockGestureReset) {
+    btnUnlockGestureReset.onclick = () => {
+      if (gestureUnlockApi) gestureUnlockApi.reset();
+      document.getElementById('unlock-gesture-status').textContent = '';
+      document.getElementById('unlock-gesture-status').className = 'gesture-status';
+    };
+  }
+
+  // ── 通过手势重置密码 ─────────────────────────────────────────
+  document.getElementById('btn-reset-pw-by-gesture').onclick = () => {
+    // 打开手势验证弹窗
+    openModal({
+      title: '通过手势重置密码',
+      size: 'sm',
+      bodyHTML: `
+        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+          请绘制您的解锁手势以验证身份，验证通过后可设置新密码。
+        </div>
+        <div class="gesture-container">
+          <div class="gesture-canvas-wrap" id="reset-gesture-canvas-wrap">
+            <canvas id="reset-gesture-canvas" width="240" height="240"></canvas>
+          </div>
+          <div class="gesture-hint" id="reset-gesture-hint">请绘制解锁手势</div>
+          <div class="gesture-status" id="reset-gesture-status"></div>
+        </div>
+      `,
+      footerHTML: '',
+    });
+
+    setTimeout(() => {
+      const resetApi = initGestureCanvas('reset-gesture-canvas', 'unlock');
+      if (resetApi) {
+        gestureState.onComplete = (pattern) => {
+          const saved = Store.data.gesturePattern;
+          const statusEl = document.getElementById('reset-gesture-status');
+          if (pattern === saved) {
+            statusEl.className = 'gesture-status success';
+            statusEl.textContent = '手势验证成功，请设置新密码';
+            // 关闭弹窗，打开设置新密码弹窗
+            closeModal();
+            setTimeout(() => openResetPwByGestureDialog(), 300);
+          } else {
+            statusEl.className = 'gesture-status error';
+            statusEl.textContent = '手势错误，请重试';
+          }
+        };
+      }
+    }, 200);
+  };
+
+  function openResetPwByGestureDialog() {
+    openModal({
+      title: '设置新密码',
+      size: 'sm',
+      bodyHTML: `
+        <div class="auth-group">
+          <label class="label required">新密码（至少6位）</label>
+          <input type="password" id="reset-pw-new" class="input" placeholder="至少6位" autocomplete="off">
+        </div>
+        <div class="auth-group">
+          <label class="label required">再次输入新密码</label>
+          <input type="password" id="reset-pw-confirm" class="input" placeholder="再次输入相同密码" autocomplete="off">
+          <div class="error-text" id="reset-pw-error" style="display:none;">两次密码不一致</div>
+          <div class="success-text" id="reset-pw-match" style="display:none;font-size:12px;color:var(--color-success);margin-top:4px;">✓ 两次密码一致</div>
+        </div>
+      `,
+      footerHTML: '<button class="btn btn-primary" id="btn-do-reset-pw">确认修改</button>',
+    });
+
+    // 实时比对
+    const pw1 = document.getElementById('reset-pw-new');
+    const pw2 = document.getElementById('reset-pw-confirm');
+    if (pw1 && pw2) {
+      const check = () => {
+        if (!pw2.value) {
+          document.getElementById('reset-pw-error').style.display = 'none';
+          document.getElementById('reset-pw-match').style.display = 'none';
+          return;
+        }
+        if (pw1.value === pw2.value && pw1.value.length >= 6) {
+          document.getElementById('reset-pw-error').style.display = 'none';
+          document.getElementById('reset-pw-match').style.display = 'block';
+        } else {
+          document.getElementById('reset-pw-match').style.display = 'none';
+        }
+      };
+      pw1.oninput = check;
+      pw2.oninput = check;
+    }
+
+    document.getElementById('btn-do-reset-pw').onclick = async () => {
+      const newPw = document.getElementById('reset-pw-new').value;
+      const confirmPw = document.getElementById('reset-pw-confirm').value;
+      if (!newPw || newPw.length < 6) { showToast('密码至少6位', 'error'); return; }
+      if (newPw !== confirmPw) {
+        document.getElementById('reset-pw-error').style.display = 'block';
+        return;
+      }
+      // 用新密码重新加密并保存数据
+      try {
+        Store.password = newPw;
+        await Store.save();
+        Store.addLog('密码修改', '成功', '通过手势验证重置密码');
+        showToast('密码已重置，下次请使用新密码登录', 'success');
+        closeModal();
+      } catch (e) {
+        showToast('密码重置失败：' + e.message, 'error');
+      }
+    };
+  }
+
+  // ── 手势设置初始化（在进入安全页面时调用）────────────────────────────
+  window.initGestureSettingOnce = function() {
+    if (document.getElementById('gesture-not-set') ||
+        document.getElementById('gesture-has-set')) {
+      initGestureSetting();
+    }
+    // 同时初始化密保问题显示
+    initSecurityQuestionsUI();
+  };
+
+  // ── 密保问题模块 ──────────────────────────────────────────────
+  function initSecurityQuestionsUI() {
+    const hasSQ = Array.isArray(Store.data.securityQuestions) && Store.data.securityQuestions.length === 2;
+    // 同步明文标志位
+    if (hasSQ) {
+      localStorage.setItem('crm_has_sq', '1');
+    } else {
+      localStorage.removeItem('crm_has_sq');
+    }
+    const notSetEl = document.getElementById('sq-not-set');
+    const hasSetEl = document.getElementById('sq-has-set');
+    if (!notSetEl || !hasSetEl) return;
+    notSetEl.style.display = hasSQ ? 'none' : 'flex';
+    hasSetEl.style.display = hasSQ ? 'block' : 'none';
+    // 更新重置密码按钮状态
+    const btn1 = document.getElementById('btn-reset-pw-by-sq-settings');
+    if (btn1) btn1.disabled = !hasSQ;
+  }
+
+  // 保存密保问题
+  const btnSqSave = document.getElementById('btn-sq-save');
+  if (btnSqSave) {
+    btnSqSave.onclick = () => {
+      const q1 = document.getElementById('sq-q1').value.trim();
+      const a1 = document.getElementById('sq-a1').value.trim();
+      const q2 = document.getElementById('sq-q2').value.trim();
+      const a2 = document.getElementById('sq-a2').value.trim();
+      if (!q1 || !a1 || !q2 || !a2) {
+        showToast('请完整填写2个密保问题和答案', 'error');
+        return;
+      }
+      Store.data.securityQuestions = [
+        { q: q1, a: a1.toLowerCase() },
+        { q: q2, a: a2.toLowerCase() }
+      ];
+      localStorage.setItem('crm_has_sq', '1');
+      Store.markDirty();
+      Store.save().then(() => {
+        showToast('密保问题已保存', 'success');
+        initSecurityQuestionsUI();
+      });
+    };
+  }
+
+  // 取消设置密保
+  const btnSqCancel = document.getElementById('btn-sq-cancel');
+  if (btnSqCancel) {
+    btnSqCancel.onclick = () => {
+      document.getElementById('sq-q1').value = '';
+      document.getElementById('sq-a1').value = '';
+      document.getElementById('sq-q2').value = '';
+      document.getElementById('sq-a2').value = '';
+      initSecurityQuestionsUI();
+    };
+  }
+
+  // 清除密保问题
+  const btnSqClear = document.getElementById('btn-sq-clear');
+  if (btnSqClear) {
+    btnSqClear.onclick = () => {
+      confirmDialog('清除密保问题', '清除后忘记密码将无法通过密保问题重置，是否继续？', false, () => {
+        Store.data.securityQuestions = [];
+        localStorage.removeItem('crm_has_sq');
+        Store.markDirty();
+        Store.save().then(() => {
+          showToast('密保问题已清除', 'success');
+          initSecurityQuestionsUI();
+        });
+      });
+    };
+  }
+
+  // 修改密保问题
+  const btnSqEdit = document.getElementById('btn-sq-edit');
+  if (btnSqEdit) {
+    btnSqEdit.onclick = () => {
+      const sq = Store.data.securityQuestions;
+      if (Array.isArray(sq) && sq.length === 2) {
+        document.getElementById('sq-q1').value = sq[0].q || '';
+        document.getElementById('sq-a1').value = '';
+        document.getElementById('sq-q2').value = sq[1].q || '';
+        document.getElementById('sq-a2').value = '';
+      }
+      document.getElementById('sq-not-set').style.display = 'flex';
+      document.getElementById('sq-has-set').style.display = 'none';
+    };
+  }
+
+  // ── 通过密保问题重置密码（从解锁页面"忘记密码"进入）────────────────────────────
+  window.openResetBySecurityQuestionsDialog = function() {
+    const sq = Store.data.securityQuestions;
+    if (!Array.isArray(sq) || sq.length !== 2) {
+      showToast('未设置密保问题，请先注册并设置密保问题', 'error');
+      return;
+    }
+    openModal({
+      title: '通过密保问题重置密码',
+      size: 'sm',
+      bodyHTML: `
+        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+          请回答以下密保问题以验证身份：
+        </div>
+        <div class="auth-group" style="margin-bottom:10px;">
+          <label class="label required">${escapeHTML(sq[0].q)}</label>
+          <input type="text" id="sq-answer-1" class="input" placeholder="请输入答案" autocomplete="off">
+        </div>
+        <div class="auth-group" style="margin-bottom:10px;">
+          <label class="label required">${escapeHTML(sq[1].q)}</label>
+          <input type="text" id="sq-answer-2" class="input" placeholder="请输入答案" autocomplete="off">
+        </div>
+        <div class="error-text" id="sq-verify-error" style="display:none;">答案错误，请重试</div>
+      `,
+      footerHTML: '<button class="btn btn-primary" id="btn-sq-verify">验证并重置密码</button>',
+    });
+
+    document.getElementById('btn-sq-verify').onclick = () => {
+      const ans1 = document.getElementById('sq-answer-1').value.trim().toLowerCase();
+      const ans2 = document.getElementById('sq-answer-2').value.trim().toLowerCase();
+      if (ans1 === sq[0].a && ans2 === sq[1].a) {
+        closeModal();
+        setTimeout(() => openSetNewPasswordDialog(), 300);
+      } else {
+        document.getElementById('sq-verify-error').style.display = 'block';
+      }
+    };
+  };
+
+  // ── 通用：设置新密码弹窗 ──────────────────────────────────
+  function openSetNewPasswordDialog() {
+    openModal({
+      title: '设置新密码',
+      size: 'sm',
+      bodyHTML: `
+        <div class="auth-group">
+          <label class="label required">新密码（至少6位）</label>
+          <input type="password" id="reset-pw-new-final" class="input" placeholder="至少6位" autocomplete="off">
+        </div>
+        <div class="auth-group">
+          <label class="label required">再次输入新密码</label>
+          <input type="password" id="reset-pw-confirm-final" class="input" placeholder="再次输入相同密码" autocomplete="off">
+          <div class="error-text" id="reset-pw-error-final" style="display:none;">两次密码不一致</div>
+          <div class="success-text" id="reset-pw-match-final" style="display:none;font-size:12px;color:var(--color-success);margin-top:4px;">✓ 两次密码一致</div>
+        </div>
+      `,
+      footerHTML: '<button class="btn btn-primary" id="btn-do-reset-pw-final">确认修改</button>',
+    });
+
+    // 实时比对
+    const pw1 = document.getElementById('reset-pw-new-final');
+    const pw2 = document.getElementById('reset-pw-confirm-final');
+    if (pw1 && pw2) {
+      const check = () => {
+        if (!pw2.value) {
+          document.getElementById('reset-pw-error-final').style.display = 'none';
+          document.getElementById('reset-pw-match-final').style.display = 'none';
+          return;
+        }
+        if (pw1.value === pw2.value && pw1.value.length >= 6) {
+          document.getElementById('reset-pw-error-final').style.display = 'none';
+          document.getElementById('reset-pw-match-final').style.display = 'block';
+        } else {
+          document.getElementById('reset-pw-match-final').style.display = 'none';
+        }
+      };
+      pw1.oninput = check;
+      pw2.oninput = check;
+    }
+
+    document.getElementById('btn-do-reset-pw-final').onclick = async () => {
+      const newPw = document.getElementById('reset-pw-new-final').value;
+      const confirmPw = document.getElementById('reset-pw-confirm-final').value;
+      if (!newPw || newPw.length < 6) { showToast('密码至少6位', 'error'); return; }
+      if (newPw !== confirmPw) {
+        document.getElementById('reset-pw-error-final').style.display = 'block';
+        return;
+      }
+      try {
+        Store.password = newPw;
+        await Store.save();
+        Store.addLog('密码修改', '成功', '通过密保问题/手势重置密码');
+        showToast('密码已重置，下次请使用新密码登录', 'success');
+        closeModal();
+        // 回到解锁页面
+        setTimeout(initAuthPage, 500);
+      } catch (e) {
+        showToast('密码重置失败：' + e.message, 'error');
+      }
+    };
+  }
+
+  // ── 设置页面：通过密保问题重置密码 ─────────────────────────
+  const btnResetBySqSettings = document.getElementById('btn-reset-pw-by-sq-settings');
+  if (btnResetBySqSettings) {
+    btnResetBySqSettings.onclick = () => {
+      const sq = Store.data.securityQuestions;
+      if (!Array.isArray(sq) || sq.length !== 2) {
+        showToast('请先在"数据与安全"中设置密保问题', 'warning');
+        return;
+      }
+      openResetBySecurityQuestionsDialog();
+    };
+  }
+
+  // ── 设置页面：验证当前密码重置 ─────────────────────────────
+  const btnResetByCurPw = document.getElementById('btn-reset-pw-by-cur-pw-settings');
+  if (btnResetByCurPw) {
+    btnResetByCurPw.onclick = () => {
+      openModal({
+        title: '验证当前密码',
+        size: 'sm',
+        bodyHTML: `
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            请输入当前解锁密码以验证身份：
+          </div>
+          <div class="auth-group">
+            <label class="label required">当前密码</label>
+            <input type="password" id="cur-pw-input" class="input" placeholder="请输入当前密码" autocomplete="off">
+            <div class="error-text" id="cur-pw-error" style="display:none;">密码错误</div>
+          </div>
+        `,
+        footerHTML: '<button class="btn btn-primary" id="btn-verify-cur-pw">验证</button>',
+      });
+
+      document.getElementById('btn-verify-cur-pw').onclick = async () => {
+        const curPw = document.getElementById('cur-pw-input').value;
+        if (!curPw) return;
+        // 验证密码：尝试用输入的密码解密数据
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) throw new Error('无数据');
+          await decryptData(raw, curPw);
+          // 密码正确
+          closeModal();
+          setTimeout(() => openSetNewPasswordDialog(), 300);
+        } catch (e) {
+          document.getElementById('cur-pw-error').style.display = 'block';
+        }
+      };
+    };
+  }
+
+  // ── 设置页面：验证手势重置密码 ─────────────────────────────
+  const btnResetByGestureSettings = document.getElementById('btn-reset-pw-by-gesture-settings');
+  if (btnResetByGestureSettings) {
+    btnResetByGestureSettings.onclick = () => {
+      const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
+      if (!hasGesture) {
+        showToast('请先在"数据与安全"中设置解锁手势', 'warning');
+        return;
+      }
+      openModal({
+        title: '验证解锁手势',
+        size: 'sm',
+        bodyHTML: `
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            请绘制您的解锁手势以验证身份：
+          </div>
+          <div class="gesture-container">
+            <div class="gesture-canvas-wrap" id="settings-gesture-canvas-wrap">
+              <canvas id="settings-gesture-canvas" width="240" height="240"></canvas>
+            </div>
+            <div class="gesture-hint" id="settings-gesture-hint">请绘制解锁手势</div>
+            <div class="gesture-status" id="settings-gesture-status"></div>
+          </div>
+        `,
+        footerHTML: '',
+      });
+
+      setTimeout(() => {
+        const settingsGestureApi = initGestureCanvas('settings-gesture-canvas', 'unlock');
+        if (settingsGestureApi) {
+          gestureState.onComplete = (pattern) => {
+            const saved = Store.data.gesturePattern;
+            const statusEl = document.getElementById('settings-gesture-status');
+            if (pattern === saved) {
+              statusEl.className = 'gesture-status success';
+              statusEl.textContent = '手势验证成功';
+              closeModal();
+              setTimeout(() => openSetNewPasswordDialog(), 300);
+            } else {
+              statusEl.className = 'gesture-status error';
+              statusEl.textContent = '手势错误，请重试';
+            }
+          };
+        }
+      }, 200);
+    };
+  }
+
 })();
 </script>
 </body>
