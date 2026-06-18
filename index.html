@@ -210,7 +210,16 @@
 }
 [data-theme="dark"] .table-wrap {
   background: var(--bg-secondary);
+  scrollbar-color: var(--color-neutral-500) transparent;
 }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-500);
+  border-color: var(--bg-secondary);
+}
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
 [data-theme="dark"] .data-table th {
   background: rgba(255,255,255,0.04);
   border-bottom-color: var(--border-color);
@@ -1742,6 +1751,25 @@ input[type="checkbox"]:checked {
   border: 1px solid var(--color-neutral-200);
   box-shadow: var(--shadow-sm);
   overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-neutral-300) transparent;
+}
+.table-wrap::-webkit-scrollbar {
+  height: 8px;
+}
+.table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+.table-wrap::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: 4px;
+  border: 2px solid var(--color-neutral-0);
+}
+.table-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
 }
 table.data-table {
   width: 100%;
@@ -1795,6 +1823,30 @@ table.data-table {
   transition: opacity 0.15s var(--ease-out);
 }
 .data-table tbody tr:hover .table-actions { opacity: 1; }
+
+.col-custom-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+.col-custom-item[draggable="true"] {
+  cursor: grab;
+}
+.col-custom-item[draggable="true"]:active {
+  cursor: grabbing;
+}
+.col-drag-handle {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  user-select: none;
+}
 
 .data-table th:not(:last-child) {
   border-right: 3px solid transparent;
@@ -2799,6 +2851,7 @@ html.scrolling {
             <button class="btn btn-sm btn-outline" id="btn-reset-filter">重置</button>
             <button class="btn btn-sm" id="btn-new-customer">➕ 新增客户</button>
             <button class="btn btn-sm btn-outline" id="btn-add-to-channel">📤 添加到</button>
+            <button class="btn btn-sm btn-outline" id="btn-customize-columns">🏷️ 自定义标签</button>
             <button class="btn btn-sm btn-danger" id="btn-batch-delete">🗑 批量删除</button>
           </div>
         </div>
@@ -2806,7 +2859,7 @@ html.scrolling {
         <div class="table-wrap">
           <table class="data-table" id="customer-table">
             <thead>
-              <tr>
+              <tr id="customer-thead-row">
                 <th style="width:40px;"><input type="checkbox" id="check-all"></th>
                 <th style="width:50px;">序号</th>
                 <th data-sort="name">姓名 ▾</th>
@@ -4445,6 +4498,183 @@ let listState = {
   page: 1, pageSize: 10, selected: new Set()
 };
 
+const COLUMN_DEFS = [
+  { key: 'name', label: '姓名', sortable: true },
+  { key: 'phone', label: '手机号', sortable: true },
+  { key: 'wechat', label: '微信' },
+  { key: 'level', label: '等级', sortable: true },
+  { key: 'product', label: '意向产品' },
+  { key: 'budget', label: '预算范围' },
+  { key: 'source', label: '来源', sortable: true },
+  { key: 'status', label: '成交状态', sortable: true },
+  { key: 'industry', label: '行业' },
+  { key: 'industryLevel1', label: '一级行业' },
+  { key: 'industryLevel2', label: '二级行业' },
+  { key: 'website', label: '网址' },
+  { key: 'createdAt', label: '录入时间', sortable: true }
+];
+
+function getColumnConfig() {
+  let config;
+  try {
+    const raw = localStorage.getItem('crm_col_config');
+    if (raw) config = JSON.parse(raw);
+  } catch (e) {}
+  if (!Array.isArray(config)) {
+    config = COLUMN_DEFS.map(d => ({ key: d.key, visible: true }));
+  } else {
+    COLUMN_DEFS.forEach(def => {
+      if (!config.find(c => c.key === def.key)) {
+        config.push({ key: def.key, visible: true });
+      }
+    });
+  }
+  let nameIdx = config.findIndex(c => c.key === 'name');
+  if (nameIdx > 0) {
+    const item = config.splice(nameIdx, 1)[0];
+    item.visible = true;
+    config.unshift(item);
+  } else if (nameIdx === -1) {
+    config.unshift({ key: 'name', visible: true });
+  } else {
+    config[nameIdx].visible = true;
+  }
+  config.forEach(c => { if (c.visible === undefined) c.visible = true; });
+  return config;
+}
+
+function saveColumnConfig(config) {
+  localStorage.setItem('crm_col_config', JSON.stringify(config));
+}
+
+function renderColumnHeaders(config) {
+  let html = '';
+  config.forEach(c => {
+    if (!c.visible) return;
+    const def = COLUMN_DEFS.find(d => d.key === c.key);
+    if (!def) return;
+    const sortAttr = def.sortable ? ` data-sort="${c.key}"` : '';
+    html += `<th${sortAttr}>${escapeHTML(def.label)} ${def.sortable ? '▾' : ''}</th>`;
+  });
+  return html;
+}
+
+function renderColumnCells(c, config, start, i, masked) {
+  let html = '';
+  config.forEach(col => {
+    if (!col.visible) return;
+    const key = col.key;
+    if (key === 'name') {
+      html += `<td><strong>${escapeHTML(masked.name || '-')}</strong></td>`;
+    } else if (key === 'phone') {
+      html += `<td>${escapeHTML(masked.phone || '-')}</td>`;
+    } else if (key === 'level') {
+      html += `<td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>`;
+    } else if (key === 'product') {
+      const p = c.product || '-';
+      html += `<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(p)}">${escapeHTML(p)}</td>`;
+    } else if (key === 'source') {
+      html += `<td>${escapeHTML(c.source || '-')}</td>`;
+    } else if (key === 'status') {
+      html += `<td><span class="badge ${statusClass(c.status)}">${escapeHTML(c.status || '-')}</span></td>`;
+    } else if (key === 'industry') {
+      const display = c.industryLevel1 ? (c.industryLevel2 ? `${escapeHTML(c.industryLevel1)} / ${escapeHTML(c.industryLevel2)}` : escapeHTML(c.industryLevel1)) : '-';
+      html += `<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${display}">${display}</td>`;
+    } else if (key === 'createdAt') {
+      html += `<td>${formatDate(c.createdAt)}</td>`;
+    } else if (key === 'wechat') {
+      html += `<td>${escapeHTML(masked.wechat || '-')}</td>`;
+    } else if (key === 'budget') {
+      html += `<td>${escapeHTML(c.budget || '-')}</td>`;
+    } else if (key === 'industryLevel1') {
+      html += `<td>${escapeHTML(c.industryLevel1 || '-')}</td>`;
+    } else if (key === 'industryLevel2') {
+      html += `<td>${escapeHTML(c.industryLevel2 || '-')}</td>`;
+    } else if (key === 'website') {
+      html += `<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(c.website || '')}">${escapeHTML(c.website || '-')}</td>`;
+    }
+  });
+  return html;
+}
+
+function openColumnCustomizer() {
+  let config = getColumnConfig();
+  let itemsHtml = '';
+  config.forEach((c, idx) => {
+    const def = COLUMN_DEFS.find(d => d.key === c.key);
+    if (!def) return;
+    const disabled = c.key === 'name' ? ' disabled' : '';
+    const checked = c.visible ? 'checked' : '';
+    const drag = c.key === 'name' ? ' style="opacity:0.5;cursor:default;"' : ' draggable="true"';
+    itemsHtml += `<div class="col-custom-item" data-key="${c.key}" data-idx="${idx}"${drag}>
+      <span class="col-drag-handle">⠿</span>
+      <label style="display:flex;align-items:center;gap:6px;flex:1;cursor:pointer;">
+        <input type="checkbox" class="col-visibility-chk" ${checked}${disabled}>
+        <span>${escapeHTML(def.label)}</span>
+      </label>
+    </div>`;
+  });
+
+  openModal({
+    title: '自定义列显示', size: 'sm',
+    bodyHTML: `<div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">勾选显示的列，拖拽调整顺序（姓名固定为首列不可隐藏）</div>
+      <div id="col-custom-list" style="display:flex;flex-direction:column;gap:4px;">${itemsHtml}</div>`,
+    footer: (f) => {
+      const cancel = document.createElement('button'); cancel.className = 'btn btn-sm btn-outline'; safeText(cancel, '取消');
+      const save = document.createElement('button'); save.className = 'btn btn-sm btn-primary'; safeText(save, '保存');
+      f.appendChild(cancel); f.appendChild(save);
+      cancel.onclick = closeModal;
+
+      const list = document.getElementById('col-custom-list');
+      let dragItem = null;
+
+      list.querySelectorAll('.col-custom-item[draggable]').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          dragItem = item;
+          item.style.opacity = '0.4';
+        });
+        item.addEventListener('dragend', () => {
+          if (dragItem) dragItem.style.opacity = '';
+          dragItem = null;
+          list.querySelectorAll('.col-custom-item').forEach(el => el.style.borderColor = '');
+        });
+        item.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          list.querySelectorAll('.col-custom-item').forEach(el => el.style.borderColor = '');
+          item.style.borderColor = 'var(--accent)';
+        });
+        item.addEventListener('dragleave', () => { item.style.borderColor = ''; });
+        item.addEventListener('drop', (e) => {
+          e.preventDefault();
+          item.style.borderColor = '';
+          if (!dragItem || dragItem === item) return;
+          const parent = list;
+          const items = [...parent.querySelectorAll('.col-custom-item')];
+          const fromIdx = items.indexOf(dragItem);
+          const toIdx = items.indexOf(item);
+          if (fromIdx < toIdx) {
+            parent.insertBefore(dragItem, item.nextSibling);
+          } else {
+            parent.insertBefore(dragItem, item);
+          }
+        });
+      });
+
+      save.onclick = () => {
+        const newConfig = [];
+        list.querySelectorAll('.col-custom-item').forEach(el => {
+          const key = el.dataset.key;
+          const chk = el.querySelector('.col-visibility-chk');
+          newConfig.push({ key, visible: chk.checked });
+        });
+        saveColumnConfig(newConfig);
+        closeModal();
+        renderCustomerTable();
+      };
+    }
+  });
+}
+
 function renderFilterSources() {
   const sel = document.getElementById('filter-source');
   if (!sel) return;
@@ -4500,55 +4730,63 @@ function applyListFilters() {
   return arr;
 }
 
+let _dragState = null;
+
 function initColumnResizers() {
   const table = document.getElementById('customer-table');
-  if (!table || table.dataset.resizers === '1') return;
-  table.dataset.resizers = '1';
+  if (!table) return;
 
   const headers = table.querySelectorAll('thead th');
-  let dragState = null;
 
   headers.forEach((th, index) => {
     if (index === headers.length - 1) return;
-    th.addEventListener('mousedown', (e) => {
+    th._resizerHandler && th.removeEventListener('mousedown', th._resizerHandler);
+    const handler = (e) => {
       const rect = th.getBoundingClientRect();
       if (rect.right - e.clientX > 8) return;
       e.preventDefault();
       e.stopPropagation();
-      dragState = { th, startX: e.clientX, startWidth: rect.width, moved: false };
+      _dragState = { th, startX: e.clientX, startWidth: rect.width, moved: false };
       table.classList.add('resizing');
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
+    };
+    th._resizerHandler = handler;
+    th.addEventListener('mousedown', handler);
+  });
+
+  if (!table.dataset.resizersInit) {
+    table.dataset.resizersInit = '1';
+
+    document.addEventListener('mousemove', (e) => {
+      if (!_dragState) return;
+      if (Math.abs(e.clientX - _dragState.startX) > 3) _dragState.moved = true;
+      const diff = e.clientX - _dragState.startX;
+      let newWidth = _dragState.startWidth + diff;
+      if (newWidth < 60) newWidth = 60;
+      _dragState.th.style.width = newWidth + 'px';
     });
-  });
 
-  document.addEventListener('mousemove', (e) => {
-    if (!dragState) return;
-    if (Math.abs(e.clientX - dragState.startX) > 3) dragState.moved = true;
-    const diff = e.clientX - dragState.startX;
-    let newWidth = dragState.startWidth + diff;
-    if (newWidth < 60) newWidth = 60;
-    dragState.th.style.width = newWidth + 'px';
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (!dragState) return;
-    const moved = dragState.moved;
-    dragState = null;
-    const tbl = document.getElementById('customer-table');
-    if (tbl) tbl.classList.remove('resizing');
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-    if (moved) {
-      document.body.dataset.colDrag = '1';
-      setTimeout(() => { delete document.body.dataset.colDrag; }, 100);
-    }
-  });
+    document.addEventListener('mouseup', () => {
+      if (!_dragState) return;
+      const moved = _dragState.moved;
+      _dragState = null;
+      const tbl = document.getElementById('customer-table');
+      if (tbl) tbl.classList.remove('resizing');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      if (moved) {
+        document.body.dataset.colDrag = '1';
+        setTimeout(() => { delete document.body.dataset.colDrag; }, 100);
+      }
+    });
+  }
 }
 
 function renderCustomerTable() {
   const tbody = document.getElementById('customer-tbody');
   if (!tbody) return;
+  const theadRow = document.getElementById('customer-thead-row');
   const data = applyListFilters();
   const total = data.length;
   const pageCount = Math.max(1, Math.ceil(total / listState.pageSize));
@@ -4557,28 +4795,32 @@ function renderCustomerTable() {
   const pageData = data.slice(start, start + listState.pageSize);
   const showAll = window.__showPlain !== false;
 
+  const colConfig = getColumnConfig();
+  const visibleCount = colConfig.filter(c => c.visible).length;
+  const totalCols = 2 + visibleCount + 1;
+
+  if (theadRow) {
+    theadRow.innerHTML = `
+      <th style="width:40px;"><input type="checkbox" id="check-all"></th>
+      <th style="width:50px;">序号</th>
+      ${renderColumnHeaders(colConfig)}
+      <th style="width:240px;">操作</th>`;
+  }
+
   tbody.innerHTML = '';
   if (pageData.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="11" style="padding:40px;text-align:center;color:var(--text-muted);">暂无符合条件的客户</td>`;
+    tr.innerHTML = `<td colspan="${totalCols}" style="padding:40px;text-align:center;color:var(--text-muted);">暂无符合条件的客户</td>`;
     tbody.appendChild(tr);
   } else {
     pageData.forEach((c, i) => {
       const tr = document.createElement('tr');
       const masked = showAll ? c : maskCustomer(c);
       const checked = listState.selected.has(c.id) ? 'checked' : '';
-      const industryDisplay = c.industryLevel1 ? (c.industryLevel2 ? `${escapeHTML(c.industryLevel1)} / ${escapeHTML(c.industryLevel2)}` : escapeHTML(c.industryLevel1)) : '-';
       tr.innerHTML = `
         <td><input type="checkbox" data-id="${c.id}" ${checked}></td>
         <td>${start + i + 1}</td>
-        <td><strong>${escapeHTML(masked.name || '-')}</strong></td>
-        <td>${escapeHTML(masked.phone || '-')}</td>
-        <td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>
-        <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(c.product || '')}">${escapeHTML(c.product || '-')}</td>
-        <td>${escapeHTML(c.source || '-')}</td>
-        <td><span class="badge ${statusClass(c.status)}">${escapeHTML(c.status || '-')}</span></td>
-        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${industryDisplay}">${industryDisplay}</td>
-        <td>${formatDate(c.createdAt)}</td>
+        ${renderColumnCells(c, colConfig, start, i, masked)}
         <td>
           <button class="btn btn-sm" data-act="view" data-id="${c.id}">详情</button>
           <button class="btn btn-sm btn-outline" data-act="edit" data-id="${c.id}">编辑</button>
@@ -4672,6 +4914,19 @@ function renderCustomerTable() {
   if (info) safeText(info, `共 ${total} 条  第 ${listState.page}/${pageCount} 页`);
   const pn = document.getElementById('page-num');
   if (pn) safeText(pn, `${listState.page} / ${pageCount}`);
+
+  // 全选 + 自定义列按钮（每次重建表头后重新绑定）
+  const checkAll = document.getElementById('check-all');
+  if (checkAll) {
+    checkAll.onchange = (e) => {
+      const checked = e.target.checked;
+      document.querySelectorAll('#customer-tbody input[type="checkbox"][data-id]').forEach(x => {
+        x.checked = checked;
+        if (checked) listState.selected.add(x.dataset.id);
+        else listState.selected.delete(x.dataset.id);
+      });
+    };
+  }
   initColumnResizers();
 }
 
@@ -8229,8 +8484,11 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
         const header = rows[0];
-        const expectedHeader = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
-        if (header.length !== expectedHeader.length || !header.every((h, i) => h.trim() === expectedHeader[i])) {
+        const oldExpected = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
+        const newExpected = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
+        const isNewFormat = header.length >= 24 && header.every((h, i) => i >= newExpected.length || h.trim() === newExpected[i]);
+        const isOldFormat = header.length === 20 && header.every((h, i) => h.trim() === oldExpected[i]);
+        if (!isNewFormat && !isOldFormat) {
           showToast('表头格式不正确，请使用导出数据的表头格式', 'error');
           return;
         }
@@ -8238,43 +8496,81 @@ document.addEventListener('DOMContentLoaded', function () {
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (row.length === 0 || row.every(c => c.trim() === '')) continue;
-          const customer = {
-            id: uuid(),
-            name: row[0] || '',
-            gender: row[1] || '',
-            age: row[2] ? (function(){ const v=parseInt(row[2]); return isNaN(v)?null:v; })() : null,
-            phone: row[3] || '',
-            wechat: row[4] || '',
-            email: row[5] || '',
-            province: row[6] || '',
-            city: row[7] || '',
-            district: row[8] || '',
-            address: row[9] || '',
-            source: row[10] || '',
-            level: row[11] || (getLevels()[Math.floor(getLevels().length / 2)] || {}).name || '',
-            status: row[12] || '未沟通',
-            product: row[13] || '',
-            budget: row[14] || '',
-            nextFollowDate: row[15] || '',
-            createdAt: row[16] ? parseDateStr(row[16]) || Date.now() : Date.now(),
-            tags: (row[17] || '').split('|').filter(t => t.trim()).map(t => {
+          const customer = {};
+          if (isNewFormat) {
+            customer.id = uuid();
+            customer.name = row[0] || '';
+            customer.gender = row[1] || '';
+            customer.age = row[2] ? (function(){ const v=parseInt(row[2]); return isNaN(v)?null:v; })() : null;
+            customer.phone = row[3] || '';
+            customer.wechat = row[4] || '';
+            customer.email = row[5] || '';
+            customer.province = row[6] || '';
+            customer.city = row[7] || '';
+            customer.district = row[8] || '';
+            customer.address = row[9] || '';
+            customer.source = row[10] || '';
+            customer.level = row[11] || (getLevels()[Math.floor(getLevels().length / 2)] || {}).name || '';
+            customer.status = row[12] || '未沟通';
+            customer.industryLevel1 = row[13] || '';
+            customer.industryLevel2 = row[14] || '';
+            customer.website = row[15] || '';
+            customer.platforms = (row[16] || '').split('|').filter(Boolean);
+            customer.product = row[17] || '';
+            customer.budget = row[18] || '';
+            customer.nextFollowDate = row[19] || '';
+            customer.createdAt = row[20] ? parseDateStr(row[20]) || Date.now() : Date.now();
+            customer.tags = (row[21] || '').split('|').filter(t => t.trim()).map(t => {
               let tag = (Store.data.tags || []).find(x => x.name === t.trim());
               if (!tag) {
                 tag = { id: uuid(), name: t.trim(), color: '#2563eb' };
                 Store.data.tags.push(tag);
               }
               return tag.id;
-            }),
-            remark: row[18] || '',
-            channels: (row[19] || '').split('|').map(s => {
+            });
+            customer.remark = row[22] || '';
+            customer.channels = (row[23] || '').split('|').map(s => {
               const map = { 'GEO': 'geo', '360': '360', 'Bing': 'bing', '百度': 'baidu', '抖音': 'douyin', '闲鱼': 'xianyu' };
               return map[s.trim()] || s.trim();
-            }).filter(Boolean),
-            createdBy: 'import',
-            updatedAt: Date.now(),
-            remarkHistory: [],
-            deleted: false
-          };
+            }).filter(Boolean);
+          } else {
+            // 旧格式 20 列兼容
+            customer.id = uuid();
+            customer.name = row[0] || '';
+            customer.gender = row[1] || '';
+            customer.age = row[2] ? (function(){ const v=parseInt(row[2]); return isNaN(v)?null:v; })() : null;
+            customer.phone = row[3] || '';
+            customer.wechat = row[4] || '';
+            customer.email = row[5] || '';
+            customer.province = row[6] || '';
+            customer.city = row[7] || '';
+            customer.district = row[8] || '';
+            customer.address = row[9] || '';
+            customer.source = row[10] || '';
+            customer.level = row[11] || (getLevels()[Math.floor(getLevels().length / 2)] || {}).name || '';
+            customer.status = row[12] || '未沟通';
+            customer.product = row[13] || '';
+            customer.budget = row[14] || '';
+            customer.nextFollowDate = row[15] || '';
+            customer.createdAt = row[16] ? parseDateStr(row[16]) || Date.now() : Date.now();
+            customer.tags = (row[17] || '').split('|').filter(t => t.trim()).map(t => {
+              let tag = (Store.data.tags || []).find(x => x.name === t.trim());
+              if (!tag) {
+                tag = { id: uuid(), name: t.trim(), color: '#2563eb' };
+                Store.data.tags.push(tag);
+              }
+              return tag.id;
+            });
+            customer.remark = row[18] || '';
+            customer.channels = (row[19] || '').split('|').map(s => {
+              const map = { 'GEO': 'geo', '360': '360', 'Bing': 'bing', '百度': 'baidu', '抖音': 'douyin', '闲鱼': 'xianyu' };
+              return map[s.trim()] || s.trim();
+            }).filter(Boolean);
+          }
+          customer.createdBy = 'import';
+          customer.updatedAt = Date.now();
+          customer.remarkHistory = [];
+          customer.deleted = false;
           imported.push(customer);
         }
         if (imported.length === 0) {
@@ -8330,25 +8626,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const pageCount = Math.max(1, Math.ceil(total / listState.pageSize));
     if (listState.page < pageCount) { listState.page++; renderCustomerTable(); }
   };
-  // 排序（列表页表头点击）
-  document.querySelectorAll('#customer-table th[data-sort]').forEach(th => {
-    th.addEventListener('click', (e) => {
-      if (document.body.dataset.colDrag !== undefined) return;
-      const key = th.dataset.sort;
-      if (listState.sortKey === key) listState.sortAsc = !listState.sortAsc;
-      else { listState.sortKey = key; listState.sortAsc = false; }
-      renderCustomerTable();
-    });
+  // 排序（列表页表头点击）- 使用事件委托，支持动态重建的表头
+  document.getElementById('customer-table').addEventListener('click', (e) => {
+    const th = e.target.closest('th[data-sort]');
+    if (!th) return;
+    if (document.body.dataset.colDrag !== undefined) return;
+    const key = th.dataset.sort;
+    if (listState.sortKey === key) listState.sortAsc = !listState.sortAsc;
+    else { listState.sortKey = key; listState.sortAsc = false; }
+    renderCustomerTable();
   });
-  // 全选
-  document.getElementById('check-all').onchange = (e) => {
-    const checked = e.target.checked;
-    document.querySelectorAll('#customer-tbody input[type="checkbox"][data-id]').forEach(x => {
-      x.checked = checked;
-      if (checked) listState.selected.add(x.dataset.id);
-      else listState.selected.delete(x.dataset.id);
-    });
-  };
+  document.getElementById('btn-customize-columns').onclick = openColumnCustomizer;
   document.getElementById('btn-batch-delete').onclick = () => {
     if (!listState.selected || listState.selected.size === 0) { showToast('请先勾选客户', 'warning'); return; }
     confirmDialog('批量删除客户', `确认删除 ${listState.selected.size} 个客户？操作不可逆。`, true, () => {
