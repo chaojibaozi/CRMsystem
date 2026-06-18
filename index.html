@@ -979,75 +979,6 @@ input[type="checkbox"]:checked {
   border-radius: 8px;
 }
 
-/* 标签排行条 */
-.bi-tag-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  margin-bottom: 6px;
-  transition: background 0.18s, transform 0.18s;
-  cursor: default;
-}
-.bi-tag-row:hover {
-  background: var(--bg-tertiary);
-  transform: translateX(2px);
-}
-.bi-tag-name {
-  width: 110px;
-  flex-shrink: 0;
-  font-size: 12.5px;
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-}
-.bi-tag-dot {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.4);
-}
-.bi-tag-bar-track {
-  flex: 1;
-  height: 22px;
-  background: var(--bg-tertiary);
-  border-radius: 6px;
-  overflow: hidden;
-  position: relative;
-}
-.bi-tag-bar-fill2 {
-  height: 100%;
-  border-radius: 6px;
-  animation: biTagBarIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
-  min-width: 8px;
-}
-.bi-tag-bar-text {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  pointer-events: none;
-}
-.bi-tag-count {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text-primary);
-  min-width: 36px;
-  text-align: right;
-}
 
 @media (max-width: 1024px) {
   .bi-kpi-row { grid-template-columns: repeat(3, 1fr); }
@@ -1782,6 +1713,29 @@ table.data-table {
           <div class="bi-analysis-grid" id="bi-analysis-grid"></div>
         </div>
 
+        <!-- 异常智能预警 -->
+        <div class="bi-section">
+          <div class="bi-section-title">
+            <span class="bi-section-icon">🔔</span>
+            <span>异常智能预警</span>
+            <span class="bi-section-meta" id="bi-alert-meta"></span>
+          </div>
+          <div class="bi-alert-bar" id="bi-alert-bar"></div>
+        </div>
+
+        <!-- 业务漏斗与趋势预测 -->
+        <div class="bi-section">
+          <div class="bi-section-title">
+            <span class="bi-section-icon">🔮</span>
+            <span>趋势预测分析</span>
+          </div>
+          <div class="bi-predict-grid" id="bi-predict-grid"></div>
+          <div class="bi-card bi-card-wide" style="margin-top:10px;">
+            <div class="bi-card-title"><span class="bi-card-icon">⚠️</span>客户流失风险预判</div>
+            <div class="bi-churn-list" id="bi-churn-list"></div>
+          </div>
+        </div>
+
         <!-- 图表分析区 -->
         <div class="bi-section">
           <div class="bi-section-title">
@@ -1813,10 +1767,6 @@ table.data-table {
               <div class="bi-card-title"><span class="bi-card-icon">🏙️</span>省份排行 TOP10</div>
               <div class="bi-chart-area"><canvas id="bi-chart-province" class="bi-canvas" data-chart="province"></canvas></div>
             </div>
-            <div class="bi-card">
-              <div class="bi-card-title"><span class="bi-card-icon">🏷️</span>标签使用排行</div>
-              <div class="bi-chart-area" id="bi-tag-rank"></div>
-            </div>
             <div class="bi-card bi-card-wide">
               <div class="bi-card-title"><span class="bi-card-icon">⏰</span>跟进时效分析</div>
               <div class="bi-chart-area"><canvas id="bi-chart-followup" class="bi-canvas" data-chart="followup"></canvas></div>
@@ -1829,29 +1779,6 @@ table.data-table {
               <div class="bi-card-title"><span class="bi-card-icon">👥</span>客户年龄与性别分布</div>
               <div class="bi-chart-area"><canvas id="bi-chart-demographic" class="bi-canvas" data-chart="demographic"></canvas></div>
             </div>
-          </div>
-        </div>
-
-        <!-- 异常智能预警 -->
-        <div class="bi-section">
-          <div class="bi-section-title">
-            <span class="bi-section-icon">🔔</span>
-            <span>异常智能预警</span>
-            <span class="bi-section-meta" id="bi-alert-meta"></span>
-          </div>
-          <div class="bi-alert-bar" id="bi-alert-bar"></div>
-        </div>
-
-        <!-- 业务漏斗与趋势预测 -->
-        <div class="bi-section">
-          <div class="bi-section-title">
-            <span class="bi-section-icon">🔮</span>
-            <span>趋势预测分析</span>
-          </div>
-          <div class="bi-predict-grid" id="bi-predict-grid"></div>
-          <div class="bi-card bi-card-wide" style="margin-top:10px;">
-            <div class="bi-card-title"><span class="bi-card-icon">⚠️</span>客户流失风险预判</div>
-            <div class="bi-churn-list" id="bi-churn-list"></div>
           </div>
         </div>
 
@@ -4264,7 +4191,6 @@ function renderAllBICharts(list) {
     { name: 'BIMonthly',     fn: drawBIMonthlyChart },
     { name: 'BIChannel',     fn: drawBIChannelChart },
     { name: 'BIProvince',    fn: drawBIProvinceChart },
-    { name: 'BITagRank',     fn: drawBITagRank },
     { name: 'BIFollowup',    fn: drawBIFollowupChart },
     { name: 'BIProduct',     fn: drawBIProductChart },
     { name: 'BIDemographic', fn: drawBIDemographicChart }
@@ -4498,24 +4424,133 @@ function generateBIReport(type) {
   lines.push(`  360: ${channel360} 位`);
   lines.push(`  Bing: ${channelBing} 位`);
   lines.push(`  未分配: ${total - list.filter(c => c.channel).length} 位`);
-  lines.push('');
-  lines.push(`【预警信息】`);
-  lines.push(`  跟进逾期: ${overdue} 位`);
-  lines.push(`  今日待跟进: ${list.filter(c => {
-    if (!c.nextFollowDate) return false;
+  // ========== 风险指标计算 ==========
+  const overdueCustomers = list.filter(c => c.status === '跟进中' && c.nextFollowDate).filter(c => {
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
-    return ft !== null && ft >= today.getTime() && ft < today.getTime() + 86400000;
-  }).length} 位`);
-  lines.push(`  超过14天未跟进: ${list.filter(c => {
+    return ft !== null && ft < now;
+  });
+  const overdueNames = overdueCustomers.slice(0, 5).map(c => c.name).join('、');
+  const overdueDays = overdueCustomers.map(c => {
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null ? Math.floor((now - ft) / 86400000) : 0;
+  });
+  const maxOverdueDays = overdueDays.length > 0 ? Math.max(...overdueDays) : 0;
+
+  const stagnantList = list.filter(c => {
     if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
     const days = c.remarkHistory && c.remarkHistory.length > 0 ? Math.floor((now - c.remarkHistory[0].time) / 86400000) : Math.floor((now - c.createdAt) / 86400000);
     return days > 14;
-  }).length} 位`);
+  });
+  const stagnantNames = stagnantList.slice(0, 5).map(c => c.name).join('、');
+
+  const highRiskLost = list.filter(c => {
+    if (c.status === '已成交' || c.status === '流失' || c.deleted) return false;
+    if (!c.remarkHistory || c.remarkHistory.length === 0) return false;
+    const lastContact = c.remarkHistory[0].time;
+    const daysSince = Math.floor((now - lastContact) / 86400000);
+    return daysSince > 21;
+  });
+  const highRiskLostNames = highRiskLost.slice(0, 5).map(c => c.name).join('、');
+
+  const topLevelCustomers = list.filter(c => topLevelsReport.includes(c.level));
+  const topLevelOverdue = topLevelCustomers.filter(c => c.nextFollowDate).filter(c => {
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft < now;
+  });
+  const topLevelStagnant = topLevelCustomers.filter(c => {
+    if (c.status === '已成交' || c.status === '流失') return false;
+    const days = c.remarkHistory && c.remarkHistory.length > 0 ? Math.floor((now - c.remarkHistory[0].time) / 86400000) : Math.floor((now - c.createdAt) / 86400000);
+    return days > 7;
+  });
+
+  const todayFollowList = list.filter(c => {
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft >= today.getTime() && ft < today.getTime() + 86400000;
+  });
+  const todayFollowNames = todayFollowList.slice(0, 5).map(c => c.name).join('、');
+
+  const recentLost = list.filter(c => c.status === '流失' && c.updatedAt && c.updatedAt >= (type === 'daily' ? today.getTime() : type === 'weekly' ? weekStart.getTime() : monthStart.getTime()));
+  const recentLostNames = recentLost.slice(0, 5).map(c => c.name).join('、');
+
+  const noRemarkNew = list.filter(c => {
+    if (c.status === '已成交' || c.status === '流失') return false;
+    return c.createdAt >= timeStart && (!c.remarkHistory || c.remarkHistory.length === 0);
+  });
+  const noRemarkNewNames = noRemarkNew.slice(0, 5).map(c => c.name).join('、');
+
+  const conversionRate = total > 0 ? (dealCount / total * 100) : 0;
+  const lostRate = total > 0 ? (lostCount / total * 100) : 0;
+
+  lines.push('');
+  lines.push(`【预警信息】`);
+  lines.push(`  跟进逾期: ${overdue} 位`);
+  lines.push(`  今日待跟进: ${todayFollowList.length} 位`);
+  lines.push(`  超过14天未跟进: ${stagnantList.length} 位`);
+  lines.push('');
+  lines.push(`【风险提醒】`);
+  // 1. 逾期风险
+  if (overdueCustomers.length > 0) {
+    lines.push(`  🔴 跟进逾期风险`);
+    lines.push(`     共 ${overdueCustomers.length} 位客户逾期未跟进，最长逾期 ${maxOverdueDays} 天`);
+    if (overdueNames) lines.push(`     涉及客户: ${overdueNames}${overdueCustomers.length > 5 ? ' 等' : ''}`);
+  }
+  // 2. 高价值客户风险
+  if (topLevelOverdue.length > 0 || topLevelStagnant.length > 0) {
+    lines.push(`  🟠 高价值客户风险`);
+    if (topLevelOverdue.length > 0) lines.push(`     ${topLevelsReport[0] || '高'}级客户逾期: ${topLevelOverdue.length} 位，流失风险极高`);
+    if (topLevelStagnant.length > 0) lines.push(`     ${topLevelsReport[0] || '高'}级客户7天未跟进: ${topLevelStagnant.length} 位`);
+    const riskNames = [...topLevelOverdue, ...topLevelStagnant].slice(0, 5).map(c => `${c.name}(${c.level}级)`).join('、');
+    if (riskNames) lines.push(`     涉及客户: ${riskNames}`);
+  }
+  // 3. 流失风险
+  if (highRiskLost.length > 0) {
+    lines.push(`  🟠 即将流失风险`);
+    lines.push(`     ${highRiskLost.length} 位客户超过21天无联系，存在高流失风险`);
+    if (highRiskLostNames) lines.push(`     涉及客户: ${highRiskLostNames}${highRiskLost.length > 5 ? ' 等' : ''}`);
+  }
+  // 4. 新客沉寂风险
+  if (noRemarkNew.length > 0) {
+    lines.push(`  🟡 新客沉寂风险`);
+    lines.push(`     ${noRemarkNew.length} 位${timeRange}新增客户无任何跟进记录`);
+    if (noRemarkNewNames) lines.push(`     涉及客户: ${noRemarkNewNames}${noRemarkNew.length > 5 ? ' 等' : ''}`);
+  }
+  // 5. 近期流失
+  if (recentLost.length > 0) {
+    lines.push(`  🟡 近期流失预警`);
+    lines.push(`     ${timeRange}新增流失客户 ${recentLost.length} 位`);
+    if (recentLostNames) lines.push(`     涉及客户: ${recentLostNames}${recentLost.length > 5 ? ' 等' : ''}`);
+  }
+  // 6. 流失率风险
+  if (lostRate > 10) {
+    lines.push(`  🔴 流失率超标`);
+    lines.push(`     当前流失率 ${lostRate.toFixed(1)}%，超过10%警戒线（共 ${lostCount} 位）`);
+  }
+  // 7. 转化率风险
+  if (conversionRate < 15 && total > 5) {
+    lines.push(`  🟡 转化率偏低`);
+    lines.push(`     当前成交转化率仅 ${conversionRate.toFixed(1)}%，低于15%健康线`);
+  }
+  // 8. 跟进饱和度风险
+  if (followCount > 0 && todayFollowList.length === 0) {
+    lines.push(`  🟡 今日无跟进安排`);
+    lines.push(`     ${followCount} 位跟进中客户，但今日无任何跟进计划`);
+  }
+  // 无风险时
+  if (overdueCustomers.length === 0 && topLevelOverdue.length === 0 && topLevelStagnant.length === 0 && highRiskLost.length === 0 && noRemarkNew.length === 0 && recentLost.length === 0 && lostRate <= 10 && conversionRate >= 15) {
+    lines.push(`  ✅ 当前无重大风险，各项指标健康`);
+  }
   lines.push('');
   lines.push(`【操作建议】`);
-  if (overdue > 0) lines.push(`  ⚠️ ${overdue} 位客户跟进已逾期，请优先联系`);
+  if (overdueCustomers.length > 0) lines.push(`  ⚠️ ${overdueCustomers.length} 位客户跟进已逾期（最长${maxOverdueDays}天），请优先联系`);
+  if (topLevelOverdue.length > 0) lines.push(`  🚨 ${topLevelOverdue.length} 位${topLevelsReport[0] || '高'}级客户逾期，务必立即安排跟进`);
+  if (topLevelStagnant.length > 0) lines.push(`  🔔 ${topLevelStagnant.length} 位${topLevelsReport[0] || '高'}级客户超7天未跟进，防止流失`);
+  if (highRiskLost.length > 0) lines.push(`  📞 ${highRiskLost.length} 位客户超21天无联系，建议尽快回访`);
+  if (noRemarkNew.length > 0) lines.push(`  💡 ${noRemarkNew.length} 位新客户无跟进记录，建议及时首访`);
+  if (recentLost.length > 0) lines.push(`  🔄 ${recentLost.length} 位客户${timeRange}流失，建议分析流失原因并尝试挽回`);
+  if (lostRate > 10) lines.push(`  📊 流失率 ${lostRate.toFixed(1)}% 超过警戒线，建议检讨客户维护策略`);
   if (uncontacted > 0) lines.push(`  💡 ${uncontacted} 位客户尚未沟通，建议分配跟进`);
-  if (topLevelsReport.length > 0 && overdue > 0) lines.push(`  🔔 关注${topLevelsReport[0]}级客户跟进状态，防止高价值客户流失`);
+  if (todayFollowList.length > 0) lines.push(`  📌 今日需跟进 ${todayFollowList.length} 位：${todayFollowNames || ''}`);
   lines.push(`  报表由CRM系统自动生成`);
 
   _lastReport = lines.join('\n');
@@ -5050,41 +5085,6 @@ function drawBIProvinceChart(list) {
 }
 
 // 标签使用排行（HTML + CSS动画）
-function drawBITagRank(list) {
-  const el = document.getElementById('bi-tag-rank'); if (!el) return;
-  const tags = Store.data.tags || [];
-  if (tags.length === 0) {
-    el.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px;">暂无标签数据</div>';
-    return;
-  }
-  const counts = tags.map(t => ({ tag: t, count: list.filter(c => (c.tags||[]).indexOf(t.id) !== -1).length }));
-  counts.sort((a,b) => b.count - a.count);
-  const top = counts.slice(0, 10);
-  const maxCount = Math.max(...top.map(c => c.count), 1);
-  // 先渲染宽度0，然后触发动画
-  el.innerHTML = top.map((c, i) => {
-    const pct = (c.count / maxCount * 100).toFixed(1);
-    const textColor = c.count > 0 ? '#fff' : 'transparent';
-    return `<div class="bi-tag-row" style="animation-delay:${i * 50}ms">
-      <span class="bi-tag-name">
-        <span class="bi-tag-dot" style="background:${c.tag.color};"></span>
-        ${escapeHTML(c.tag.name)}
-      </span>
-      <div class="bi-tag-bar-track">
-        <div class="bi-tag-bar-fill2" style="width:0%;background:linear-gradient(90deg,${c.tag.color},${c.tag.color}cc);transition:width 0.7s cubic-bezier(.4,0,.2,1) ${i * 60}ms;" data-pct="${pct}"></div>
-        <span class="bi-tag-bar-text" style="color:${textColor}">${c.count > 0 ? c.count : ''}</span>
-      </div>
-      <span class="bi-tag-count">${c.count}</span>
-    </div>`;
-  }).join('');
-  // 下一帧触发宽度动画
-  requestAnimationFrame(() => {
-    el.querySelectorAll('.bi-tag-bar-fill2').forEach(bar => {
-      bar.style.width = bar.dataset.pct + '%';
-    });
-  });
-}
-
 // 跟进时效分析（动画 + 圆角 + 高清）- 只统计活跃客户
 function drawBIFollowupChart(list) {
   const canvas = document.getElementById('bi-chart-followup'); if (!canvas) return;
@@ -5354,17 +5354,19 @@ function drawBIDemographicChart(list) {
       ctx.fillStyle = tc.textMut; ctx.font = `10px ${BI_FONT}`;
       ctx.fillText('总人数', cx, cy + 10);
     }
-    // 图例
+    // 图例（上下排列，避免男女文字重叠）
     if (ease > 0.9) {
-      const ly = cy + R + 10;
-      if (ly + 12 < H) {
+      const ly = cy + R + 8;
+      if (ly + 24 < H) {
         ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        // 男
         roundRect(ctx, cx - 42, ly - 5, 10, 10, 3); ctx.fillStyle = '#3b82f6'; ctx.fill();
         ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`;
         ctx.fillText(`男 ${maleCount} (${(maleCount/genderTotal*100).toFixed(0)}%)`, cx - 28, ly);
-        roundRect(ctx, cx + 6, ly - 5, 10, 10, 3); ctx.fillStyle = '#f472b6'; ctx.fill();
+        // 女
+        roundRect(ctx, cx - 42, ly + 14, 10, 10, 3); ctx.fillStyle = '#f472b6'; ctx.fill();
         ctx.fillStyle = tc.textSec;
-        ctx.fillText(`女 ${femaleCount} (${(femaleCount/genderTotal*100).toFixed(0)}%)`, cx + 20, ly);
+        ctx.fillText(`女 ${femaleCount} (${(femaleCount/genderTotal*100).toFixed(0)}%)`, cx - 28, ly + 19);
       }
     }
     ctx.textBaseline = 'alphabetic';
