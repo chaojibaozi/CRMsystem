@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self';">
 <title>客户关系管理系统 - 本地加密存储版</title>
+<link rel="icon" href="logo64.png" type="image/png">
 <style>
 /* ========================================
    全局样式变量：支持浅色 / 深色主题切换（高端化改造版）
@@ -2427,7 +2428,7 @@ html.scrolling {
 <div id="auth-view" class="auth-wrap" style="display:none;">
   <div class="auth-card">
     <div class="auth-logo">
-      <img class="auth-logo-icon" src="logo213.jpg" alt="Logo">
+      <img class="auth-logo-icon" src="logo.png" alt="Logo">
       <div class="auth-title">客户关系管理系统</div>
       <div class="auth-subtitle">本地加密 · 隐私优先</div>
     </div>
@@ -2527,7 +2528,7 @@ html.scrolling {
     <!-- 侧边栏 -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <img class="sidebar-logo" src="logo213.jpg" alt="Logo">
+        <img class="sidebar-logo" src="logo.png" alt="Logo">
         <div>
           <div class="sidebar-title">CRM Pro</div>
           <div class="sidebar-subtitle">本地加密 · 隐私优先</div>
@@ -3117,7 +3118,7 @@ html.scrolling {
   <div id="lock-overlay" class="lock-overlay" style="display:none;">
     <div class="lock-dialog">
       <div class="lock-dialog-header">
-        <img class="auth-logo-icon" src="logo213.jpg" alt="Logo" style="width:36px;height:36px;border-radius:var(--radius-sm);">
+        <img class="auth-logo-icon" src="logo.png" alt="Logo" style="width:36px;height:36px;border-radius:var(--radius-sm);">
         <div>
           <div style="font-weight:700;font-size:15px;">系统已锁定</div>
           <div style="font-size:12px;color:var(--text-muted);" id="lock-username-display"></div>
@@ -7755,13 +7756,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // 使用双重 rAF 确保 canvas 从 display:none 切换到 display:block 后完成布局
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        lockGestureApi = initGestureCanvas('lock-gesture-canvas', 'unlock');
-        if (lockGestureApi) {
-          const saved = Store.data.gesturePattern;
-          gestureState.onComplete = (pattern, points) => {
-            if (!pattern) return;
-            const statusEl = document.getElementById('lock-gesture-status');
-            if (pattern === saved) {
+        const saved = Store.data.gesturePattern;
+        lockGestureApi = (window.__initGestureCanvas || initGestureCanvas)('lock-gesture-canvas', 'unlock', (pattern, points) => {
+          if (!pattern) return;
+          const statusEl = document.getElementById('lock-gesture-status');
+          if (pattern === saved) {
             statusEl.className = 'gesture-status success';
             statusEl.textContent = '手势验证成功，正在解锁...';
             setTimeout(() => {
@@ -7781,12 +7780,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 showToast('会话已过期，请重新登录', 'warning');
               }
             }, 600);
-            } else {
-              statusEl.className = 'gesture-status error';
-              statusEl.textContent = '手势错误，请重试';
-              if (lockGestureApi) lockGestureApi.reset();
-            }
-          };
+          } else {
+            statusEl.className = 'gesture-status error';
+            statusEl.textContent = '手势错误，请重试';
+            if (lockGestureApi) lockGestureApi.reset();
+          }
+        });
+        if (lockGestureApi) {
+          // 其他状态由回调内处理
         }
       });
     });
@@ -9415,6 +9416,16 @@ function refreshUI() {
     return found;
   }
 
+  // 缓存 Canvas 用色（通过 getComputedStyle 解析 CSS 变量，避免在 Canvas2D 中使用 var()）
+  function resolveCanvasColor(varName, fallback) {
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return val || fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
   // 绘制9点网格和路径
   function drawGesture() {
     const { ctx, points, currentPath, canvas } = gestureState;
@@ -9422,8 +9433,12 @@ function refreshUI() {
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
+    const colorPrimary = resolveCanvasColor('--color-primary-500', '#6366f1');
+    const colorPrimaryDark = resolveCanvasColor('--color-primary-600', '#4f46e5');
+    const colorUnused = resolveCanvasColor('--color-neutral-300', '#d1d5db');
+
     // 绘制连线
-    ctx.strokeStyle = 'var(--color-primary-500, #6366f1)';
+    ctx.strokeStyle = colorPrimary;
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -9452,13 +9467,9 @@ function refreshUI() {
       const isUsed = points.indexOf(i) >= 0;
       ctx.beginPath();
       ctx.arc(p.x, p.y, DOT_RADIUS, 0, Math.PI * 2);
-      if (isUsed) {
-        ctx.fillStyle = 'var(--color-primary-500, #6366f1)';
-      } else {
-        ctx.fillStyle = 'var(--border-color, #d1d5db)';
-      }
+      ctx.fillStyle = isUsed ? colorPrimary : colorUnused;
       ctx.fill();
-      ctx.strokeStyle = isUsed ? 'var(--color-primary-600, #4f46e5)' : 'var(--color-neutral-300, #d1d5db)';
+      ctx.strokeStyle = isUsed ? colorPrimaryDark : colorUnused;
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
@@ -9472,7 +9483,7 @@ function refreshUI() {
   }
 
   // 初始化手势Canvas
-  function initGestureCanvas(canvasId, mode) {
+  function initGestureCanvas(canvasId, mode, onComplete) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return null;
     const ctx = canvas.getContext('2d');
@@ -9481,6 +9492,7 @@ function refreshUI() {
     gestureState = {
       canvas, ctx, points: [], currentPath: [],
       isDrawing: false, wrapEl, mode,
+      onComplete: (typeof onComplete === 'function') ? onComplete : null,
     };
 
     // 绘制初始状态
@@ -10178,6 +10190,8 @@ function refreshUI() {
     };
   }
 
+  // 导出 initGestureCanvas 到 window，供锁屏浮层使用
+  window.__initGestureCanvas = initGestureCanvas;
 })();
 </script>
 </body>
