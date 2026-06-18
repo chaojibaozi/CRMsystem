@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self';">
-<title>客户关系管理系统 - 本地加密存储版</title>
+<title>客户关系管理系统</title>
 <link rel="icon" href="logo64.png" type="image/png">
 <style>
 /* ========================================
@@ -547,9 +547,10 @@ input[type="checkbox"]:checked {
 }
 .lock-dialog .auth-group { margin-bottom: var(--space-3); }
 .lock-dialog .error-text { font-size: 12px; margin-top: 4px; }
+.lock-dialog .lock-dialog-header .auth-logo-icon { margin: 0; }
 .lock-dialog .gesture-container { margin: 0 auto; }
-.lock-dialog .gesture-canvas-wrap { width: 220px; height: 220px; margin: 0 auto; }
-.lock-dialog .gesture-canvas-wrap canvas { width: 220px; height: 220px; }
+.lock-dialog .gesture-canvas-wrap { width: 240px; height: 240px; margin: 0 auto; }
+.lock-dialog .gesture-canvas-wrap canvas { width: 240px; height: 240px; }
 .lock-dialog .gesture-hint { font-size: 13px; }
 .lock-dialog .gesture-actions { margin-top: 8px; }
 .auth-logo {
@@ -2430,7 +2431,7 @@ html.scrolling {
     <div class="auth-logo">
       <img class="auth-logo-icon" src="logo.png" alt="Logo">
       <div class="auth-title">客户关系管理系统</div>
-      <div class="auth-subtitle">本地加密 · 隐私优先</div>
+      <div class="auth-subtitle">本地加密 · 本地存储</div>
     </div>
 
     <!-- 解锁视图 -->
@@ -2530,8 +2531,8 @@ html.scrolling {
       <div class="sidebar-header">
         <img class="sidebar-logo" src="logo.png" alt="Logo">
         <div>
-          <div class="sidebar-title">CRM Pro</div>
-          <div class="sidebar-subtitle">本地加密 · 隐私优先</div>
+          <div class="sidebar-title">CRM 客户管理</div>
+          <div class="sidebar-subtitle">本地加密 · 本地存储</div>
         </div>
       </div>
       <span class="nav-group-label">概览</span>
@@ -9435,7 +9436,7 @@ function refreshUI() {
 
     const colorPrimary = resolveCanvasColor('--color-primary-500', '#6366f1');
     const colorPrimaryDark = resolveCanvasColor('--color-primary-600', '#4f46e5');
-    const colorUnused = resolveCanvasColor('--color-neutral-300', '#d1d5db');
+    const colorUnused = resolveCanvasColor('--color-neutral-500', '#6B7280');
 
     // 绘制连线
     ctx.strokeStyle = colorPrimary;
