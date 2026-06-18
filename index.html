@@ -561,6 +561,32 @@ input[type="checkbox"]:checked {
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: var(--color-neutral-400);
 }
+
+/* 全局滚动条 — 与导航栏一致的细滚动条，hover/滚动时才显示 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: var(--color-neutral-300) transparent;
+}
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
 .sidebar-header {
   padding: 0 var(--space-4) 10px;
   border-bottom: 1px solid var(--color-neutral-100);
@@ -1690,6 +1716,13 @@ table.data-table {
   transform: rotate(90deg);
 }
 .modal-body { padding: 14px; }
+.modal::-webkit-scrollbar { width: 4px; }
+.modal::-webkit-scrollbar-track { background: transparent; }
+.modal::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
+.modal:hover::-webkit-scrollbar-thumb { background: var(--color-neutral-300); }
+.modal::-webkit-scrollbar-thumb:hover { background: var(--color-neutral-400); }
+.modal { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.modal:hover { scrollbar-color: var(--color-neutral-300) transparent; }
 .modal-footer {
   padding: 10px 14px;
   border-top: 1px solid var(--border-color);
@@ -3151,7 +3184,7 @@ const Store = {
   // 运行态内存：解锁成功后保存
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
-  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '' }, // 明文内存
+  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] }, // 明文内存
   settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
@@ -3164,7 +3197,7 @@ const Store = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '' };
+        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] };
         return;
       }
       const plain = await decryptData(raw, this.password);
@@ -6931,7 +6964,7 @@ function resetIdleTimer() {
     Store.password = null;
     sessionStorage.removeItem('crm_session_pw'); // 清除会话密码
     document.getElementById('app-view').style.display = 'none';
-    document.getElementById('auth-view').style.display = 'block';
+    document.getElementById('auth-view').style.display = 'flex';
     document.getElementById('unlock-password').value = '';
     const unEl2 = document.getElementById('unlock-username');
     if (unEl2) unEl2.value = '';
@@ -7189,7 +7222,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const ok = await doUnlock(pw);
     if (ok) {
       // 解密成功后，验证用户名是否匹配
-      await Store.load(); // 临时加载数据以检查用户名
+      Store.password = pw; // 先设置密码，load() 需要用它解密
+      try {
+        await Store.load(); // 临时加载数据以检查用户名
+      } catch (e) {
+        Store.password = null;
+        document.getElementById('unlock-error').style.display = 'block';
+        safeText(document.getElementById('attempt-info'), '数据加载失败');
+        showToast('数据解密失败，请检查密码', 'error');
+        return;
+      }
       if (Store.data.username && Store.data.username !== username) {
         Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] };
         Store.password = null;
@@ -7301,7 +7343,7 @@ document.addEventListener('DOMContentLoaded', function () {
     Store.unlocked = false; Store.password = null;
     sessionStorage.removeItem('crm_session_pw'); // 清除会话密码
     document.getElementById('app-view').style.display = 'none';
-    document.getElementById('auth-view').style.display = 'block';
+    document.getElementById('auth-view').style.display = 'flex';
     document.getElementById('unlock-password').value = '';
     const unEl = document.getElementById('unlock-username');
     if (unEl) unEl.value = '';
@@ -7317,7 +7359,7 @@ document.addEventListener('DOMContentLoaded', function () {
       Store.unlocked = false; Store.password = null;
       sessionStorage.removeItem('crm_session_pw');
       document.getElementById('app-view').style.display = 'none';
-      document.getElementById('auth-view').style.display = 'block';
+      document.getElementById('auth-view').style.display = 'flex';
       document.getElementById('unlock-password').value = '';
       document.getElementById('unlock-username').value = '';
       showToast('已登出系统', 'info');
