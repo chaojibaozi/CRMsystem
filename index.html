@@ -3013,13 +3013,19 @@ html.scrolling {
 
         <div class="card" style="margin-bottom:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;">⭐ 客户等级管理</h2>
-            <button class="btn btn-primary btn-sm" id="btn-new-level">➕ 新增等级</button>
+            <h2 style="font-size:18px;">⭐ 客户等级 / 标签管理</h2>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-primary btn-sm" id="btn-new-tag">➕ 新增标签</button>
+              <button class="btn btn-primary btn-sm" id="btn-new-level">➕ 新增等级</button>
+            </div>
           </div>
-          <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
-            自定义客户等级分类及对应颜色，修改等级名称将同步更新所有关联客户。删除等级不会影响已关联客户的历史数据（等级如被使用则无法删除）。
+          <div style="margin-bottom:16px;font-size:13px;color:var(--text-secondary);">
+            自定义客户等级分类及对应颜色，修改等级名称将同步更新所有关联客户。标签用于客户分类，可自定义颜色，各自独立管理。
           </div>
-          <div id="level-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+          <div style="font-size:14px;font-weight:500;margin-bottom:8px;">等级</div>
+          <div id="level-list" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;"></div>
+          <div style="font-size:14px;font-weight:500;margin-bottom:8px;">标签</div>
+          <div id="tag-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
         </div>
 
         <div class="card" style="margin-bottom:12px;">
@@ -3031,17 +3037,6 @@ html.scrolling {
             自定义客户来源分类，修改来源名称将同步更新所有关联客户。删除来源不会影响已关联客户的历史数据（来源如被使用则无法删除）。
           </div>
           <div id="source-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
-        </div>
-
-        <div class="card" style="margin-bottom:12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;">🏷️ 自定义标签管理</h2>
-            <button class="btn btn-primary btn-sm" id="btn-new-tag">➕ 新增标签</button>
-          </div>
-          <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
-            标签用于客户分类，可自定义颜色。删除标签不会影响已关联客户的历史数据（标签如被使用则无法删除）。
-          </div>
-          <div id="tag-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
         </div>
       </section>
 
@@ -4194,9 +4189,20 @@ function openCustomerForm(customer) {
           <input type="${f.type}" class="input" data-key="${f.key}" value="${escapeHTML(val)}" maxlength="${f.max || 100}"${disabledAttr} style="${disabledStyle}"></div>`;
       }
     }
-    // 标签多选（业务信息区块）
+    // 客户等级单选 + 标签多选（业务信息区块）
     if (sec.key === 'business') {
-      const currentTags = c.tags || [];
+      const levels = getLevels();
+      const currentLevel = _currentChannel ? getChannelField(c, _currentChannel, 'level') : c.level;
+      html += `<div class="form-group" style="grid-column:1/-1;">
+        <label class="label">客户等级（单选）</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">`;
+      for (const l of levels) {
+        const sel = l.name === currentLevel;
+        html += `<span class="level-radio" data-level="${escapeHTML(l.name)}" data-level-color="${l.color}" style="display:inline-block;padding:4px 14px;border-radius:14px;font-size:12px;cursor:pointer;background:${sel ? l.color : '#e5e7eb'};color:${sel ? 'white' : '#4b5563'};border:1px solid ${sel ? l.color : 'transparent'};transition:all 0.15s;">${escapeHTML(l.name)}</span>`;
+      }
+      html += `<input type="hidden" data-key="level" id="level-hidden" value="${escapeHTML(currentLevel || '')}"></div></div>`;
+      // 客户标签
+      const currentTags = _currentChannel ? (getChannelField(c, _currentChannel, 'tags') || []) : (c.tags || []);
       html += `<div class="form-group" style="grid-column:1/-1;">
         <label class="label">客户标签（点击选择，可多选）</label>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
@@ -4251,6 +4257,20 @@ function openCustomerForm(customer) {
             el.style.color = 'white';
             el.dataset.selected = 'true';
           }
+        };
+      });
+      // 等级单选选择切换
+      document.querySelectorAll('.level-radio').forEach(el => {
+        el.onclick = () => {
+          document.querySelectorAll('.level-radio').forEach(x => {
+            x.style.background = '#e5e7eb';
+            x.style.color = '#4b5563';
+            x.style.borderColor = 'transparent';
+          });
+          el.style.background = el.dataset.levelColor || '#2563eb';
+          el.style.color = 'white';
+          el.style.borderColor = el.dataset.levelColor || '#2563eb';
+          document.getElementById('level-hidden').value = el.dataset.level;
         };
       });
 
@@ -4401,7 +4421,7 @@ function openCustomerForm(customer) {
           el.value = v;
         });
         // 还原标签
-        const currentTags = c.tags || [];
+        const currentTags = _currentChannel ? (getChannelField(c, _currentChannel, 'tags') || []) : (c.tags || []);
         document.querySelectorAll('#modal-box .tag-chip[data-tag]').forEach(el => {
           const sel = currentTags.indexOf(el.dataset.tag) !== -1;
           el.style.background = sel ? el.dataset.color : '#e5e7eb';
@@ -4434,6 +4454,15 @@ function openCustomerForm(customer) {
           label.style.borderColor = checked ? 'var(--accent)' : 'var(--border-color)';
           label.style.background = checked ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)';
         });
+        // 还原等级单选
+        const currentLevelReset = _currentChannel ? getChannelField(c, _currentChannel, 'level') : c.level;
+        document.querySelectorAll('#modal-box .level-radio').forEach(el => {
+          const sel = el.dataset.level === currentLevelReset;
+          el.style.background = sel ? (el.dataset.levelColor || '#2563eb') : '#e5e7eb';
+          el.style.color = sel ? 'white' : '#4b5563';
+          el.style.borderColor = sel ? (el.dataset.levelColor || '#2563eb') : 'transparent';
+        });
+        document.getElementById('level-hidden').value = currentLevelReset || '';
         showToast('已重置', 'success');
       };
 
@@ -4466,6 +4495,7 @@ function openCustomerForm(customer) {
             if (safe.level !== undefined) setChannelField(old, _currentChannel, 'level', safe.level);
             if (safe.status !== undefined) setChannelField(old, _currentChannel, 'status', safe.status);
             if (safe.nextFollowDate !== undefined) setChannelField(old, _currentChannel, 'nextFollowDate', safe.nextFollowDate);
+            if (safe.tags !== undefined) setChannelField(old, _currentChannel, 'tags', safe.tags);
             if (safe.remark && safe.remark !== (getChannelField(c, _currentChannel, 'lastRemark') || '')) {
               addChannelRemark(old, _currentChannel, safe.remark, formImages.slice());
             }
@@ -4612,14 +4642,58 @@ function saveColumnConfig(config) {
   localStorage.setItem('crm_col_config', JSON.stringify(config));
 }
 
+function getChannelColumnConfig(channel) {
+  const key = 'crm_col_config_' + channel;
+  let config;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) config = JSON.parse(raw);
+  } catch (e) {}
+  if (!Array.isArray(config)) {
+    config = COLUMN_DEFS.map(d => ({ key: d.key, visible: true }));
+  } else {
+    const validKeys = COLUMN_DEFS.map(d => d.key);
+    config = config.filter(c => validKeys.includes(c.key));
+    COLUMN_DEFS.forEach(def => {
+      if (!config.find(c => c.key === def.key)) {
+        config.push({ key: def.key, visible: true });
+      }
+    });
+  }
+  // 注入等级和标签列
+  [{ key: 'level', visible: true }, { key: 'tags', visible: true }].forEach(ec => {
+    if (!config.find(c => c.key === ec.key)) {
+      config.push(ec);
+    }
+  });
+  let nameIdx = config.findIndex(c => c.key === 'name');
+  if (nameIdx > 0) {
+    const item = config.splice(nameIdx, 1)[0];
+    item.visible = true;
+    config.unshift(item);
+  } else if (nameIdx === -1) {
+    config.unshift({ key: 'name', visible: true });
+  } else {
+    config[nameIdx].visible = true;
+  }
+  config.forEach(c => { if (c.visible === undefined) c.visible = true; });
+  return config;
+}
+
+function saveChannelColumnConfig(channel, config) {
+  localStorage.setItem('crm_col_config_' + channel, JSON.stringify(config));
+}
+
 function renderColumnHeaders(config) {
   let html = '';
+  const labelMap = { level: '等级', tags: '标签' };
   config.forEach(c => {
     if (!c.visible) return;
     const def = COLUMN_DEFS.find(d => d.key === c.key);
-    if (!def) return;
-    const sortAttr = def.sortable ? ` data-sort="${c.key}"` : '';
-    html += `<th${sortAttr}>${escapeHTML(def.label)} ${def.sortable ? '▾' : ''}</th>`;
+    const label = def ? def.label : (labelMap[c.key] || c.key);
+    if (!label) return;
+    const sortAttr = def && def.sortable ? ` data-sort="${c.key}"` : '';
+    html += `<th${sortAttr}>${escapeHTML(label)} ${def && def.sortable ? '▾' : ''}</th>`;
   });
   return html;
 }
@@ -4660,17 +4734,26 @@ function renderColumnCells(c, config, start, i, masked, channel) {
       html += `<td>${escapeHTML(c.industryLevel2 || '-')}</td>`;
     } else if (key === 'website') {
       html += `<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(c.website || '')}">${escapeHTML(c.website || '-')}</td>`;
+    } else if (key === 'tags') {
+      const tagIds = channel ? getChannelField(c, channel, 'tags') : c.tags;
+      const tags = (Store.data.tags || []);
+      const tagHtml = (tagIds || []).map(tid => {
+        const t = tags.find(x => x.id === tid);
+        return t ? `<span class="badge" style="background:${t.color};color:#fff;font-size:10px;padding:2px 6px;margin:1px;">${escapeHTML(t.name)}</span>` : '';
+      }).join('') || '-';
+      html += `<td style="max-width:120px;">${tagHtml}</td>`;
     }
   });
   return html;
 }
 
-function openColumnCustomizer() {
-  let config = getColumnConfig();
+function openColumnCustomizer(channel) {
+  let config = channel ? getChannelColumnConfig(channel) : getColumnConfig();
   let itemsHtml = '';
   config.forEach((c, idx) => {
     const def = COLUMN_DEFS.find(d => d.key === c.key);
-    if (!def) return;
+    const label = def ? def.label : ({ level: '等级', tags: '标签' })[c.key] || c.key;
+    if (!def && !channel) return;
     const disabled = c.key === 'name' ? ' disabled' : '';
     const checked = c.visible ? 'checked' : '';
     const drag = c.key === 'name' ? ' style="opacity:0.5;cursor:default;"' : ' draggable="true"';
@@ -4678,7 +4761,7 @@ function openColumnCustomizer() {
       <span class="col-drag-handle">⠿</span>
       <label style="display:flex;align-items:center;gap:6px;flex:1;cursor:pointer;">
         <input type="checkbox" class="col-visibility-chk" ${checked}${disabled}>
-        <span>${escapeHTML(def.label)}</span>
+        <span>${escapeHTML(label)}</span>
       </label>
     </div>`;
   });
@@ -4735,9 +4818,13 @@ function openColumnCustomizer() {
           const chk = el.querySelector('.col-visibility-chk');
           newConfig.push({ key, visible: chk.checked });
         });
-        saveColumnConfig(newConfig);
+        if (channel) {
+          saveChannelColumnConfig(channel, newConfig);
+        } else {
+          saveColumnConfig(newConfig);
+        }
         closeModal();
-        renderCustomerTable();
+        if (channel) renderChannelPage(channel); else renderCustomerTable();
       };
     }
   });
@@ -5177,7 +5264,7 @@ function renderChannelPage(channel) {
   if (!container) return;
   
   const filtered = applyChannelFilters(channel, rawCustomers);
-  const colConfig = getColumnConfig();
+  const colConfig = channel ? getChannelColumnConfig(channel) : getColumnConfig();
   
   let html = getChannelFilterBarHTML(channel);
   
@@ -8946,10 +9033,10 @@ document.addEventListener('DOMContentLoaded', function () {
     else { listState.sortKey = key; listState.sortAsc = false; }
     renderCustomerTable();
   });
-  document.getElementById('btn-customize-columns').onclick = openColumnCustomizer;
+  document.getElementById('btn-customize-columns').onclick = () => openColumnCustomizer();
   ['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu', 'trash'].forEach(suffix => {
     const btn = document.getElementById('btn-customize-columns-' + suffix);
-    if (btn) btn.onclick = openColumnCustomizer;
+    if (btn) btn.onclick = () => openColumnCustomizer(suffix);
   });
   document.getElementById('btn-batch-delete').onclick = () => {
     if (!listState.selected || listState.selected.size === 0) { showToast('请先勾选客户', 'warning'); return; }
