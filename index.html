@@ -2296,7 +2296,7 @@ table.data-table {
       </ul>
       <span class="nav-group-label">客户管理</span>
       <ul class="nav-list">
-        <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表</li>
+        <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表<span class="nav-count" id="nav-count-all">0</span></li>
         <li class="nav-item" data-page="geo"><span class="nav-icon">🌍</span>GEO客户<span class="nav-count" id="nav-count-geo">0</span></li>
         <li class="nav-item" data-page="360"><span class="nav-icon">🔄</span>360客户<span class="nav-count" id="nav-count-360">0</span></li>
         <li class="nav-item" data-page="bing"><span class="nav-icon">🔍</span>Bing客户<span class="nav-count" id="nav-count-bing">0</span></li>
@@ -7788,6 +7788,11 @@ window.addEventListener('resize', () => {
    ================================================================ */
 function updateNavCounts() {
   const customers = Store.data.customers || [];
+  // 客户列表 - 显示有效客户总数
+  const allEl = document.getElementById('nav-count-all');
+  if (allEl) {
+    allEl.textContent = customers.filter(c => c.deleted !== true).length;
+  }
   const channelItems = [
     { id: 'nav-count-geo', key: 'geo' },
     { id: 'nav-count-360', key: '360' },
