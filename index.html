@@ -539,15 +539,16 @@ input[type="checkbox"]:checked {
 }
 .lock-dialog-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  text-align: center;
+  gap: var(--space-2);
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border-color);
 }
 .lock-dialog .auth-group { margin-bottom: var(--space-3); }
 .lock-dialog .error-text { font-size: 12px; margin-top: 4px; }
-.lock-dialog .lock-dialog-header .auth-logo-icon { margin: 0; }
 .lock-dialog .gesture-container { margin: 0 auto; }
 .lock-dialog .gesture-canvas-wrap { width: 240px; height: 240px; margin: 0 auto; }
 .lock-dialog .gesture-canvas-wrap canvas { width: 240px; height: 240px; }
@@ -2401,6 +2402,11 @@ html.scrolling {
 </head>
 <body>
 
+<!-- 初始防护遮罩：默认可见，浏览器第一帧就挡住所有内容，JS确定状态后移除 -->
+<div id="initial-shield" style="position:fixed;inset:0;z-index:100000;background:#0f172a;display:flex;align-items:center;justify-content:center;">
+  <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);border-top-color:#6366F1;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+</div>
+
 <!-- 仪表盘统计浮层 -->
 <div class="stat-popup-overlay" id="stat-popup-overlay"></div>
 <div class="stat-popup" id="stat-popup">
@@ -2793,6 +2799,7 @@ html.scrolling {
                 <th data-sort="level">等级 ▾</th>
                 <th data-sort="source">来源 ▾</th>
                 <th data-sort="status">成交状态 ▾</th>
+                <th>行业</th>
                 <th data-sort="createdAt">录入时间 ▾</th>
                 <th style="width:240px;">操作</th>
               </tr>
@@ -3450,6 +3457,53 @@ function getSourceOptions() {
   return getSources().map(s => s.name);
 }
 
+// ===== 行业数据定义 =====
+const industryData = {
+  '医疗健康': ['医疗器械', '医药制造', '医疗服务', '健康管理', '生物技术', '其他'],
+  '机械设备': ['工程机械', '机床工具', '农业机械', '纺织机械', '包装机械', '其他'],
+  '游戏': ['手游', '端游', '页游', '游戏发行', '游戏开发', '其他'],
+  '教育培训': ['K12教育', '职业教育', '语言培训', '兴趣培训', '在线教育', '其他'],
+  '招商加盟': ['餐饮加盟', '教育加盟', '零售加盟', '服务加盟', '美容加盟', '其他'],
+  '商务服务': ['咨询服务', '法律服务', '财务服务', '人力资源', '广告营销', '其他'],
+  '装修装饰': ['家装', '公装', '装修材料', '设计服务', '智能家居', '其他'],
+  '生活用品生活服务': ['日用品', '家居用品', '洗护用品', '家政服务', '维修服务', '其他'],
+  '交通类': ['汽车销售', '汽车维修', '物流运输', '公共交通', '航空服务', '其他'],
+  '电子电工': ['电子元器件', '电气设备', '仪器仪表', '电线电缆', '电源电池', '其他'],
+  '化工及材料': ['石油化工', '精细化工', '塑料橡胶', '涂料油漆', '新材料', '其他'],
+  '家用电器': ['大家电', '小家电', '厨房电器', '生活电器', '智能家电', '其他'],
+  '农林牧渔': ['种植业', '畜牧业', '渔业', '林业', '农业服务', '其他'],
+  '旅游': ['旅行社', '景区管理', '酒店住宿', '旅游平台', '旅游服务', '其他'],
+  '休闲娱乐': ['电影院', 'KTV', '健身', '棋牌', '户外活动', '其他'],
+  '安全安保': ['安防设备', '安保服务', '网络安全', '消防器材', '监控系统', '其他'],
+  '食品餐饮': ['餐饮服务', '食品加工', '饮料饮品', '烘焙', '外卖', '其他'],
+  '节能环保': ['节能设备', '环保工程', '新能源', '污水处理', '废气处理', '其他'],
+  '金融服务': ['银行', '保险', '证券', '投资理财', '支付服务', '其他'],
+  'IT产品': ['软件', '硬件', '互联网服务', '云计算', '人工智能', '其他'],
+  '成人用品': ['计生用品', '情趣用品', '保健用品', '其他'],
+  '化妆品': ['护肤', '彩妆', '香水', '个人护理', '美妆工具', '其他'],
+  '房地产': ['住宅开发', '商业地产', '房产中介', '物业管理', '地产营销', '其他'],
+  '通信服务': ['移动通信', '固网宽带', '通信设备', '增值服务', '其他'],
+  '办公文教': ['办公设备', '文具用品', '办公家具', '打印服务', '其他'],
+  '图书音像': ['图书出版', '音像制品', '数字阅读', '书店', '其他'],
+  '铃声短信': ['手机铃声', '短信服务', '彩信服务', '其他'],
+  '彩票': ['福彩', '体彩', '彩票平台', '其他'],
+  '电子商务': ['B2B', 'B2C', 'C2C', 'O2O', '跨境电商', '其他'],
+  '社交': ['社交平台', '婚恋交友', '社区论坛', '即时通讯', '其他'],
+  '招聘': ['在线招聘', '猎头服务', '兼职平台', '劳务派遣', '其他'],
+  '资讯': ['新闻资讯', '行业资讯', '财经资讯', '科技资讯', '其他'],
+  '分类信息其他': ['分类信息', '其他'],
+  '宗教': ['佛教', '道教', '基督教', '伊斯兰教', '宗教用品', '其他'],
+  '移动建站': ['网站建设', '小程序开发', 'APP开发', '移动营销', '其他']
+};
+
+function getIndustryLevel1Options() {
+  return Object.keys(industryData);
+}
+
+function getIndustryLevel2Options(level1) {
+  return industryData[level1] || [];
+}
+
 /* ================================================================
    模块 2：数据存储层（localStorage 加密 + 本地文件夹同步）
    ================================================================ */
@@ -3948,6 +4002,9 @@ function openCustomerForm(customer) {
         { key: 'budget', label: '预算范围', type: 'text', max: 50 },
         { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'] },
         { key: 'nextFollowDate', label: '下次跟进日期', type: 'date' },
+        { key: 'website', label: '客户网址', type: 'text', max: 200 },
+        { key: 'industryLevel1', label: '一级行业', type: 'select-industry' },
+        { key: 'industryLevel2', label: '二级行业', type: 'select-industry2' },
       ]
     },
     {
@@ -3990,6 +4047,23 @@ function openCustomerForm(customer) {
           </label>`;
         }
         html += `</div></div>`;
+      } else if (f.type === 'select-industry') {
+        const options = getIndustryLevel1Options();
+        html += `<div class="form-group">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <select class="select" data-key="${f.key}" id="industry-level1-select">
+            <option value="">请选择</option>
+            ${options.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}
+          </select></div>`;
+      } else if (f.type === 'select-industry2') {
+        const currentL1 = c.industryLevel1 || '';
+        const options2 = getIndustryLevel2Options(currentL1);
+        html += `<div class="form-group">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <select class="select" data-key="${f.key}" id="industry-level2-select">
+            <option value="">请选择</option>
+            ${options2.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}
+          </select></div>`;
       } else if (f.type === 'select') {
         html += `<div class="form-group">
           <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
@@ -4077,6 +4151,18 @@ function openCustomerForm(customer) {
           }
         };
       });
+
+      // 一级行业切换联动二级行业
+      const l1Select = document.getElementById('industry-level1-select');
+      const l2Select = document.getElementById('industry-level2-select');
+      if (l1Select && l2Select) {
+        l1Select.addEventListener('change', () => {
+          const l1 = l1Select.value;
+          const opts = getIndustryLevel2Options(l1);
+          l2Select.innerHTML = '<option value="">请选择</option>' +
+            opts.map(o => `<option value="${escapeHTML(o)}">${escapeHTML(o)}</option>`).join('');
+        });
+      }
 
       // 截图粘贴 / 拖拽支持
       const formImages = [];
@@ -4354,13 +4440,14 @@ function renderCustomerTable() {
   tbody.innerHTML = '';
   if (pageData.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="7" style="padding:40px;text-align:center;color:var(--text-muted);">暂无符合条件的客户</td>`;
+    tr.innerHTML = `<td colspan="10" style="padding:40px;text-align:center;color:var(--text-muted);">暂无符合条件的客户</td>`;
     tbody.appendChild(tr);
   } else {
     pageData.forEach((c, i) => {
       const tr = document.createElement('tr');
       const masked = showAll ? c : maskCustomer(c);
       const checked = listState.selected.has(c.id) ? 'checked' : '';
+      const industryDisplay = c.industryLevel1 ? (c.industryLevel2 ? `${escapeHTML(c.industryLevel1)} / ${escapeHTML(c.industryLevel2)}` : escapeHTML(c.industryLevel1)) : '-';
       tr.innerHTML = `
         <td><input type="checkbox" data-id="${c.id}" ${checked}></td>
         <td>${start + i + 1}</td>
@@ -4369,6 +4456,7 @@ function renderCustomerTable() {
         <td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>
         <td>${escapeHTML(c.source || '-')}</td>
         <td><span class="badge ${statusClass(c.status)}">${escapeHTML(c.status || '-')}</span></td>
+        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${industryDisplay}">${industryDisplay}</td>
         <td>${formatDate(c.createdAt)}</td>
         <td>
           <button class="btn btn-sm" data-act="view" data-id="${c.id}">详情</button>
@@ -4645,6 +4733,9 @@ function openCustomerDetail(c, fromPopup) {
         <div class="detail-item"><div class="detail-label">下次跟进日期</div><div class="detail-value">${formatNextFollowDate(c.nextFollowDate)}</div></div>
         <div class="detail-item"><div class="detail-label">录入时间</div><div class="detail-value">${formatDate(c.createdAt)}</div></div>
         <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">联系地址</div><div class="detail-value">${escapeHTML(addressFull || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">一级行业</div><div class="detail-value">${escapeHTML(c.industryLevel1 || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">二级行业</div><div class="detail-value">${escapeHTML(c.industryLevel2 || '-')}</div></div>
+        <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户网址</div><div class="detail-value">${c.website ? `<a href="${escapeHTML(c.website)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">${escapeHTML(c.website)}</a>` : '-'}</div></div>
         <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户标签</div><div class="detail-value">${tagHtml || '<span style="color:var(--text-muted);">无</span>'}</div></div>
         <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">备注</div><div class="detail-value">${escapeHTML(c.remark || '-')}</div></div>
       </div>
@@ -4710,7 +4801,7 @@ function openCustomerDetail(c, fromPopup) {
    模块 9：CSV 导出工具
    ================================================================ */
 function exportCustomerRows(list, plain) {
-  const header = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
+  const header = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
   const rows = [header.join(',')];
   list.forEach(c => {
     const d = plain ? c : maskCustomer(c);
@@ -4718,7 +4809,8 @@ function exportCustomerRows(list, plain) {
     const row = [
       d.name, d.gender, d.age, d.phone, d.wechat, d.email,
       d.province, d.city, d.district, addr,
-      d.source, d.level, d.status, d.product, d.budget, d.nextFollowDate,
+      d.source, d.level, d.status, d.industryLevel1 || '', d.industryLevel2 || '', d.website || '',
+      d.product, d.budget, d.nextFollowDate,
       formatDate(c.createdAt),
       (d.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|'),
       c.remark || '',
@@ -7276,7 +7368,7 @@ function resetIdleTimer() {
     }
     stopAutoSave();
     Store.unlocked = false;
-    // 保留 sessionStorage 中的密码，以便手势解锁时恢复
+    sessionStorage.setItem('crm_session_locked', '1');
     window.showLockOverlay();
     showToast('系统已自动锁定，请验证密码解锁', 'warning');
   }, IDLE_TIMEOUT_MS);
@@ -7390,6 +7482,16 @@ function handleAvatarUpload(file) {
   reader.readAsDataURL(file);
 }
 
+// 移除初始防护遮罩（浏览器加载时默认可见，JS准备好内容后移除）
+function dismissShield() {
+  const el = document.getElementById('initial-shield');
+  if (el && el.parentNode) {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.15s ease-out';
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 180);
+  }
+}
+
 async function enterApp(password) {
   Store.password = password;
   Store.unlocked = true;
@@ -7414,6 +7516,7 @@ async function enterApp(password) {
   await Store.save();
   document.getElementById('auth-view').style.display = 'none';
   document.getElementById('app-view').style.display = 'block';
+  dismissShield();
   applyTheme(Store.settings.theme || 'light');
   navigate('dashboard');
   // 启动无操作检测
@@ -7437,6 +7540,7 @@ async function enterApp(password) {
 function initAuthPage() {
   document.getElementById('app-view').style.display = 'none';
   document.getElementById('auth-view').style.display = 'flex';
+  dismissShield();
   // 清空输入
   document.getElementById('unlock-password').value = '';
   const unlockUsernameEl = document.getElementById('unlock-username');
@@ -7517,19 +7621,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 尝试从 sessionStorage 恢复登录状态（密码经会话级随机掩码混淆）
   const savedObfuscated = sessionStorage.getItem('crm_session_pw');
+  const isLocked = sessionStorage.getItem('crm_session_locked') === '1';
   if (savedObfuscated) {
     const savedPassword = _deobfuscatePw(savedObfuscated);
     doUnlock(savedPassword).then(ok => {
       if (ok) {
+        // 如果处于锁屏状态，显示锁屏浮层而非直接进入
+        if (isLocked) {
+          document.getElementById('auth-view').style.display = 'none';
+          document.getElementById('app-view').style.display = 'block';
+          document.getElementById('lock-overlay').style.display = 'flex';
+          dismissShield();
+          Store.password = savedPassword;
+          Store.unlocked = false;
+          // 加载数据用于显示用户名
+          Store.load().then(() => {
+            showLockOverlay();
+          }).catch(() => {
+            showLockOverlay();
+          });
+          return;
+        }
         enterApp(savedPassword);
         return;
       }
       sessionStorage.removeItem('crm_session_pw');
+      sessionStorage.removeItem('crm_session_locked');
       initAuthPage();
     }).catch(() => {
+      sessionStorage.removeItem('crm_session_locked');
       initAuthPage();
     });
   } else {
+    sessionStorage.removeItem('crm_session_locked');
     initAuthPage();
   }
 
@@ -7672,7 +7796,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-lock').onclick = () => {
     clearIdleTimer();
     Store.unlocked = false;
-    // 保留 sessionStorage 中的密码，以便手势解锁时恢复
+    sessionStorage.setItem('crm_session_locked', '1');
     showLockOverlay();
   };
 
@@ -7711,6 +7835,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const ok = await doUnlock(pw);
     if (ok) {
       lockFailCount = 0;
+      sessionStorage.removeItem('crm_session_locked');
       hideLockOverlay();
       enterApp(pw);
     } else {
@@ -7754,22 +7879,27 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function initLockGestureMode() {
-    // 使用双重 rAF 确保 canvas 从 display:none 切换到 display:block 后完成布局
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const saved = Store.data.gesturePattern;
-        lockGestureApi = (window.__initGestureCanvas || initGestureCanvas)('lock-gesture-canvas', 'unlock', (pattern, points) => {
+        const initGC = window.__initGestureCanvas;
+        if (typeof initGC !== 'function') {
+          showToast('手势模块暂不可用，请使用密码解锁', 'error');
+          document.getElementById('btn-lock-pw-mode').click();
+          return;
+        }
+        lockGestureApi = initGC('lock-gesture-canvas', 'unlock', (pattern, points) => {
           if (!pattern) return;
           const statusEl = document.getElementById('lock-gesture-status');
           if (pattern === saved) {
             statusEl.className = 'gesture-status success';
             statusEl.textContent = '手势验证成功，正在解锁...';
             setTimeout(() => {
-              // 手势正确：恢复密码（从 sessionStorage 读取混淆后的密码）
               const obfPw = sessionStorage.getItem('crm_session_pw');
               if (obfPw) {
                 Store.password = _deobfuscatePw(obfPw);
                 Store.unlocked = true;
+                sessionStorage.removeItem('crm_session_locked');
                 hideLockOverlay();
                 refreshUI();
                 showToast('欢迎回来', 'success');
@@ -7777,6 +7907,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // sessionStorage 丢失，回退到完整登录
                 hideLockOverlay();
                 Store.unlocked = false; Store.password = null;
+                sessionStorage.removeItem('crm_session_locked');
                 initAuthPage();
                 showToast('会话已过期，请重新登录', 'warning');
               }
@@ -7807,6 +7938,7 @@ document.addEventListener('DOMContentLoaded', function () {
     stopAutoSave();
     Store.unlocked = false; Store.password = null;
     sessionStorage.removeItem('crm_session_pw');
+    sessionStorage.removeItem('crm_session_locked');
     initAuthPage();
   };
 
@@ -7818,6 +7950,7 @@ document.addEventListener('DOMContentLoaded', function () {
       stopAutoSave();
       Store.unlocked = false; Store.password = null;
       sessionStorage.removeItem('crm_session_pw');
+      sessionStorage.removeItem('crm_session_locked');
       document.getElementById('app-view').style.display = 'none';
       document.getElementById('auth-view').style.display = 'block';
       document.getElementById('unlock-password').value = '';
@@ -9574,6 +9707,9 @@ function refreshUI() {
     };
   }
 
+  // 立即导出 initGestureCanvas 到全局，供锁屏浮层使用
+  window.__initGestureCanvas = initGestureCanvas;
+
   // ── 设置手势 ────────────────────────────────────────────────
   let gestureSetApi = null;
 
@@ -9768,49 +9904,54 @@ function refreshUI() {
           <div class="success-text" id="reset-pw-match" style="display:none;font-size:12px;color:var(--color-success);margin-top:4px;">✓ 两次密码一致</div>
         </div>
       `,
-      footerHTML: '<button class="btn btn-primary" id="btn-do-reset-pw">确认修改</button>',
+      footer: (f) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.id = 'btn-do-reset-pw';
+        btn.textContent = '确认修改';
+        f.appendChild(btn);
+
+        // 实时比对
+        const pw1 = document.getElementById('reset-pw-new');
+        const pw2 = document.getElementById('reset-pw-confirm');
+        if (pw1 && pw2) {
+          const check = () => {
+            if (!pw2.value) {
+              document.getElementById('reset-pw-error').style.display = 'none';
+              document.getElementById('reset-pw-match').style.display = 'none';
+              return;
+            }
+            if (pw1.value === pw2.value && pw1.value.length >= 6) {
+              document.getElementById('reset-pw-error').style.display = 'none';
+              document.getElementById('reset-pw-match').style.display = 'block';
+            } else {
+              document.getElementById('reset-pw-match').style.display = 'none';
+            }
+          };
+          pw1.oninput = check;
+          pw2.oninput = check;
+        }
+
+        btn.onclick = async () => {
+          const newPw = document.getElementById('reset-pw-new').value;
+          const confirmPw = document.getElementById('reset-pw-confirm').value;
+          if (!newPw || newPw.length < 6) { showToast('密码至少6位', 'error'); return; }
+          if (newPw !== confirmPw) {
+            document.getElementById('reset-pw-error').style.display = 'block';
+            return;
+          }
+          try {
+            Store.password = newPw;
+            await Store.save();
+            Store.addLog('密码修改', '成功', '通过手势验证重置密码');
+            showToast('密码已重置，下次请使用新密码登录', 'success');
+            closeModal();
+          } catch (e) {
+            showToast('密码重置失败：' + e.message, 'error');
+          }
+        };
+      },
     });
-
-    // 实时比对
-    const pw1 = document.getElementById('reset-pw-new');
-    const pw2 = document.getElementById('reset-pw-confirm');
-    if (pw1 && pw2) {
-      const check = () => {
-        if (!pw2.value) {
-          document.getElementById('reset-pw-error').style.display = 'none';
-          document.getElementById('reset-pw-match').style.display = 'none';
-          return;
-        }
-        if (pw1.value === pw2.value && pw1.value.length >= 6) {
-          document.getElementById('reset-pw-error').style.display = 'none';
-          document.getElementById('reset-pw-match').style.display = 'block';
-        } else {
-          document.getElementById('reset-pw-match').style.display = 'none';
-        }
-      };
-      pw1.oninput = check;
-      pw2.oninput = check;
-    }
-
-    document.getElementById('btn-do-reset-pw').onclick = async () => {
-      const newPw = document.getElementById('reset-pw-new').value;
-      const confirmPw = document.getElementById('reset-pw-confirm').value;
-      if (!newPw || newPw.length < 6) { showToast('密码至少6位', 'error'); return; }
-      if (newPw !== confirmPw) {
-        document.getElementById('reset-pw-error').style.display = 'block';
-        return;
-      }
-      // 用新密码重新加密并保存数据
-      try {
-        Store.password = newPw;
-        await Store.save();
-        Store.addLog('密码修改', '成功', '通过手势验证重置密码');
-        showToast('密码已重置，下次请使用新密码登录', 'success');
-        closeModal();
-      } catch (e) {
-        showToast('密码重置失败：' + e.message, 'error');
-      }
-    };
   }
 
   // ── 手势设置初始化（在进入安全页面时调用）────────────────────────────
@@ -9935,20 +10076,25 @@ function refreshUI() {
         </div>
         <div class="error-text" id="sq-verify-error" style="display:none;">答案错误，请重试</div>
       `,
-      footerHTML: '<button class="btn btn-primary" id="btn-sq-verify">验证并重置密码</button>',
+      footer: (f) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.id = 'btn-sq-verify';
+        btn.textContent = '验证并重置密码';
+        f.appendChild(btn);
+        btn.onclick = () => {
+          const ans1 = document.getElementById('sq-answer-1').value.trim().toLowerCase();
+          const ans2 = document.getElementById('sq-answer-2').value.trim().toLowerCase();
+          if (ans1 === sq[0].a && ans2 === sq[1].a) {
+            closeModal();
+            setTimeout(() => openSetNewPasswordDialog(), 300);
+          } else {
+            document.getElementById('sq-verify-error').style.display = 'block';
+          }
+        };
+      },
     });
-
-    document.getElementById('btn-sq-verify').onclick = () => {
-      const ans1 = document.getElementById('sq-answer-1').value.trim().toLowerCase();
-      const ans2 = document.getElementById('sq-answer-2').value.trim().toLowerCase();
-      if (ans1 === sq[0].a && ans2 === sq[1].a) {
-        closeModal();
-        setTimeout(() => openSetNewPasswordDialog(), 300);
-      } else {
-        document.getElementById('sq-verify-error').style.display = 'block';
-      }
-    };
-  };
+  }
 
   // ── 通用：设置新密码弹窗 ──────────────────────────────────
   function openSetNewPasswordDialog() {
@@ -9967,50 +10113,56 @@ function refreshUI() {
           <div class="success-text" id="reset-pw-match-final" style="display:none;font-size:12px;color:var(--color-success);margin-top:4px;">✓ 两次密码一致</div>
         </div>
       `,
-      footerHTML: '<button class="btn btn-primary" id="btn-do-reset-pw-final">确认修改</button>',
+      footer: (f) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.id = 'btn-do-reset-pw-final';
+        btn.textContent = '确认修改';
+        f.appendChild(btn);
+
+        // 实时比对
+        const pw1 = document.getElementById('reset-pw-new-final');
+        const pw2 = document.getElementById('reset-pw-confirm-final');
+        if (pw1 && pw2) {
+          const check = () => {
+            if (!pw2.value) {
+              document.getElementById('reset-pw-error-final').style.display = 'none';
+              document.getElementById('reset-pw-match-final').style.display = 'none';
+              return;
+            }
+            if (pw1.value === pw2.value && pw1.value.length >= 6) {
+              document.getElementById('reset-pw-error-final').style.display = 'none';
+              document.getElementById('reset-pw-match-final').style.display = 'block';
+            } else {
+              document.getElementById('reset-pw-match-final').style.display = 'none';
+            }
+          };
+          pw1.oninput = check;
+          pw2.oninput = check;
+        }
+
+        btn.onclick = async () => {
+          const newPw = document.getElementById('reset-pw-new-final').value;
+          const confirmPw = document.getElementById('reset-pw-confirm-final').value;
+          if (!newPw || newPw.length < 6) { showToast('密码至少6位', 'error'); return; }
+          if (newPw !== confirmPw) {
+            document.getElementById('reset-pw-error-final').style.display = 'block';
+            return;
+          }
+          try {
+            Store.password = newPw;
+            await Store.save();
+            Store.addLog('密码修改', '成功', '通过密保问题/手势重置密码');
+            showToast('密码已重置，下次请使用新密码登录', 'success');
+            closeModal();
+            // 回到解锁页面
+            setTimeout(initAuthPage, 500);
+          } catch (e) {
+            showToast('密码重置失败：' + e.message, 'error');
+          }
+        };
+      },
     });
-
-    // 实时比对
-    const pw1 = document.getElementById('reset-pw-new-final');
-    const pw2 = document.getElementById('reset-pw-confirm-final');
-    if (pw1 && pw2) {
-      const check = () => {
-        if (!pw2.value) {
-          document.getElementById('reset-pw-error-final').style.display = 'none';
-          document.getElementById('reset-pw-match-final').style.display = 'none';
-          return;
-        }
-        if (pw1.value === pw2.value && pw1.value.length >= 6) {
-          document.getElementById('reset-pw-error-final').style.display = 'none';
-          document.getElementById('reset-pw-match-final').style.display = 'block';
-        } else {
-          document.getElementById('reset-pw-match-final').style.display = 'none';
-        }
-      };
-      pw1.oninput = check;
-      pw2.oninput = check;
-    }
-
-    document.getElementById('btn-do-reset-pw-final').onclick = async () => {
-      const newPw = document.getElementById('reset-pw-new-final').value;
-      const confirmPw = document.getElementById('reset-pw-confirm-final').value;
-      if (!newPw || newPw.length < 6) { showToast('密码至少6位', 'error'); return; }
-      if (newPw !== confirmPw) {
-        document.getElementById('reset-pw-error-final').style.display = 'block';
-        return;
-      }
-      try {
-        Store.password = newPw;
-        await Store.save();
-        Store.addLog('密码修改', '成功', '通过密保问题/手势重置密码');
-        showToast('密码已重置，下次请使用新密码登录', 'success');
-        closeModal();
-        // 回到解锁页面
-        setTimeout(initAuthPage, 500);
-      } catch (e) {
-        showToast('密码重置失败：' + e.message, 'error');
-      }
-    };
   }
 
   // ── 设置页面：通过密保问题重置密码 ─────────────────────────
@@ -10043,24 +10195,32 @@ function refreshUI() {
             <div class="error-text" id="cur-pw-error" style="display:none;">密码错误</div>
           </div>
         `,
-        footerHTML: '<button class="btn btn-primary" id="btn-verify-cur-pw">验证</button>',
-      });
+        footer: (f) => {
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-primary';
+          btn.id = 'btn-verify-cur-pw';
+          btn.textContent = '验证';
+          f.appendChild(btn);
 
-      document.getElementById('btn-verify-cur-pw').onclick = async () => {
-        const curPw = document.getElementById('cur-pw-input').value;
-        if (!curPw) return;
-        // 验证密码：尝试用输入的密码解密数据
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) throw new Error('无数据');
-          await decryptData(raw, curPw);
-          // 密码正确
-          closeModal();
-          setTimeout(() => openSetNewPasswordDialog(), 300);
-        } catch (e) {
-          document.getElementById('cur-pw-error').style.display = 'block';
-        }
-      };
+          const doVerify = async () => {
+            const curPw = document.getElementById('cur-pw-input').value;
+            if (!curPw) return;
+            try {
+              const raw = localStorage.getItem(STORAGE_KEY);
+              if (!raw) throw new Error('无数据');
+              await decryptData(raw, curPw);
+              closeModal();
+              setTimeout(() => openSetNewPasswordDialog(), 300);
+            } catch (e) {
+              document.getElementById('cur-pw-error').style.display = 'block';
+            }
+          };
+
+          btn.onclick = doVerify;
+          const input = document.getElementById('cur-pw-input');
+          if (input) input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doVerify(); });
+        },
+      });
     };
   }
 
