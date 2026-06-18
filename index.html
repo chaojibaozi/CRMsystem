@@ -989,12 +989,12 @@ input[type="checkbox"]:checked {
   z-index: 9999;
   width: 90%;
   max-width: 600px;
-  max-height: 70vh;
   display: flex;
   flex-direction: column;
   opacity: 0;
   visibility: hidden;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+  overflow: hidden;                 /* 裁剪子元素滚动条至圆角边界 */
 }
 .stat-popup.active { 
   transform: translate(-50%, -50%) scale(1);
@@ -1028,6 +1028,25 @@ input[type="checkbox"]:checked {
   padding: 12px;
   overflow-y: auto;
   flex: 1;
+  max-height: 70vh;
+}
+/* 统计浮层细滚动条 - 滚动时显示，停止后隐藏 */
+.stat-popup-body::-webkit-scrollbar {
+  width: 4px;
+}
+.stat-popup-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.stat-popup-body::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+.stat-popup-body.scrolling::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+}
+.stat-popup-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
 }
 .stat-popup-item {
   padding: 12px;
@@ -1218,12 +1237,12 @@ input[type="checkbox"]:checked {
   z-index: 10001;
   width: 90%;
   max-width: 480px;
-  max-height: 78vh;
   display: flex;
   flex-direction: column;
   opacity: 0;
   visibility: hidden;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+  overflow: hidden;                 /* 裁剪子元素滚动条至圆角边界 */
 }
 .customer-float-panel.active {
   transform: translate(-50%, -50%) scale(1);
@@ -1263,6 +1282,25 @@ input[type="checkbox"]:checked {
   padding: 14px 18px;
   overflow-y: auto;
   flex: 1;
+  max-height: 78vh;
+}
+/* 客户浮层细滚动条 - 滚动时显示，停止后隐藏 */
+.customer-float-body::-webkit-scrollbar {
+  width: 4px;
+}
+.customer-float-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.customer-float-body::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+.customer-float-body.scrolling::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+}
+.customer-float-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
 }
 .customer-float-grid {
   display: grid;
@@ -2329,6 +2367,33 @@ table.data-table {
   background: rgba(99,102,241,0.15);
   border-color: var(--color-primary-500);
   color: var(--color-primary-300);
+}
+
+/* 页面级细滚动条 - 鼠标滚轮滚动时显示，停止后隐藏 */
+html::-webkit-scrollbar {
+  width: 4px;
+}
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+html::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+html.scrolling::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+/* Firefox 页面滚动条 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+html.scrolling {
+  scrollbar-color: var(--color-neutral-300) transparent;
 }
 </style>
 </head>
@@ -8210,6 +8275,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 注：自动锁屏监控已在 setupIdleDetection 中统一处理
 
+  // ── 统计浮层滚动条显隐 ──
+  const _statPopupBody = document.querySelector('.stat-popup-body');
+  let _statPopupTimer = null;
+  _statPopupBody.addEventListener('scroll', () => {
+    _statPopupBody.classList.add('scrolling');
+    clearTimeout(_statPopupTimer);
+    _statPopupTimer = setTimeout(() => {
+      _statPopupBody.classList.remove('scrolling');
+    }, 500);
+  });
+  // ── 客户浮层滚动条显隐 ──
+  const _floatBody = document.querySelector('.customer-float-body');
+  let _floatTimer = null;
+  _floatBody.addEventListener('scroll', () => {
+    _floatBody.classList.add('scrolling');
+    clearTimeout(_floatTimer);
+    _floatTimer = setTimeout(() => {
+      _floatBody.classList.remove('scrolling');
+    }, 500);
+  });
+  // ── 页面级滚动条显隐 ──
+  let _pageScrollTimer = null;
+  window.addEventListener('scroll', () => {
+    document.documentElement.classList.add('scrolling');
+    clearTimeout(_pageScrollTimer);
+    _pageScrollTimer = setTimeout(() => {
+      document.documentElement.classList.remove('scrolling');
+    }, 500);
+  }, { passive: true });
   // ── Modal 滚动条显隐：鼠标滚轮滚动时显示，停止 500ms 后隐藏 ──
   const _modalScroll = document.querySelector('.modal-scroll');
   let _modalScrollTimer = null;
