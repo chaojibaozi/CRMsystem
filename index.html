@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self';">
 <title>客户关系管理系统 - 本地加密存储版</title>
 <style>
 /* ========================================
@@ -14,8 +15,8 @@
   --bg-tertiary: #eef2f7;
   --border-color: #e1e8ed;
   --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
   --accent-light: #dbeafe;
@@ -39,8 +40,8 @@
   --bg-tertiary: #334155;
   --border-color: #334155;
   --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-secondary: #e2e8f0;
+  --text-muted: #b0c0d0;
   --accent: #3b82f6;
   --accent-hover: #60a5fa;
   --accent-light: #1e3a8a;
@@ -331,6 +332,23 @@ input[type="checkbox"]:checked {
   border-radius: 0 2px 2px 0;
 }
 .nav-icon { font-size: 14px; width: 16px; text-align: center; }
+.nav-count {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  padding: 1px 6px;
+  border-radius: 8px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1.6;
+  transition: background 0.2s, color 0.2s;
+}
+.nav-item.active .nav-count {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
 
 .main-content {
   flex: 1;
@@ -484,10 +502,10 @@ input[type="checkbox"]:checked {
   background: var(--bg-secondary);
   transform: translateX(4px);
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  border-color: var(--primary);
+  border-color: var(--accent);
 }
 .stat-popup-item-name { font-weight: 600; margin-bottom: 4px; transition: color 0.2s; }
-.stat-popup-item:hover .stat-popup-item-name { color: var(--primary); }
+.stat-popup-item:hover .stat-popup-item-name { color: var(--accent); }
 .stat-popup-item-info { font-size: 12px; color: var(--text-secondary); }
 .stat-popup-empty { text-align: center; color: var(--text-muted); padding: 40px 0; }
 
@@ -801,6 +819,47 @@ input[type="checkbox"]:checked {
   gap: 8px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color);
+  cursor: default;
+}
+.bi-section-title .bi-collapse-btn {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.25s ease, background 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.bi-section-title .bi-collapse-btn:hover {
+  background: var(--border-color);
+}
+.bi-section-title .bi-collapse-btn.collapsed {
+  transform: rotate(-90deg);
+}
+.bi-section-title .bi-collapse-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bi-section-body {
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  max-height: 3000px;
+  opacity: 1;
+}
+.bi-section-body.collapsed {
+  max-height: 0;
+  opacity: 0;
 }
 .bi-section-icon { font-size: 18px; }
 .bi-section-meta {
@@ -866,6 +925,37 @@ input[type="checkbox"]:checked {
 .bi-kpi-card[data-accent="warn"]    .bi-kpi-value { color: #d97706; }
 .bi-kpi-card[data-accent="info"]    .bi-kpi-value { color: #2563eb; }
 
+/* 拖动排序 */
+.bi-sortable [draggable="true"] { cursor: grab; user-select: none; position: relative; }
+.bi-sortable [draggable="true"]:active { cursor: grabbing; }
+.bi-sortable .bi-drag-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+  background: rgba(37,99,235,0.06) !important;
+}
+.bi-sortable .bi-dragging {
+  opacity: 0.4;
+  transform: scale(0.96);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+  z-index: 100;
+}
+.bi-drag-handle {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: grab;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bi-sortable [draggable="true"]:hover .bi-drag-handle { opacity: 0.5; }
+.bi-drag-handle:active { cursor: grabbing; }
+
 /* 客户数据分析矩阵 */
 .bi-analysis-grid {
   display: grid;
@@ -879,6 +969,7 @@ input[type="checkbox"]:checked {
   border: 1px solid var(--border-color);
   animation: biCardIn 0.4s ease both;
   transition: box-shadow 0.2s, border-color 0.2s;
+  position: relative;
 }
 .bi-analysis-card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.07);
@@ -892,6 +983,7 @@ input[type="checkbox"]:checked {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border-color);
   letter-spacing: 0.2px;
+  position: relative;
 }
 .bi-analysis-list {
   font-size: 12px;
@@ -946,6 +1038,7 @@ input[type="checkbox"]:checked {
   grid-column: span 2;
   transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
   animation: biCardIn 0.45s ease both;
+  position: relative;
 }
 .bi-card:hover {
   box-shadow: 0 6px 20px rgba(0,0,0,0.09);
@@ -963,6 +1056,13 @@ input[type="checkbox"]:checked {
   gap: 6px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+.bi-card-title .bi-drag-handle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 .bi-card-icon { font-size: 15px; }
 .bi-chart-area {
@@ -1634,10 +1734,13 @@ table.data-table {
         <li class="nav-item active" data-page="dashboard"><span class="nav-icon">■</span>仪表盘</li>
         <li class="nav-item" data-page="bi"><span class="nav-icon">📊</span>BI看板</li>
         <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表</li>
-        <li class="nav-item" data-page="geo"><span class="nav-icon">🌍</span>GEO客户</li>
-        <li class="nav-item" data-page="360"><span class="nav-icon">🔄</span>360客户</li>
-        <li class="nav-item" data-page="bing"><span class="nav-icon">🔍</span>Bing客户</li>
-        <li class="nav-item" data-page="trash"><span class="nav-icon">🗑️</span>作废客户</li>
+        <li class="nav-item" data-page="geo"><span class="nav-icon">🌍</span>GEO客户<span class="nav-count" id="nav-count-geo">0</span></li>
+        <li class="nav-item" data-page="360"><span class="nav-icon">🔄</span>360客户<span class="nav-count" id="nav-count-360">0</span></li>
+        <li class="nav-item" data-page="bing"><span class="nav-icon">🔍</span>Bing客户<span class="nav-count" id="nav-count-bing">0</span></li>
+        <li class="nav-item" data-page="baidu"><span class="nav-icon">🔎</span>百度客户<span class="nav-count" id="nav-count-baidu">0</span></li>
+        <li class="nav-item" data-page="douyin"><span class="nav-icon">🎵</span>抖音客户<span class="nav-count" id="nav-count-douyin">0</span></li>
+        <li class="nav-item" data-page="xianyu"><span class="nav-icon">🐟</span>闲鱼客户<span class="nav-count" id="nav-count-xianyu">0</span></li>
+        <li class="nav-item" data-page="trash"><span class="nav-icon">🗑️</span>作废客户<span class="nav-count" id="nav-count-trash">0</span></li>
         <li class="nav-item" data-page="security"><span class="nav-icon">⚙</span>数据与安全</li>
         <li class="nav-item" data-page="settings"><span class="nav-icon">🔧</span>设置</li>
       </ul>
@@ -1709,8 +1812,8 @@ table.data-table {
             <span>客户数据分析</span>
             <span class="bi-section-meta" id="bi-data-meta"></span>
           </div>
-          <div class="bi-kpi-row" id="bi-kpi-row"></div>
-          <div class="bi-analysis-grid" id="bi-analysis-grid"></div>
+          <div class="bi-kpi-row bi-sortable" id="bi-kpi-row"></div>
+          <div class="bi-analysis-grid bi-sortable" id="bi-analysis-grid"></div>
         </div>
 
         <!-- 异常智能预警 -->
@@ -1719,8 +1822,11 @@ table.data-table {
             <span class="bi-section-icon">🔔</span>
             <span>异常智能预警</span>
             <span class="bi-section-meta" id="bi-alert-meta"></span>
+            <button class="bi-collapse-btn" title="折叠/展开"><svg viewBox="0 0 14 14"><polyline points="3,5 7,9 11,5"/></svg></button>
           </div>
-          <div class="bi-alert-bar" id="bi-alert-bar"></div>
+          <div class="bi-section-body">
+            <div class="bi-alert-bar" id="bi-alert-bar"></div>
+          </div>
         </div>
 
         <!-- 业务漏斗与趋势预测 -->
@@ -1728,11 +1834,14 @@ table.data-table {
           <div class="bi-section-title">
             <span class="bi-section-icon">🔮</span>
             <span>趋势预测分析</span>
+            <button class="bi-collapse-btn" title="折叠/展开"><svg viewBox="0 0 14 14"><polyline points="3,5 7,9 11,5"/></svg></button>
           </div>
-          <div class="bi-predict-grid" id="bi-predict-grid"></div>
-          <div class="bi-card bi-card-wide" style="margin-top:10px;">
-            <div class="bi-card-title"><span class="bi-card-icon">⚠️</span>客户流失风险预判</div>
-            <div class="bi-churn-list" id="bi-churn-list"></div>
+          <div class="bi-section-body">
+            <div class="bi-predict-grid" id="bi-predict-grid"></div>
+            <div class="bi-card bi-card-wide" style="margin-top:10px;">
+              <div class="bi-card-title"><span class="bi-card-icon">⚠️</span>客户流失风险预判</div>
+              <div class="bi-churn-list" id="bi-churn-list"></div>
+            </div>
           </div>
         </div>
 
@@ -1741,44 +1850,47 @@ table.data-table {
           <div class="bi-section-title">
             <span class="bi-section-icon">📈</span>
             <span>图表分析</span>
+            <button class="bi-collapse-btn" title="折叠/展开"><svg viewBox="0 0 14 14"><polyline points="3,5 7,9 11,5"/></svg></button>
           </div>
-          <div class="bi-chart-grid">
-            <div class="bi-card">
-              <div class="bi-card-title"><span class="bi-card-icon">📊</span>客户等级分布</div>
+          <div class="bi-section-body">
+          <div class="bi-chart-grid bi-sortable" id="bi-chart-grid">
+            <div class="bi-card" data-sort-id="chart-level" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">📊</span>客户等级分布<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-level" class="bi-canvas" data-chart="level"></canvas></div>
             </div>
-            <div class="bi-card">
-              <div class="bi-card-title"><span class="bi-card-icon">🥧</span>客户来源分布</div>
+            <div class="bi-card" data-sort-id="chart-source" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">🥧</span>客户来源分布<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-source" class="bi-canvas" data-chart="source"></canvas></div>
             </div>
-            <div class="bi-card bi-card-wide">
-              <div class="bi-card-title"><span class="bi-card-icon">🏆</span>成交转化漏斗</div>
+            <div class="bi-card" data-sort-id="chart-funnel" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">🏆</span>成交转化漏斗<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-funnel" class="bi-canvas" data-chart="funnel"></canvas></div>
             </div>
-            <div class="bi-card bi-card-wide">
-              <div class="bi-card-title"><span class="bi-card-icon">📈</span>近12个月新增趋势</div>
+            <div class="bi-card" data-sort-id="chart-monthly" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">📈</span>近12个月新增趋势<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-monthly" class="bi-canvas" data-chart="monthly"></canvas></div>
             </div>
-            <div class="bi-card">
-              <div class="bi-card-title"><span class="bi-card-icon">🌍</span>渠道对比分析</div>
+            <div class="bi-card" data-sort-id="chart-channel" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">🌍</span>渠道对比分析<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-channel" class="bi-canvas" data-chart="channel"></canvas></div>
             </div>
-            <div class="bi-card">
-              <div class="bi-card-title"><span class="bi-card-icon">🏙️</span>省份排行 TOP10</div>
+            <div class="bi-card" data-sort-id="chart-province" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">🏙️</span>省份排行 TOP10<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-province" class="bi-canvas" data-chart="province"></canvas></div>
             </div>
-            <div class="bi-card bi-card-wide">
-              <div class="bi-card-title"><span class="bi-card-icon">⏰</span>跟进时效分析</div>
+            <div class="bi-card bi-card-wide" data-sort-id="chart-followup" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">⏰</span>跟进时效分析<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-followup" class="bi-canvas" data-chart="followup"></canvas></div>
             </div>
-            <div class="bi-card bi-card-wide">
-              <div class="bi-card-title"><span class="bi-card-icon">💰</span>意向产品 / 预算分布</div>
+            <div class="bi-card bi-card-wide" data-sort-id="chart-product" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">💰</span>意向产品 / 预算分布<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-product" class="bi-canvas" data-chart="product"></canvas></div>
             </div>
-            <div class="bi-card bi-card-wide">
-              <div class="bi-card-title"><span class="bi-card-icon">👥</span>客户年龄与性别分布</div>
+            <div class="bi-card bi-card-wide" data-sort-id="chart-demographic" draggable="true">
+              <div class="bi-card-title"><span class="bi-card-icon">👥</span>客户年龄与性别分布<span class="bi-drag-handle" title="拖动排序">⠿</span></div>
               <div class="bi-chart-area"><canvas id="bi-chart-demographic" class="bi-canvas" data-chart="demographic"></canvas></div>
             </div>
+          </div>
           </div>
         </div>
 
@@ -1913,6 +2025,39 @@ table.data-table {
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-bing">草稿自动保存中...</div>
           </div>
           <div id="customer-form-container-bing"></div>
+        </div>
+      </section>
+
+      <!-- 百度客户 -->
+      <section class="page" id="page-baidu">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;" id="form-title-baidu">百度客户</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-baidu">草稿自动保存中...</div>
+          </div>
+          <div id="customer-form-container-baidu"></div>
+        </div>
+      </section>
+
+      <!-- 抖音客户 -->
+      <section class="page" id="page-douyin">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;" id="form-title-douyin">抖音客户</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-douyin">草稿自动保存中...</div>
+          </div>
+          <div id="customer-form-container-douyin"></div>
+        </div>
+      </section>
+
+      <!-- 闲鱼客户 -->
+      <section class="page" id="page-xianyu">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;" id="form-title-xianyu">闲鱼客户</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-xianyu">草稿自动保存中...</div>
+          </div>
+          <div id="customer-form-container-xianyu"></div>
         </div>
       </section>
 
@@ -2220,9 +2365,39 @@ async function deriveKey(password, saltBytes, usage) {
   );
 }
 
-// 生成密码校验哈希：使用固定salt派生一个校验值
+// 密码 XOR 混淆存入 sessionStorage（防止 DevTools 直接读取明文）
+const _PW_MASK = 'CrmS3cur1tyX0rK3y!';
+function _obfuscatePw(pw) {
+  const mask = _PW_MASK;
+  let result = '';
+  for (let i = 0; i < pw.length; i++) {
+    result += String.fromCharCode(pw.charCodeAt(i) ^ mask.charCodeAt(i % mask.length));
+  }
+  return btoa(result);
+}
+function _deobfuscatePw(encoded) {
+  try {
+    const decoded = atob(encoded);
+    const mask = _PW_MASK;
+    let result = '';
+    for (let i = 0; i < decoded.length; i++) {
+      result += String.fromCharCode(decoded.charCodeAt(i) ^ mask.charCodeAt(i % mask.length));
+    }
+    return result;
+  } catch(e) { return ''; }
+}
+
+// 生成密码校验哈希：使用存储的随机 salt（首次生成后持久化到 localStorage）
 async function passwordHash(password) {
-  const salt = strToBytes('crm_password_check_salt_v1_fixed');
+  // 读取或生成随机 salt
+  let saltB64 = localStorage.getItem('crm_hash_salt');
+  let salt;
+  if (saltB64) {
+    salt = base64ToBytes(saltB64);
+  } else {
+    salt = crypto.getRandomValues(new Uint8Array(16));
+    localStorage.setItem('crm_hash_salt', bytesToBase64(salt));
+  }
   const key = await deriveKey(password, salt, ['encrypt']);
   // 通过 encrypt 一小段固定文本作为校验值
   const iv = new Uint8Array(12);
@@ -2265,7 +2440,7 @@ function getDefaultLevels() {
     { id: 'cl_a', name: 'A', color: '#dc2626', sort: 1 },
     { id: 'cl_b', name: 'B', color: '#d97706', sort: 2 },
     { id: 'cl_c', name: 'C', color: '#2563eb', sort: 3 },
-    { id: 'cl_d', name: 'D', color: '#9ca3af', sort: 4 }
+    { id: 'cl_d', name: 'D', color: '#6b7280', sort: 4 }
   ];
 }
 
@@ -2314,6 +2489,7 @@ const Store = {
   folderHandle: null,
   folderName: '',
   lastSyncTime: 0,
+  _dirty: false,           // 脏数据标记：有未保存变更时为 true
 
   /* --- 通用读写 localStorage（加密） --- */
   async load() {
@@ -2374,6 +2550,12 @@ const Store = {
     localStorage.setItem(STORAGE_KEY, enc);
     // 同步到文件夹
     this.syncToFolder(enc);
+    this._dirty = false;
+  },
+
+  // 标记数据已变更（供自动保存轮询使用）
+  markDirty() {
+    if (this.unlocked) this._dirty = true;
   },
 
   saveSettings() {
@@ -2708,6 +2890,20 @@ function getDefaultTags() {
   return Store.data.tags;
 }
 
+/** 判断客户是否属于指定渠道（兼容旧 channel 字符串和新的 channels 数组） */
+function hasChannel(c, ch) {
+  if (c.channels && Array.isArray(c.channels)) return c.channels.indexOf(ch) !== -1;
+  if (c.channel) return c.channel === ch;
+  return false;
+}
+
+/** 获取客户所有渠道（兼容旧数据） */
+function getCustomerChannels(c) {
+  if (c.channels && Array.isArray(c.channels)) return c.channels;
+  if (c.channel) return [c.channel];
+  return [];
+}
+
 function openCustomerForm(customer) {
   const isEdit = !!customer;
   const c = customer || { id: uuid(), createdAt: Date.now() };
@@ -2726,7 +2922,7 @@ function openCustomerForm(customer) {
         { key: 'email', label: '邮箱', type: 'email', max: 80 },
         { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
         { key: 'level', label: '客户等级', type: 'select', options: getLevelOptions() },
-        { key: 'channel', label: '所属渠道', type: 'select', options: ['', 'geo', '360', 'bing'] },
+        { key: 'channels', label: '所属渠道（可多选）', type: 'checkbox-group', options: ['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu'] },
       ]
     },
     {
@@ -2772,13 +2968,27 @@ function openCustomerForm(customer) {
         if (typeof val === 'number') val = dateOnly(val);
         else if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) val = '';
       }
-      if (f.type === 'select') {
-        const channelLabels = { '': '无', 'geo': 'GEO', '360': '360', 'bing': 'Bing' };
+      if (f.type === 'checkbox-group') {
+        const channelLabels = { 'geo': '🌍 GEO客户', '360': '🔄 360客户', 'bing': '🔍 Bing客户', 'baidu': '🔎 百度客户', 'douyin': '🎵 抖音客户', 'xianyu': '🐟 闲鱼客户' };
+        // 兼容旧数据：channel 字符串 → channels 数组
+        const currentChannels = c.channels || (c.channel ? [c.channel] : []);
+        html += `<div class="form-group" style="grid-column:1/-1;">
+          <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">`;
+        for (const opt of f.options) {
+          const checked = currentChannels.indexOf(opt) !== -1;
+          html += `<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:6px 14px;border-radius:8px;border:1.5px solid ${checked ? 'var(--accent)' : 'var(--border-color)'};background:${checked ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)'};font-size:13px;transition:all 0.15s;user-select:none;" class="channel-checkbox-label" data-opt="${opt}" data-checked="${checked}">
+            <input type="checkbox" data-channel="${opt}" ${checked ? 'checked' : ''} style="accent-color:var(--accent);width:16px;height:16px;cursor:pointer;">
+            <span>${channelLabels[opt] || opt}</span>
+          </label>`;
+        }
+        html += `</div></div>`;
+      } else if (f.type === 'select') {
         html += `<div class="form-group">
           <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
           <select class="select" data-key="${f.key}">
             ${f.options.map(o => {
-              const display = f.key === 'channel' ? (channelLabels[o] || o) : (o || '请选择');
+              const display = o || '请选择';
               return `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(display)}</option>`;
             }).join('')}
           </select></div>`;
@@ -2842,7 +3052,7 @@ function openCustomerForm(customer) {
 
       // 切换分组展开
       document.querySelectorAll('.form-section-header').forEach(h => {
-        h.onclick = () => h.parentElement.classList.toggle('open');
+        h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
       });
       // 标签选择切换
       document.querySelectorAll('.tag-chip[data-tag]').forEach(el => {
@@ -2929,6 +3139,10 @@ function openCustomerForm(customer) {
         document.querySelectorAll('#modal-box .tag-chip[data-tag]').forEach(el => {
           if (el.dataset.selected === 'true') d.tags.push(el.dataset.tag);
         });
+        d.channels = [];
+        document.querySelectorAll('#modal-box [data-channel]').forEach(el => {
+          if (el.checked) d.channels.push(el.dataset.channel);
+        });
         return d;
       };
       document.querySelectorAll('#modal-box .input, #modal-box .textarea, #modal-box .select').forEach(el => {
@@ -2938,6 +3152,21 @@ function openCustomerForm(customer) {
             try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ customerId: c.id, data: collect() })); } catch (e) {}
             try { safeText(document.getElementById('form-draft-status'), '草稿已自动保存于 ' + formatDate(Date.now())); } catch (e) {}
           }, 800);
+        });
+      });
+      // 渠道复选框联动样式
+      document.querySelectorAll('#modal-box .channel-checkbox-label').forEach(label => {
+        const checkbox = label.querySelector('[data-channel]');
+        if (!checkbox) return;
+        const updateStyle = () => {
+          const checked = checkbox.checked;
+          label.dataset.checked = checked;
+          label.style.borderColor = checked ? 'var(--accent)' : 'var(--border-color)';
+          label.style.background = checked ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)';
+        };
+        checkbox.addEventListener('change', updateStyle);
+        label.addEventListener('click', (e) => {
+          if (e.target !== checkbox) { checkbox.checked = !checkbox.checked; updateStyle(); }
         });
       });
 
@@ -2952,6 +3181,19 @@ function openCustomerForm(customer) {
           el.style.background = sel ? el.dataset.color : '#e5e7eb';
           el.style.color = sel ? 'white' : '#4b5563';
           el.dataset.selected = sel ? 'true' : 'false';
+        });
+        // 还原渠道复选框
+        const resetChannels = c.channels || (c.channel ? [c.channel] : []);
+        document.querySelectorAll('#modal-box [data-channel]').forEach(el => {
+          el.checked = resetChannels.indexOf(el.dataset.channel) !== -1;
+        });
+        document.querySelectorAll('#modal-box .channel-checkbox-label').forEach(label => {
+          const checkbox = label.querySelector('[data-channel]');
+          if (!checkbox) return;
+          const checked = checkbox.checked;
+          label.dataset.checked = checked;
+          label.style.borderColor = checked ? 'var(--accent)' : 'var(--border-color)';
+          label.style.background = checked ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)';
         });
         showToast('已重置', 'success');
       };
@@ -2983,8 +3225,11 @@ function openCustomerForm(customer) {
           if (!old) { showToast('客户数据不存在', 'error'); return; }
           Object.keys(safe).forEach(k => {
             if (k === 'tags') old.tags = safe.tags;
+            else if (k === 'channels') old.channels = safe.channels;
             else old[k] = safe[k];
           });
+          // 清理旧 channel 字段，统一用 channels
+          if (old.channel !== undefined) { delete old.channel; }
           if (safe.remark && safe.remark !== (c.lastRemark || '')) {
             old.remarkHistory = old.remarkHistory || [];
             old.remarkHistory.unshift({ time: Date.now(), text: safe.remark, images: formImages.slice() });
@@ -3000,7 +3245,9 @@ function openCustomerForm(customer) {
           navigate('list');
           return;
         } else {
-          const newC = { ...safe, id: c.id, createdAt: Date.now(), remarkHistory: [] };
+          const newC = { ...safe, id: c.id, createdAt: Date.now(), remarkHistory: [], channels: safe.channels || [] };
+          // 清理旧 channel 字段
+          if (newC.channel !== undefined) { delete newC.channel; }
           if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark, images: formImages.slice() });
           Store.data.customers.unshift(newC);
           try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
@@ -3216,11 +3463,14 @@ function renderChannelPage(channel) {
   const channelNames = {
     geo: 'GEO',
     '360': '360',
-    bing: 'Bing'
+    bing: 'Bing',
+    baidu: '百度',
+    douyin: '抖音',
+    xianyu: '闲鱼'
   };
   const channelName = channelNames[channel] || channel;
   
-  const customers = Store.data.customers.filter(c => c.deleted !== true && c.channel === channel);
+  const customers = Store.data.customers.filter(c => c.deleted !== true && hasChannel(c, channel));
   const container = document.getElementById(`customer-form-container-${channel}`);
   if (!container) return;
   
@@ -3343,7 +3593,7 @@ function renderTrashPage() {
 function levelColor(level) {
   const l = getLevelByName(level);
   if (l) return l.color;
-  return '#9ca3af';
+  return '#6b7280';
 }
 function statusClass(s) {
   if (s === '已成交') return 'badge-success';
@@ -3430,7 +3680,7 @@ function openCustomerDetail(c, fromPopup) {
         };
         document.getElementById('exportOne').onclick = () => {
           const row = exportCustomerRows([c], true);
-          downloadCSV(`${c.name}_客户资料.csv`, row);
+          downloadCSV(`${c.name.replace(/[\\/:*?"<>|]/g, '_')}_客户资料.csv`, row);
           showToast('已导出单客户资料', 'success');
         };
         document.getElementById('delDetail').onclick = () => {
@@ -3466,7 +3716,7 @@ function exportCustomerRows(list, plain) {
       formatDate(c.createdAt),
       (d.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|'),
       c.remark || '',
-      c.channel || ''
+      getCustomerChannels(c).map(ch => ({ geo: 'GEO', '360': '360', bing: 'Bing', baidu: '百度', douyin: '抖音', xianyu: '闲鱼' }[ch] || ch)).join('|')
     ];
     rows.push(row.map(v => csvEscape(v)).join(','));
   });
@@ -3555,7 +3805,7 @@ function renderDashboard() {
     el.style.gridTemplateColumns = 'repeat(auto-fit, minmax(180px, 1fr))';
     el.style.gap = '16px';
     el.innerHTML = stats.map(s => `
-      <div class="stat-card" data-stat-type="${s.type}" style="padding:18px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);cursor:pointer;transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),border-color 0.2s;" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)';this.style.borderColor='var(--primary)';" onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='';">
+      <div class="stat-card" data-stat-type="${s.type}" style="padding:18px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);cursor:pointer;transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),border-color 0.2s;" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)';this.style.borderColor='var(--accent)';" onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='';">
         <div style="font-size:13px;color:var(--text-secondary);transition:color 0.2s;">${escapeHTML(s.label)}</div>
         <div style="font-size:28px;font-weight:700;margin-top:6px;transition:transform 0.2s;">${s.value}</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${escapeHTML(s.hint)}</div>
@@ -3606,8 +3856,10 @@ function showStatPopup(type) {
       title = '本月新增 (' + customers.length + ')';
       break;
     case 'vip':
-      customers = list.filter(c => topLevelNames.includes(c.level));
-      title = topLevelLabel + ' 级客户 (' + customers.length + ')';
+      { const topNames = getLevels().slice(0, 2).map(l => l.name);
+        customers = list.filter(c => topNames.includes(c.level));
+        title = topNames.join('/') + ' 级客户 (' + customers.length + ')';
+      }
       break;
     case 'follow':
       customers = list.filter(c => {
@@ -3909,12 +4161,12 @@ function showCustomerFloat(customer, source) {
     riskHtml = '<span class="customer-float-item full"><div class="customer-float-label">流失预警</div><div class="customer-float-value" style="color:' + riskColor + ';font-weight:700;">' + riskLevel + ' · ' + daysSinceLast + '天未跟进 · 最后跟进: ' + lastFollowDate + '</div></span>';
   }
 
-  const channelMap = { geo: 'GEO', '360': '360', bing: 'Bing' };
-  const channelLabel = channelMap[customer.channel] || (customer.channel || '未分配');
+  const channelMap = { geo: 'GEO', '360': '360', bing: 'Bing', baidu: '百度', douyin: '抖音', xianyu: '闲鱼' };
+  const channelLabel = getCustomerChannels(customer).map(ch => channelMap[ch] || ch).join('、') || '未分配';
 
   nameEl.textContent = customer.name || '未命名';
   badgesEl.innerHTML = (customer.level ? '<span style="background:' + levelColorVal + ';">' + escapeHTML(customer.level) + '级</span>' : '') +
-    (customer.status ? '<span style="background:' + (customer.status === '已成交' ? '#16a34a' : customer.status === '流失' ? '#dc2626' : '#6b7280') + ';">' + escapeHTML(customer.status) + '</span>' : '') +
+    (customer.status ? '<span style="background:' + (customer.status === '已成交' ? '#16a34a' : customer.status === '流失' ? '#dc2626' : '#4b5563') + ';">' + escapeHTML(customer.status) + '</span>' : '') +
     (source === 'overdue' ? '<span style="background:#dc2626;">超期未联系</span>' : '') +
     (source === 'upcoming' ? '<span style="background:#d97706;">临近联系日</span>' : '') +
     (source === 'agenda' ? '<span style="background:#2563eb;">待沟通</span>' : '') +
@@ -3990,7 +4242,7 @@ function drawSourcePie() {
   const total = entries.reduce((s, e) => s + e[1], 0);
   const cx = W/2, cy = H/2, R = Math.min(W, H) / 2 - 40;
   if (total === 0) {
-    ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif';
+    ctx.fillStyle = '#6b7280'; ctx.font = '14px sans-serif';
     ctx.textAlign = 'center'; ctx.fillText('暂无数据', cx, cy);
     document.getElementById('legend-source').innerHTML = '';
     return;
@@ -4015,7 +4267,7 @@ function drawSourcePie() {
   ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#111';
   ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(String(total), cx, cy - 8);
-  ctx.font = '12px sans-serif'; ctx.fillStyle = '#6b7280';
+  ctx.font = '12px sans-serif'; ctx.fillStyle = '#4b5563';
   ctx.fillText('客户', cx, cy + 14);
 
   // 图例
@@ -4056,7 +4308,7 @@ function drawTrendBar() {
   // 坐标轴
   ctx.strokeStyle = '#e5e7eb';
   ctx.beginPath(); ctx.moveTo(paddingLeft, paddingTop); ctx.lineTo(paddingLeft, H - paddingBottom); ctx.lineTo(W - paddingRight, H - paddingBottom); ctx.stroke();
-  ctx.font = '12px sans-serif'; ctx.fillStyle = '#6b7280'; ctx.textAlign = 'center';
+  ctx.font = '12px sans-serif'; ctx.fillStyle = '#4b5563'; ctx.textAlign = 'center';
   months.forEach((m, i) => {
     const x = paddingLeft + gap/2 + i * (barW + gap);
     const h = (m.count / max) * areaH;
@@ -4064,7 +4316,7 @@ function drawTrendBar() {
     ctx.fillRect(x, H - paddingBottom - h, barW, h);
     ctx.fillStyle = '#111'; ctx.textAlign = 'center';
     ctx.fillText(String(m.count), x + barW/2, H - paddingBottom - h - 6);
-    ctx.fillStyle = '#6b7280';
+    ctx.fillStyle = '#4b5563';
     ctx.fillText(m.label, x + barW/2, H - paddingBottom + 18);
   });
 }
@@ -4386,9 +4638,12 @@ function generateBIReport(type) {
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
     return ft !== null && ft < now;
   }).length;
-  const channelGeo = list.filter(c => c.channel === 'geo').length;
-  const channel360 = list.filter(c => c.channel === '360').length;
-  const channelBing = list.filter(c => c.channel === 'bing').length;
+  const channelGeo = list.filter(c => hasChannel(c, 'geo')).length;
+  const channel360 = list.filter(c => hasChannel(c, '360')).length;
+  const channelBing = list.filter(c => hasChannel(c, 'bing')).length;
+  const channelBaidu = list.filter(c => hasChannel(c, 'baidu')).length;
+  const channelDouyin = list.filter(c => hasChannel(c, 'douyin')).length;
+  const channelXianyu = list.filter(c => hasChannel(c, 'xianyu')).length;
 
   const total = list.length;
   const lines = [];
@@ -4423,7 +4678,10 @@ function generateBIReport(type) {
   lines.push(`  GEO: ${channelGeo} 位`);
   lines.push(`  360: ${channel360} 位`);
   lines.push(`  Bing: ${channelBing} 位`);
-  lines.push(`  未分配: ${total - list.filter(c => c.channel).length} 位`);
+  lines.push(`  百度: ${channelBaidu} 位`);
+  lines.push(`  抖音: ${channelDouyin} 位`);
+  lines.push(`  闲鱼: ${channelXianyu} 位`);
+  lines.push(`  未分配: ${total - list.filter(c => getCustomerChannels(c).length > 0).length} 位`);
   // ========== 风险指标计算 ==========
   const overdueCustomers = list.filter(c => c.status === '跟进中' && c.nextFollowDate).filter(c => {
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
@@ -4574,6 +4832,118 @@ function exportBIReportCSV() {
   showToast('报表已导出', 'success');
 }
 
+// BI 看板模块折叠交互
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.bi-collapse-btn');
+  if (!btn) return;
+  const section = btn.closest('.bi-section');
+  if (!section) return;
+  const body = section.querySelector('.bi-section-body');
+  if (!body) return;
+  const isCollapsed = body.classList.toggle('collapsed');
+  btn.classList.toggle('collapsed', isCollapsed);
+});
+
+// ========== BI 看板拖动排序 ==========
+const BI_SORT_KEY = 'crm_bi_sort_order';
+
+function getBISortOrder() {
+  try { return JSON.parse(localStorage.getItem(BI_SORT_KEY)) || {}; } catch(e) { return {}; }
+}
+
+function saveBISortOrder(groupId, order) {
+  const orders = getBISortOrder();
+  orders[groupId] = order;
+  try { localStorage.setItem(BI_SORT_KEY, JSON.stringify(orders)); } catch(e) {}
+}
+
+function applyBISortOrder() {
+  const orders = getBISortOrder();
+  document.querySelectorAll('.bi-sortable').forEach(grid => {
+    const groupId = grid.id || grid.closest('.bi-section')?.id || 'bi-chart-grid';
+    const order = orders[groupId];
+    if (!order || !Array.isArray(order) || order.length === 0) return;
+    const children = Array.from(grid.children);
+    const sorted = order.map(id => children.find(c => c.dataset.sortId === id)).filter(Boolean);
+    // 追加未在排序列表中的新元素
+    children.forEach(c => { if (!sorted.includes(c)) sorted.push(c); });
+    sorted.forEach(c => grid.appendChild(c));
+  });
+}
+
+// 拖动排序事件绑定（事件委托）
+(function() {
+  let dragEl = null;
+  let dragContainer = null;
+
+  document.addEventListener('dragstart', function(e) {
+    const item = e.target.closest('.bi-sortable [draggable="true"]');
+    if (!item) return;
+    dragEl = item;
+    dragContainer = item.parentElement;
+    item.classList.add('bi-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', item.dataset.sortId || '');
+  });
+
+  document.addEventListener('dragend', function(e) {
+    if (dragEl) {
+      dragEl.classList.remove('bi-dragging');
+      // 保存排序
+      if (dragContainer) {
+        const order = Array.from(dragContainer.children).map(c => c.dataset.sortId).filter(Boolean);
+        const groupId = dragContainer.id || dragContainer.closest('.bi-section')?.id || 'bi-chart-grid';
+        saveBISortOrder(groupId, order);
+      }
+      dragEl = null;
+      dragContainer = null;
+    }
+    // 清除所有 drag-over 状态
+    document.querySelectorAll('.bi-drag-over').forEach(el => el.classList.remove('bi-drag-over'));
+  });
+
+  document.addEventListener('dragover', function(e) {
+    if (!dragEl) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const container = dragEl.parentElement;
+    const afterElement = getDragAfterElement(container, e.clientY, e.clientX);
+    // 清除之前的指示器
+    container.querySelectorAll('.bi-drag-over').forEach(el => el.classList.remove('bi-drag-over'));
+    if (afterElement) {
+      if (afterElement !== dragEl) afterElement.classList.add('bi-drag-over');
+      container.insertBefore(dragEl, afterElement);
+    } else {
+      container.appendChild(dragEl);
+    }
+  });
+
+  function getDragAfterElement(container, y, x) {
+    const draggableElements = Array.from(container.querySelectorAll('[draggable="true"]:not(.bi-dragging)'));
+    let closest = null;
+    let closestOffset = Number.NEGATIVE_INFINITY;
+    // 判断是水平还是垂直排列
+    const isHorizontal = container.classList.contains('bi-kpi-row');
+    for (const child of draggableElements) {
+      const box = child.getBoundingClientRect();
+      let offset;
+      if (isHorizontal) {
+        offset = x - box.left - box.width / 2;
+      } else {
+        // 对于 grid 布局，同时考虑行和列
+        const rowOffset = y - box.top - box.height / 2;
+        const colOffset = x - box.left - box.width / 2;
+        offset = rowOffset < 0 ? rowOffset : (colOffset < 0 ? colOffset : rowOffset);
+      }
+      if (offset < 0 && offset > closestOffset) {
+        closestOffset = offset;
+        closest = child;
+      }
+    }
+    return closest;
+  }
+})();
+
 function renderBIPage() {
   const list = (Store.data.customers || []).filter(c => c.deleted !== true);
   const allCustomers = Store.data.customers || [];
@@ -4602,7 +4972,7 @@ function renderBIPage() {
   const topLevelB = sortedLevels[1] ? list.filter(c => c.level === sortedLevels[1].name).length : 0;
   const topLevelAName = sortedLevels[0] ? sortedLevels[0].name : '-';
   const topLevelBName = sortedLevels[1] ? sortedLevels[1].name : '-';
-  const hasChannel = list.filter(c => c.channel).length;
+  const channelAssigned = list.filter(c => getCustomerChannels(c).length > 0).length;
   const deletedCount = allCustomers.filter(c => c.deleted === true).length;
 
   const kpis = [
@@ -4616,16 +4986,16 @@ function renderBIPage() {
     { label: '联系率', value: contactRate + '%', sub: '已联系占比', accent: parseFloat(contactRate) >= 80 ? 'success' : 'warn' },
     { label: topLevelAName + '级客户', value: topLevelA, sub: `高意向 ${total ? (topLevelA/total*100).toFixed(1) : 0}%`, accent: 'success' },
     { label: topLevelBName + '级客户', value: topLevelB, sub: `中等意向`, accent: 'warn' },
-    { label: '渠道分配', value: hasChannel, sub: `分配率 ${total ? (hasChannel/total*100).toFixed(1) : 0}%`, accent: 'info' },
+    { label: '渠道分配', value: channelAssigned, sub: `分配率 ${total ? (channelAssigned/total*100).toFixed(1) : 0}%`, accent: 'info' },
     { label: '作废客户', value: deletedCount, sub: '已作废', accent: 'danger' }
   ];
   const kpiEl = document.getElementById('bi-kpi-row');
   if (kpiEl) {
-    kpiEl.innerHTML = kpis.map((k, i) => `<div class="bi-kpi-card" data-accent="${k.accent}" style="animation-delay:${i * 40}ms"><div class="bi-kpi-label">${escapeHTML(k.label)}</div><div class="bi-kpi-value">${k.value}</div><div class="bi-kpi-sub">${escapeHTML(k.sub)}</div></div>`).join('');
+    kpiEl.innerHTML = kpis.map((k, i) => `<div class="bi-kpi-card" data-accent="${k.accent}" data-sort-id="kpi-${i}" draggable="true" style="animation-delay:${i * 40}ms"><span class="bi-drag-handle" title="拖动排序">⠿</span><div class="bi-kpi-label">${escapeHTML(k.label)}</div><div class="bi-kpi-value">${k.value}</div><div class="bi-kpi-sub">${escapeHTML(k.sub)}</div></div>`).join('');
   }
 
   // ========== 多维数据分析矩阵 ==========
-  renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, hasChannel, todayStart);
+  renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, channelAssigned, todayStart);
 
   // ========== 异常智能预警 ==========
   renderBIAlerts(list, total, todayStart);
@@ -4634,18 +5004,22 @@ function renderBIPage() {
   renderBIPredictions(list, total);
 
   // ========== 图表渲染（延迟到布局完成后再绘制） ==========
+  applyBISortOrder();
   setTimeout(() => renderAllBICharts(list), 50);
 }
 
 // 多维数据分析矩阵
-function renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, hasChannel, todayStart) {
+function renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, channelAssigned, todayStart) {
   const el = document.getElementById('bi-analysis-grid');
   if (!el) return;
   const allLevels = getLevels();
-  const geoCount = list.filter(c => c.channel === 'geo').length;
-  const count360 = list.filter(c => c.channel === '360').length;
-  const bingCount = list.filter(c => c.channel === 'bing').length;
-  const noChannel = total - hasChannel;
+  const geoCount = list.filter(c => hasChannel(c, 'geo')).length;
+  const count360 = list.filter(c => hasChannel(c, '360')).length;
+  const bingCount = list.filter(c => hasChannel(c, 'bing')).length;
+  const baiduCount = list.filter(c => hasChannel(c, 'baidu')).length;
+  const douyinCount = list.filter(c => hasChannel(c, 'douyin')).length;
+  const xianyuCount = list.filter(c => hasChannel(c, 'xianyu')).length;
+  const noChannel = total - channelAssigned;
 
   const levelItems = allLevels.map(l => {
     const cnt = list.filter(c => c.level === l.name).length;
@@ -4662,7 +5036,7 @@ function renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, 
       items: [
         { label: '已成交', value: dealCount, pct: total ? (dealCount/total*100).toFixed(1) : 0, color: '#16a34a' },
         { label: '跟进中', value: followCount, pct: total ? (followCount/total*100).toFixed(1) : 0, color: '#f59e0b' },
-        { label: '未沟通', value: uncontacted, pct: total ? (uncontacted/total*100).toFixed(1) : 0, color: '#6b7280' }
+        { label: '未沟通', value: uncontacted, pct: total ? (uncontacted/total*100).toFixed(1) : 0, color: '#4b5563' }
       ]
     },
     {
@@ -4671,7 +5045,10 @@ function renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, 
         { label: 'GEO渠道', value: geoCount, pct: total ? (geoCount/total*100).toFixed(1) : 0, color: '#2563eb' },
         { label: '360渠道', value: count360, pct: total ? (count360/total*100).toFixed(1) : 0, color: '#16a34a' },
         { label: 'Bing渠道', value: bingCount, pct: total ? (bingCount/total*100).toFixed(1) : 0, color: '#d97706' },
-        { label: '未分配', value: noChannel, pct: total ? (noChannel/total*100).toFixed(1) : 0, color: '#9ca3af' }
+        { label: '百度渠道', value: baiduCount, pct: total ? (baiduCount/total*100).toFixed(1) : 0, color: '#7c3aed' },
+        { label: '抖音渠道', value: douyinCount, pct: total ? (douyinCount/total*100).toFixed(1) : 0, color: '#db2777' },
+        { label: '闲鱼渠道', value: xianyuCount, pct: total ? (xianyuCount/total*100).toFixed(1) : 0, color: '#0891b2' },
+        { label: '未分配', value: noChannel, pct: total ? (noChannel/total*100).toFixed(1) : 0, color: '#6b7280' }
       ]
     },
     {
@@ -4696,7 +5073,8 @@ function renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, 
   ];
 
   el.innerHTML = cards.map((card, ci) => `
-    <div class="bi-analysis-card" style="animation-delay:${ci * 60}ms">
+    <div class="bi-analysis-card" data-sort-id="analysis-${ci}" draggable="true" style="animation-delay:${ci * 60}ms">
+      <span class="bi-drag-handle" title="拖动排序">⠿</span>
       <div class="bi-analysis-title">${card.title}</div>
       <div class="bi-analysis-list">
         ${card.items.map((item, ii) => `
@@ -4841,15 +5219,15 @@ function drawBISourceChart(list) {
 // 成交转化漏斗（动画 + 圆角 + 高清）
 function drawBIFunnelChart(list) {
   const canvas = document.getElementById('bi-chart-funnel'); if (!canvas) return;
-  const { ctx, W, H } = initHiDPSCanvas(canvas, 220);
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 200);
   const tc = getThemeColors();
   const stages = ['未沟通','跟进中','已成交'];
   const stageCounts = stages.map(s => list.filter(c => c.status === s).length);
   const maxCount = Math.max(...stageCounts, 1);
-  const padding = { top: 18, bottom: 18, left: 90, right: 90 };
+  const padding = { top: 16, bottom: 16, left: 56, right: 56 };
   const chartW = W - padding.left - padding.right;
-  const barH = 46;
-  const gap = 18;
+  const barH = 38;
+  const gap = 14;
   const colors = ['#94a3b8','#f59e0b','#16a34a'];
   const gradEnds = ['#cbd5e1','#fde68a','#86efac'];
   const startY = (H - stages.length * barH - (stages.length-1) * gap) / 2;
@@ -4857,7 +5235,7 @@ function drawBIFunnelChart(list) {
   animateChart(650, (ease) => {
     ctx.clearRect(0, 0, W, H);
     stages.forEach((s, i) => {
-      const fullW = Math.max((stageCounts[i] / maxCount) * chartW, 48);
+      const fullW = Math.max((stageCounts[i] / maxCount) * chartW, 36);
       const w = fullW * ease;
       const x = W / 2 - w / 2;
       const y = startY + i * (barH + gap);
@@ -4869,22 +5247,22 @@ function drawBIFunnelChart(list) {
       ctx.fill();
       if (ease > 0.55) {
         // 阶段名称
-        ctx.fillStyle = '#fff'; ctx.font = `bold 13px ${BI_FONT}`; ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff'; ctx.font = `bold 12px ${BI_FONT}`; ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 4;
-        ctx.fillText(s, W / 2, y + barH / 2 - 5);
-        ctx.fillText(String(stageCounts[i]), W / 2, y + barH / 2 + 12);
+        ctx.fillText(s, W / 2, y + barH / 2 - 4);
+        ctx.fillText(String(stageCounts[i]), W / 2, y + barH / 2 + 11);
         ctx.shadowBlur = 0;
         // 左侧百分比
         const total = stageCounts.reduce((a,b) => a+b, 0);
         const pct = total > 0 ? (stageCounts[i] / total * 100).toFixed(1) : '0';
-        ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`; ctx.textAlign = 'right';
-        ctx.fillText(pct + '%', x - 8, y + barH / 2 + 4);
+        ctx.fillStyle = tc.textSec; ctx.font = `10px ${BI_FONT}`; ctx.textAlign = 'right';
+        ctx.fillText(pct + '%', x - 6, y + barH / 2 + 4);
       }
       // 转化率箭头
       if (i < stages.length - 1 && stageCounts[i] > 0 && ease > 0.8) {
         const rate = (stageCounts[i+1] / stageCounts[i] * 100).toFixed(1);
-        ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`; ctx.textAlign = 'center';
-        ctx.fillText('↓ 转化 ' + rate + '%', W / 2, y + barH + gap / 2 + 3);
+        ctx.fillStyle = tc.textSec; ctx.font = `10px ${BI_FONT}`; ctx.textAlign = 'center';
+        ctx.fillText('↓' + rate + '%', W / 2, y + barH + gap / 2 + 3);
       }
     });
   });
@@ -4893,7 +5271,7 @@ function drawBIFunnelChart(list) {
 // 月度新增趋势（动画折线+柱 + 高清）
 function drawBIMonthlyChart(list) {
   const canvas = document.getElementById('bi-chart-monthly'); if (!canvas) return;
-  const { ctx, W, H } = initHiDPSCanvas(canvas, 250);
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 200);
   const tc = getThemeColors();
   const now2 = new Date();
   const months = [];
@@ -4979,12 +5357,15 @@ function drawBIChannelChart(list) {
   const channels = [
     { key: 'geo', label: 'GEO', color: '#2563eb', light: '#bfdbfe' },
     { key: '360', label: '360', color: '#16a34a', light: '#bbf7d0' },
-    { key: 'bing', label: 'Bing', color: '#d97706', light: '#fde68a' }
+    { key: 'bing', label: 'Bing', color: '#d97706', light: '#fde68a' },
+    { key: 'baidu', label: '百度', color: '#7c3aed', light: '#ddd6fe' },
+    { key: 'douyin', label: '抖音', color: '#db2777', light: '#fbcfe8' },
+    { key: 'xianyu', label: '闲鱼', color: '#0891b2', light: '#a5f3fc' }
   ];
   const groups = [
-    { label: '客户总数', fn: (l, k) => l.filter(c => c.channel === k).length },
-    { label: '已成交',   fn: (l, k) => l.filter(c => c.channel === k && c.status === '已成交').length },
-    { label: '跟进中',   fn: (l, k) => l.filter(c => c.channel === k && c.status === '跟进中').length }
+    { label: '客户总数', fn: (l, k) => l.filter(c => hasChannel(c, k)).length },
+    { label: '已成交',   fn: (l, k) => l.filter(c => hasChannel(c, k) && c.status === '已成交').length },
+    { label: '跟进中',   fn: (l, k) => l.filter(c => hasChannel(c, k) && c.status === '跟进中').length }
   ];
   const padding = { top: 40, bottom: 34, left: 38, right: 14 };
   const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
@@ -5744,6 +6125,9 @@ function navigate(pageName) {
     geo: ['GEO客户', 'GEO渠道客户管理'],
     '360': ['360客户', '360渠道客户管理'],
     bing: ['Bing客户', 'Bing渠道客户管理'],
+    baidu: ['百度客户', '百度渠道客户管理'],
+    douyin: ['抖音客户', '抖音渠道客户管理'],
+    xianyu: ['闲鱼客户', '闲鱼渠道客户管理'],
     trash: ['作废客户', '已作废的客户列表'],
     security: ['数据与安全', '备份、导入、修改密码、操作日志'],
     settings: ['设置', '系统设置与标签管理']
@@ -5757,6 +6141,9 @@ function navigate(pageName) {
   else if (pageName === 'geo') renderChannelPage('geo');
   else if (pageName === '360') renderChannelPage('360');
   else if (pageName === 'bing') renderChannelPage('bing');
+  else if (pageName === 'baidu') renderChannelPage('baidu');
+  else if (pageName === 'douyin') renderChannelPage('douyin');
+  else if (pageName === 'xianyu') renderChannelPage('xianyu');
   else if (pageName === 'trash') renderTrashPage();
   else if (pageName === 'settings') renderSettingsPage();
   else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); }
@@ -5764,6 +6151,7 @@ function navigate(pageName) {
   if (window.innerWidth < 768) {
     const sb = document.getElementById('sidebar'); if (sb) sb.classList.remove('show');
   }
+  updateNavCounts();
 }
 
 // 注：自动锁屏逻辑已移至 resetIdleTimer 函数，统一使用1小时无操作登出
@@ -5794,7 +6182,7 @@ function ensureSeedData() {
         product: '企业财税咨询', budget: '20000-50000', nextFollowDate: dateOnly(now + 2 * 86400000),
         createdAt: now - 3 * 86400000, updatedAt: now - 1 * 86400000,
         tags: ['t_a'], remark: '初次沟通，客户兴趣较强', remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }],
-        channel: 'geo'
+        channels: ['geo']
       },
       {
         id: 'demo_2', name: '李伟', gender: '男', age: '41', phone: '13900000002',
@@ -5856,8 +6244,13 @@ let idleDetectionSetup = false; // 防止重复添加事件监听
 function resetIdleTimer() {
   if (idleTimer) clearTimeout(idleTimer);
   if (!Store.unlocked) return; // 已登出则不启动计时器
-  idleTimer = setTimeout(() => {
+  idleTimer = setTimeout(async () => {
     if (!Store.unlocked) return;
+    // 登出前最后保存一次，确保数据不丢失
+    if (Store._dirty) {
+      try { await Store.save(); } catch (e) {}
+    }
+    stopAutoSave();
     Store.unlocked = false; 
     Store.password = null;
     sessionStorage.removeItem('crm_session_pw'); // 清除会话密码
@@ -5884,11 +6277,35 @@ function clearIdleTimer() {
   }
 }
 
+let autoSaveTimer = null;
+const AUTO_SAVE_INTERVAL_MS = 3000; // 3 秒自动保存间隔
+
+function startAutoSave() {
+  if (autoSaveTimer) return; // 已启动则跳过
+  autoSaveTimer = setInterval(async () => {
+    if (!Store.unlocked) return;
+    try {
+      await Store.save();
+      // 更新同步状态指示（静默，不弹 toast）
+      Store.updateSyncUI();
+    } catch (e) {
+      console.warn('[自动保存] 保存失败:', e.message);
+    }
+  }, AUTO_SAVE_INTERVAL_MS);
+}
+
+function stopAutoSave() {
+  if (autoSaveTimer) {
+    clearInterval(autoSaveTimer);
+    autoSaveTimer = null;
+  }
+}
+
 async function enterApp(password) {
   Store.password = password;
   Store.unlocked = true;
-  // 保存密码到 sessionStorage（页面刷新后可自动恢复登录状态）
-  sessionStorage.setItem('crm_session_pw', password);
+  // 保存密码到 sessionStorage（XOR 混淆，非明文直存，防止 DevTools 直接读取）
+  sessionStorage.setItem('crm_session_pw', _obfuscatePw(password));
   await Store.load();
   // 若文件夹可用，尝试同步（不阻塞）
   if (Store.isFolderApiSupported()) {
@@ -5905,6 +6322,8 @@ async function enterApp(password) {
   // 启动无操作检测
   resetIdleTimer();
   setupIdleDetection();
+  // 启动自动保存（每 3 秒）
+  startAutoSave();
   Store.updateSyncUI();
   // 进入应用时清空草稿
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
@@ -5942,14 +6361,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 尝试从 sessionStorage 恢复登录状态（页面刷新后）
-  const savedPassword = sessionStorage.getItem('crm_session_pw');
-  if (savedPassword) {
+  // 密码经 XOR 混淆后存储，防止 DevTools 直接读取明文
+  const savedObfuscated = sessionStorage.getItem('crm_session_pw');
+  if (savedObfuscated) {
+    const savedPassword = _deobfuscatePw(savedObfuscated);
     doUnlock(savedPassword).then(ok => {
       if (ok) {
         enterApp(savedPassword);
         return;
       }
-      // 密码验证失败，清除缓存并显示登录界面
       sessionStorage.removeItem('crm_session_pw');
       initAuthPage();
     }).catch(() => {
@@ -5998,11 +6418,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // 忘记密码 - 清空重置
   document.getElementById('btn-forgot').onclick = () => {
     confirmDialog('重置系统', '忘记密码将清空全部本地加密数据（不可逆），确定要重置吗？', true, () => {
+      stopAutoSave();
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(SETTINGS_KEY);
       localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem('crm_hash_salt');
+      sessionStorage.removeItem('crm_session_pw');
       Store.data = { customers: [], tags: [], logs: [], versions: [] };
       Store.unlocked = false;
+      Store._dirty = false;
       showToast('数据已清空，请重新初始化', 'success');
       setTimeout(initAuthPage, 300);
     });
@@ -6073,12 +6497,33 @@ document.addEventListener('DOMContentLoaded', function () {
       title: '添加到渠道',
       size: 'sm',
       bodyHTML: `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">
-        已选择 ${selectedIds.length} 位客户，选择要添加到的渠道：
+        已选择 ${selectedIds.length} 位客户，选择要添加到的渠道（可多选）：
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <button class="btn btn-block btn-primary" id="channel-geo">🌍 GEO客户</button>
-        <button class="btn btn-block btn-outline" id="channel-360">🔄 360客户</button>
-        <button class="btn btn-block btn-outline" id="channel-bing">🔍 Bing客户</button>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
+          <input type="checkbox" id="batch-channel-geo" style="accent-color:var(--accent);width:18px;height:18px;">
+          🌍 GEO客户
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
+          <input type="checkbox" id="batch-channel-360" style="accent-color:var(--accent);width:18px;height:18px;">
+          🔄 360客户
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
+          <input type="checkbox" id="batch-channel-bing" style="accent-color:var(--accent);width:18px;height:18px;">
+          🔍 Bing客户
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
+          <input type="checkbox" id="batch-channel-baidu" style="accent-color:var(--accent);width:18px;height:18px;">
+          🔎 百度客户
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
+          <input type="checkbox" id="batch-channel-douyin" style="accent-color:var(--accent);width:18px;height:18px;">
+          🎵 抖音客户
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
+          <input type="checkbox" id="batch-channel-xianyu" style="accent-color:var(--accent);width:18px;height:18px;">
+          🐟 闲鱼客户
+        </label>
       </div>`,
       footer: (f) => {
         const cancel = document.createElement('button');
@@ -6087,25 +6532,37 @@ document.addEventListener('DOMContentLoaded', function () {
         f.appendChild(cancel);
         cancel.onclick = closeModal;
         
-        const handleAdd = async (channel) => {
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'btn btn-sm btn-primary';
+        safeText(confirmBtn, '确认添加');
+        f.appendChild(confirmBtn);
+        confirmBtn.onclick = async () => {
+          const selectedChannels = [];
+          if (document.getElementById('batch-channel-geo').checked) selectedChannels.push('geo');
+          if (document.getElementById('batch-channel-360').checked) selectedChannels.push('360');
+          if (document.getElementById('batch-channel-bing').checked) selectedChannels.push('bing');
+          if (document.getElementById('batch-channel-baidu').checked) selectedChannels.push('baidu');
+          if (document.getElementById('batch-channel-douyin').checked) selectedChannels.push('douyin');
+          if (document.getElementById('batch-channel-xianyu').checked) selectedChannels.push('xianyu');
+          if (selectedChannels.length === 0) { showToast('请至少选择一个渠道', 'warning'); return; }
           const count = selectedIds.length;
           selectedIds.forEach(id => {
             const c = Store.data.customers.find(x => x.id === id);
             if (c) {
-              c.channel = channel;
+              if (!c.channels) c.channels = c.channel ? [c.channel] : [];
+              if (c.channel !== undefined) delete c.channel;
+              selectedChannels.forEach(ch => {
+                if (c.channels.indexOf(ch) === -1) c.channels.push(ch);
+              });
               c.updatedAt = Date.now();
             }
           });
           listState.selected.clear();
-          await Store.saveWithLog('批量添加客户到渠道', `${count} 位客户 → ${channel}`);
+          await Store.saveWithLog('批量添加客户到渠道', `${count} 位客户 → ${selectedChannels.join('/')}`);
           showToast(`已将 ${count} 位客户添加到渠道`, 'success');
           closeModal();
           refreshUI();
         };
-        
-        document.getElementById('channel-geo').onclick = () => handleAdd('geo');
-        document.getElementById('channel-360').onclick = () => handleAdd('360');
-        document.getElementById('channel-bing').onclick = () => handleAdd('bing');
       }
     });
   };
@@ -6167,7 +6624,7 @@ document.addEventListener('DOMContentLoaded', function () {
             id: uuid(),
             name: row[0] || '',
             gender: row[1] || '',
-            age: row[2] ? parseInt(row[2]) : null,
+            age: row[2] ? (function(){ const v=parseInt(row[2]); return isNaN(v)?null:v; })() : null,
             phone: row[3] || '',
             wechat: row[4] || '',
             email: row[5] || '',
@@ -6191,7 +6648,10 @@ document.addEventListener('DOMContentLoaded', function () {
               return tag.id;
             }),
             remark: row[18] || '',
-            channel: row[19] || '',
+            channels: (row[19] || '').split('|').map(s => {
+              const map = { 'GEO': 'geo', '360': '360', 'Bing': 'bing', '百度': 'baidu', '抖音': 'douyin', '闲鱼': 'xianyu' };
+              return map[s.trim()] || s.trim();
+            }).filter(Boolean),
             createdBy: 'import',
             updatedAt: Date.now(),
             remarkHistory: [],
@@ -6464,6 +6924,32 @@ window.addEventListener('resize', () => {
   }
 });
 
+/* ================================================================
+   模块：导航栏客户计数
+   ================================================================ */
+function updateNavCounts() {
+  const customers = Store.data.customers || [];
+  const channelItems = [
+    { id: 'nav-count-geo', key: 'geo' },
+    { id: 'nav-count-360', key: '360' },
+    { id: 'nav-count-bing', key: 'bing' },
+    { id: 'nav-count-baidu', key: 'baidu' },
+    { id: 'nav-count-douyin', key: 'douyin' },
+    { id: 'nav-count-xianyu', key: 'xianyu' }
+  ];
+  channelItems.forEach(item => {
+    const el = document.getElementById(item.id);
+    if (el) {
+      const count = customers.filter(c => c.deleted !== true && hasChannel(c, item.key)).length;
+      el.textContent = count;
+    }
+  });
+  const trashEl = document.getElementById('nav-count-trash');
+  if (trashEl) {
+    trashEl.textContent = customers.filter(c => c.deleted === true).length;
+  }
+}
+
 function refreshUI() {
   // 根据当前所在页面刷新
   const active = document.querySelector('.page.active');
@@ -6474,9 +6960,13 @@ function refreshUI() {
   else if (active.id === 'page-geo') renderChannelPage('geo');
   else if (active.id === 'page-360') renderChannelPage('360');
   else if (active.id === 'page-bing') renderChannelPage('bing');
+  else if (active.id === 'page-baidu') renderChannelPage('baidu');
+  else if (active.id === 'page-douyin') renderChannelPage('douyin');
+  else if (active.id === 'page-xianyu') renderChannelPage('xianyu');
   else if (active.id === 'page-trash') renderTrashPage();
   else if (active.id === 'page-settings') renderSettingsPage();
   else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); }
+  updateNavCounts();
 }
 
 /* ================================================================
@@ -6965,10 +7455,10 @@ function refreshUI() {
           const name = row.dataset.name || '';
           // 预填搜索关键词，让用户直接看到该客户
           if (window.listState) {
-            window.listState.searchQ = name;
+            window.listState.keyword = name;
             window.listState.page = 1;
           }
-          const searchInput = document.getElementById('search-input');
+          const searchInput = document.getElementById('filter-keyword');
           if (searchInput) searchInput.value = name;
           if (typeof navigate === 'function') navigate('list');
           PET.hideBubble();
