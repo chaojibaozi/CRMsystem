@@ -2897,7 +2897,7 @@ html.scrolling {
       <section class="page" id="page-geo">
         <div class="card" style="position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;" id="form-title">GEO客户</h2>
+            <h2 style="font-size:18px;" id="form-title">GEO客户 <button class="btn btn-sm btn-outline" id="btn-customize-columns-geo" style="margin-left:10px;padding:2px 8px;font-size:11px;vertical-align:middle;">🏷️ 自定义标签</button></h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status">草稿自动保存中...</div>
           </div>
           <div id="customer-form-container-geo"></div>
@@ -2908,7 +2908,7 @@ html.scrolling {
       <section class="page" id="page-360">
         <div class="card" style="position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;" id="form-title-360">360客户</h2>
+            <h2 style="font-size:18px;" id="form-title-360">360客户 <button class="btn btn-sm btn-outline" id="btn-customize-columns-360" style="margin-left:10px;padding:2px 8px;font-size:11px;vertical-align:middle;">🏷️ 自定义标签</button></h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-360">草稿自动保存中...</div>
           </div>
           <div id="customer-form-container-360"></div>
@@ -2919,7 +2919,7 @@ html.scrolling {
       <section class="page" id="page-bing">
         <div class="card" style="position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;" id="form-title-bing">Bing客户</h2>
+            <h2 style="font-size:18px;" id="form-title-bing">Bing客户 <button class="btn btn-sm btn-outline" id="btn-customize-columns-bing" style="margin-left:10px;padding:2px 8px;font-size:11px;vertical-align:middle;">🏷️ 自定义标签</button></h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-bing">草稿自动保存中...</div>
           </div>
           <div id="customer-form-container-bing"></div>
@@ -2930,7 +2930,7 @@ html.scrolling {
       <section class="page" id="page-baidu">
         <div class="card" style="position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;" id="form-title-baidu">百度客户</h2>
+            <h2 style="font-size:18px;" id="form-title-baidu">百度客户 <button class="btn btn-sm btn-outline" id="btn-customize-columns-baidu" style="margin-left:10px;padding:2px 8px;font-size:11px;vertical-align:middle;">🏷️ 自定义标签</button></h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-baidu">草稿自动保存中...</div>
           </div>
           <div id="customer-form-container-baidu"></div>
@@ -2941,7 +2941,7 @@ html.scrolling {
       <section class="page" id="page-douyin">
         <div class="card" style="position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;" id="form-title-douyin">抖音客户</h2>
+            <h2 style="font-size:18px;" id="form-title-douyin">抖音客户 <button class="btn btn-sm btn-outline" id="btn-customize-columns-douyin" style="margin-left:10px;padding:2px 8px;font-size:11px;vertical-align:middle;">🏷️ 自定义标签</button></h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-douyin">草稿自动保存中...</div>
           </div>
           <div id="customer-form-container-douyin"></div>
@@ -2952,7 +2952,7 @@ html.scrolling {
       <section class="page" id="page-xianyu">
         <div class="card" style="position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;" id="form-title-xianyu">闲鱼客户</h2>
+            <h2 style="font-size:18px;" id="form-title-xianyu">闲鱼客户 <button class="btn btn-sm btn-outline" id="btn-customize-columns-xianyu" style="margin-left:10px;padding:2px 8px;font-size:11px;vertical-align:middle;">🏷️ 自定义标签</button></h2>
             <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-xianyu">草稿自动保存中...</div>
           </div>
           <div id="customer-form-container-xianyu"></div>
@@ -2963,7 +2963,7 @@ html.scrolling {
       <section class="page" id="page-trash">
         <div class="card" style="position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <h2 style="font-size:18px;" id="form-title-trash">作废客户</h2>
+            <h2 style="font-size:18px;" id="form-title-trash">作废客户 <button class="btn btn-sm btn-outline" id="btn-customize-columns-trash" style="margin-left:10px;padding:2px 8px;font-size:11px;vertical-align:middle;">🏷️ 自定义标签</button></h2>
             <div style="font-size:12px;color:var(--text-muted);">已作废的客户列表</div>
           </div>
           <div id="customer-form-container-trash"></div>
@@ -4498,6 +4498,11 @@ let listState = {
   page: 1, pageSize: 10, selected: new Set()
 };
 
+const channelFilters = {};
+['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu', 'trash'].forEach(key => {
+  channelFilters[key] = { keyword: '', level: '', status: '', source: '', dateStart: '', dateEnd: '', selected: new Set() };
+});
+
 const COLUMN_DEFS = [
   { key: 'name', label: '姓名', sortable: true },
   { key: 'phone', label: '手机号', sortable: true },
@@ -4561,13 +4566,14 @@ function renderColumnHeaders(config) {
 
 function renderColumnCells(c, config, start, i, masked) {
   let html = '';
+  const m = masked || c;
   config.forEach(col => {
     if (!col.visible) return;
     const key = col.key;
     if (key === 'name') {
-      html += `<td><strong>${escapeHTML(masked.name || '-')}</strong></td>`;
+      html += `<td><strong>${escapeHTML(m.name || '-')}</strong></td>`;
     } else if (key === 'phone') {
-      html += `<td>${escapeHTML(masked.phone || '-')}</td>`;
+      html += `<td>${escapeHTML(m.phone || '-')}</td>`;
     } else if (key === 'level') {
       html += `<td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>`;
     } else if (key === 'product') {
@@ -4583,7 +4589,7 @@ function renderColumnCells(c, config, start, i, masked) {
     } else if (key === 'createdAt') {
       html += `<td>${formatDate(c.createdAt)}</td>`;
     } else if (key === 'wechat') {
-      html += `<td>${escapeHTML(masked.wechat || '-')}</td>`;
+      html += `<td>${escapeHTML(m.wechat || '-')}</td>`;
     } else if (key === 'budget') {
       html += `<td>${escapeHTML(c.budget || '-')}</td>`;
     } else if (key === 'industryLevel1') {
@@ -4673,6 +4679,169 @@ function openColumnCustomizer() {
       };
     }
   });
+}
+
+function getChannelFilterBarHTML(suffix) {
+  const f = channelFilters[suffix] || {};
+  return `<div class="filter-bar" style="margin-bottom:12px;">
+    <div class="filter-grid">
+      <div>
+        <label class="label">关键词搜索</label>
+        <input type="text" class="input" id="filter-keyword-${suffix}" placeholder="姓名 / 脱敏手机号" value="${escapeHTML(f.keyword)}">
+      </div>
+      <div>
+        <label class="label">客户等级</label>
+        <select class="select" id="filter-level-${suffix}">
+        </select>
+      </div>
+      <div>
+        <label class="label">成交状态</label>
+        <select class="select" id="filter-status-${suffix}">
+          <option value="">全部</option>
+          <option value="未沟通"${f.status === '未沟通' ? ' selected' : ''}>未沟通</option>
+          <option value="跟进中"${f.status === '跟进中' ? ' selected' : ''}>跟进中</option>
+          <option value="已成交"${f.status === '已成交' ? ' selected' : ''}>已成交</option>
+          <option value="流失"${f.status === '流失' ? ' selected' : ''}>流失</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">客户来源</label>
+        <select class="select" id="filter-source-${suffix}">
+        </select>
+      </div>
+      <div>
+        <label class="label">录入开始日期</label>
+        <input type="date" class="input" id="filter-date-start-${suffix}" value="${f.dateStart}">
+      </div>
+      <div>
+        <label class="label">录入结束日期</label>
+        <input type="date" class="input" id="filter-date-end-${suffix}" value="${f.dateEnd}">
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn btn-primary btn-sm" id="btn-filter-${suffix}">筛选</button>
+      <button class="btn btn-sm btn-outline" id="btn-reset-${suffix}">重置</button>
+      <button class="btn btn-sm btn-danger" id="btn-batch-del-${suffix}">🗑 批量删除</button>
+    </div>
+  </div>`;
+}
+
+function applyChannelFilters(suffix, customers) {
+  const f = channelFilters[suffix] || {};
+  const kw = f.keyword.trim().toLowerCase();
+  if (kw) {
+    customers = customers.filter(c => {
+      const name = (c.name || '').toLowerCase();
+      const phone = (c.phone || '');
+      return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
+    });
+  }
+  if (f.level) customers = customers.filter(c => c.level === f.level);
+  if (f.status) customers = customers.filter(c => c.status === f.status);
+  if (f.source) customers = customers.filter(c => c.source === f.source);
+  if (f.dateStart) {
+    const t = parseDateStr(f.dateStart);
+    if (t !== null) customers = customers.filter(c => c.createdAt >= t);
+  }
+  if (f.dateEnd) {
+    const t = parseDateStr(f.dateEnd);
+    if (t !== null) customers = customers.filter(c => c.createdAt < t + 86400000);
+  }
+  return customers;
+}
+
+function renderChannelFilterLevels(suffix) {
+  const sel = document.getElementById('filter-level-' + suffix);
+  if (!sel) return;
+  const levels = getLevels();
+  const cur = channelFilters[suffix]?.level || '';
+  sel.innerHTML = '<option value="">全部</option>' +
+    levels.map(l => `<option value="${escapeHTML(l.name)}" ${l.name === cur ? 'selected' : ''}>${escapeHTML(l.name)}</option>`).join('');
+}
+
+function renderChannelFilterSources(suffix) {
+  const sel = document.getElementById('filter-source-' + suffix);
+  if (!sel) return;
+  const sources = new Set();
+  (Store.data.customers || []).forEach(c => { if (c.source) sources.add(c.source); });
+  (Store.data.customerSources || []).forEach(s => { if (s.name) sources.add(s.name); });
+  const cur = channelFilters[suffix]?.source || '';
+  sel.innerHTML = '<option value="">全部</option>' +
+    Array.from(sources).map(s => `<option value="${escapeHTML(s)}" ${s === cur ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('');
+}
+
+function bindChannelFilterEvents(suffix) {
+  const filterBtn = document.getElementById('btn-filter-' + suffix);
+  const resetBtn = document.getElementById('btn-reset-' + suffix);
+  if (filterBtn) {
+    filterBtn.onclick = () => {
+      const f = channelFilters[suffix];
+      f.keyword = document.getElementById('filter-keyword-' + suffix).value.trim();
+      f.level = document.getElementById('filter-level-' + suffix).value;
+      f.status = document.getElementById('filter-status-' + suffix).value;
+      f.source = document.getElementById('filter-source-' + suffix).value;
+      f.dateStart = document.getElementById('filter-date-start-' + suffix).value;
+      f.dateEnd = document.getElementById('filter-date-end-' + suffix).value;
+      if (suffix === 'trash') renderTrashPage(); else renderChannelPage(suffix);
+      showToast('已应用筛选条件', 'success');
+    };
+  }
+  if (resetBtn) {
+    resetBtn.onclick = () => {
+      const f = channelFilters[suffix];
+      Object.assign(f, { keyword: '', level: '', status: '', source: '', dateStart: '', dateEnd: '' });
+      document.getElementById('filter-keyword-' + suffix).value = '';
+      document.getElementById('filter-level-' + suffix).value = '';
+      document.getElementById('filter-status-' + suffix).value = '';
+      document.getElementById('filter-source-' + suffix).value = '';
+      document.getElementById('filter-date-start-' + suffix).value = '';
+      document.getElementById('filter-date-end-' + suffix).value = '';
+      if (suffix === 'trash') renderTrashPage(); else renderChannelPage(suffix);
+    };
+  }
+}
+
+function bindChannelCheckboxEvents(suffix) {
+  const container = document.getElementById('customer-form-container-' + suffix);
+  if (!container) return;
+
+  const allChk = container.querySelector('.chk-all');
+  // 全选
+  if (allChk) {
+    allChk.onchange = () => {
+      const sel = channelFilters[suffix].selected;
+      container.querySelectorAll('.chk-item').forEach(el => {
+        el.checked = allChk.checked;
+        if (allChk.checked) sel.add(el.dataset.id);
+        else sel.delete(el.dataset.id);
+      });
+    };
+  }
+  // 单项勾选
+  container.querySelectorAll('.chk-item').forEach(el => {
+    el.onchange = () => {
+      const sel = channelFilters[suffix].selected;
+      if (el.checked) sel.add(el.dataset.id);
+      else sel.delete(el.dataset.id);
+      if (allChk) allChk.checked = container.querySelectorAll('.chk-item:checked').length === container.querySelectorAll('.chk-item').length;
+    };
+  });
+  // 批量删除按钮
+  const delBtn = document.getElementById('btn-batch-del-' + suffix);
+  if (delBtn) {
+    delBtn.onclick = () => {
+      const ids = new Set(channelFilters[suffix].selected);
+      if (ids.size === 0) { showToast('请先勾选客户', 'warning'); return; }
+      confirmDialog('批量删除客户', `确认删除 ${ids.size} 个客户？操作不可逆。`, true, () => {
+        Store.data.customers = (Store.data.customers || []).filter(c => !ids.has(c.id));
+        channelFilters[suffix].selected.clear();
+        Store.saveWithLog('批量删除客户', `共删除 ${ids.size} 条`).then(() => {
+          showToast('已批量删除', 'success');
+          if (suffix === 'trash') renderTrashPage(); else renderChannelPage(suffix);
+        });
+      });
+    };
+  }
 }
 
 function renderFilterSources() {
@@ -4941,46 +5110,54 @@ function renderChannelPage(channel) {
   };
   const channelName = channelNames[channel] || channel;
   
-  const customers = Store.data.customers.filter(c => c.deleted !== true && hasChannel(c, channel));
+  const rawCustomers = Store.data.customers.filter(c => c.deleted !== true && hasChannel(c, channel));
   const container = document.getElementById(`customer-form-container-${channel}`);
   if (!container) return;
   
-  if (customers.length === 0) {
-    container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);">暂无 ${channelName} 渠道客户</div>`;
+  const filtered = applyChannelFilters(channel, rawCustomers);
+  const colConfig = getColumnConfig();
+  
+  let html = getChannelFilterBarHTML(channel);
+  
+  if (filtered.length === 0) {
+    html += `<div style="padding:40px;text-align:center;color:var(--text-muted);">${rawCustomers.length === 0 ? '暂无 ' + channelName + ' 渠道客户' : '无符合条件的客户'}</div>`;
+    container.innerHTML = html;
     return;
   }
   
-  let html = `<table class="data-table" style="width:100%;">
+  html += `<div class="table-wrap"><table class="data-table" style="width:100%;">
     <thead>
       <tr>
+        <th style="width:40px;"><input type="checkbox" class="chk-all" data-suffix="${channel}"></th>
         <th style="width:50px;">序号</th>
-        <th>姓名</th>
-        <th>手机号</th>
-        <th>等级</th>
-        <th>来源</th>
-        <th>状态</th>
+        ${renderColumnHeaders(colConfig)}
         <th style="width:120px;">操作</th>
       </tr>
     </thead>
     <tbody>`;
   
-  customers.forEach((c, i) => {
+  const sel = channelFilters[channel].selected;
+  filtered.forEach((c, i) => {
+    const checked = sel.has(c.id) ? 'checked' : '';
     html += `<tr>
+      <td><input type="checkbox" class="chk-item" data-id="${c.id}" data-suffix="${channel}" ${checked}></td>
       <td>${i + 1}</td>
-      <td><strong>${escapeHTML(c.name || '-')}</strong></td>
-      <td>${escapeHTML(c.phone || '-')}</td>
-      <td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>
-      <td>${escapeHTML(c.source || '-')}</td>
-      <td><span class="badge ${statusClass(c.status)}">${escapeHTML(c.status || '-')}</span></td>
+      ${renderColumnCells(c, colConfig)}
       <td>
         <button class="btn btn-sm" data-act="view" data-id="${c.id}">详情</button>
         <button class="btn btn-sm btn-outline" data-act="edit" data-id="${c.id}">编辑</button>
+        <button class="btn btn-sm btn-danger" data-act="del" data-id="${c.id}">删除</button>
       </td>
     </tr>`;
   });
   
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
   container.innerHTML = html;
+  
+  renderChannelFilterLevels(channel);
+  renderChannelFilterSources(channel);
+  bindChannelFilterEvents(channel);
+  bindChannelCheckboxEvents(channel);
   
   container.querySelectorAll('button[data-act]').forEach(btn => {
     btn.onclick = () => {
@@ -4989,41 +5166,84 @@ function renderChannelPage(channel) {
       if (!c) return;
       if (btn.dataset.act === 'view') openCustomerDetail(c);
       else if (btn.dataset.act === 'edit') openCustomerForm(c);
+      else if (btn.dataset.act === 'del') {
+        openModal({
+          title: '删除客户',
+          size: 'sm',
+          bodyHTML: `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">
+            选择删除方式：
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-block btn-outline" id="del-trash">🗑️ 移至作废（可恢复）</button>
+            <button class="btn btn-block btn-danger" id="del-purge">🔥 彻底删除（不可恢复）</button>
+          </div>`,
+          footer: (f) => {
+            const cancel = document.createElement('button');
+            cancel.className = 'btn btn-sm btn-outline';
+            safeText(cancel, '取消');
+            f.appendChild(cancel);
+            cancel.onclick = closeModal;
+            
+            document.getElementById('del-trash').onclick = async () => {
+              c.deleted = true;
+              c.deletedAt = Date.now();
+              await Store.saveWithLog('作废客户', '客户：' + c.name);
+              showToast('客户已移至作废', 'success');
+              closeModal();
+              if (channel === 'trash') renderTrashPage(); else renderChannelPage(channel);
+            };
+            
+            document.getElementById('del-purge').onclick = () => {
+              confirmDialog('彻底删除', '确认彻底删除客户 "' + c.name + '"？此操作不可恢复！', true, async () => {
+                Store.data.customers = Store.data.customers.filter(x => x.id !== c.id);
+                await Store.saveWithLog('彻底删除客户', '客户：' + c.name);
+                showToast('已彻底删除', 'success');
+                closeModal();
+                if (channel === 'trash') renderTrashPage(); else renderChannelPage(channel);
+              });
+            };
+          }
+        });
+      }
     };
   });
 }
 
 function renderTrashPage() {
-  const customers = Store.data.customers.filter(c => c.deleted === true);
+  const rawCustomers = Store.data.customers.filter(c => c.deleted === true);
   const container = document.getElementById('customer-form-container-trash');
   if (!container) return;
   
-  if (customers.length === 0) {
-    container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);">暂无作废客户</div>`;
+  const filtered = applyChannelFilters('trash', rawCustomers);
+  const colConfig = getColumnConfig();
+  
+  let html = getChannelFilterBarHTML('trash');
+  
+  if (filtered.length === 0) {
+    html += `<div style="padding:40px;text-align:center;color:var(--text-muted);">${rawCustomers.length === 0 ? '暂无作废客户' : '无符合条件的客户'}</div>`;
+    container.innerHTML = html;
     return;
   }
   
-  let html = `<table class="data-table" style="width:100%;">
+  html += `<div class="table-wrap"><table class="data-table" style="width:100%;">
     <thead>
       <tr>
+        <th style="width:40px;"><input type="checkbox" class="chk-all" data-suffix="trash"></th>
         <th style="width:50px;">序号</th>
-        <th>姓名</th>
-        <th>手机号</th>
-        <th>等级</th>
-        <th>来源</th>
+        ${renderColumnHeaders(colConfig)}
         <th>作废时间</th>
         <th style="width:150px;">操作</th>
       </tr>
     </thead>
     <tbody>`;
   
-  customers.forEach((c, i) => {
+  const sel = channelFilters.trash.selected;
+  filtered.forEach((c, i) => {
+    const checked = sel.has(c.id) ? 'checked' : '';
     html += `<tr style="opacity:0.7;">
+      <td><input type="checkbox" class="chk-item" data-id="${c.id}" data-suffix="trash" ${checked}></td>
       <td>${i + 1}</td>
-      <td><strong>${escapeHTML(c.name || '-')}</strong></td>
-      <td>${escapeHTML(c.phone || '-')}</td>
-      <td><span class="badge" style="background:${levelColor(c.level)};color:#fff;">${escapeHTML(c.level || '-')}</span></td>
-      <td>${escapeHTML(c.source || '-')}</td>
+      ${renderColumnCells(c, colConfig)}
       <td>${c.deletedAt ? formatDate(c.deletedAt) : '-'}</td>
       <td>
         <button class="btn btn-sm" data-act="restore" data-id="${c.id}">恢复</button>
@@ -5032,8 +5252,13 @@ function renderTrashPage() {
     </tr>`;
   });
   
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
   container.innerHTML = html;
+  
+  renderChannelFilterLevels('trash');
+  renderChannelFilterSources('trash');
+  bindChannelFilterEvents('trash');
+  bindChannelCheckboxEvents('trash');
   
   container.querySelectorAll('button[data-act]').forEach(btn => {
     btn.onclick = async () => {
@@ -8637,6 +8862,10 @@ document.addEventListener('DOMContentLoaded', function () {
     renderCustomerTable();
   });
   document.getElementById('btn-customize-columns').onclick = openColumnCustomizer;
+  ['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu', 'trash'].forEach(suffix => {
+    const btn = document.getElementById('btn-customize-columns-' + suffix);
+    if (btn) btn.onclick = openColumnCustomizer;
+  });
   document.getElementById('btn-batch-delete').onclick = () => {
     if (!listState.selected || listState.selected.size === 0) { showToast('请先勾选客户', 'warning'); return; }
     confirmDialog('批量删除客户', `确认删除 ${listState.selected.size} 个客户？操作不可逆。`, true, () => {
