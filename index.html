@@ -491,6 +491,253 @@ input[type="checkbox"]:checked {
 .stat-popup-item-info { font-size: 12px; color: var(--text-secondary); }
 .stat-popup-empty { text-align: center; color: var(--text-muted); padding: 40px 0; }
 
+.alert-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.alert-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.alert-panel:hover { border-color: var(--accent); }
+.alert-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+  font-weight: 600;
+}
+.alert-panel-header .alert-panel-icon { font-size: 16px; }
+.alert-panel-header .alert-panel-count {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.alert-panel-count.danger { background: #fef2f2; color: #dc2626; }
+.alert-panel-count.warn { background: #fffbeb; color: #d97706; }
+.alert-panel-count.info { background: #eff6ff; color: #2563eb; }
+.dark .alert-panel-count.danger { background: #2d0a0a; color: #ef4444; }
+.dark .alert-panel-count.warn { background: #422006; color: #f59e0b; }
+.dark .alert-panel-count.info { background: #0c1929; color: #3b82f6; }
+.alert-panel-body {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+}
+.alert-customer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s;
+  margin-bottom: 4px;
+}
+.alert-customer-item:last-child { margin-bottom: 0; }
+.alert-customer-item:hover {
+  background: var(--bg-tertiary);
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.alert-customer-item .alert-cust-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.alert-customer-item .alert-cust-info {
+  flex: 1;
+  min-width: 0;
+}
+.alert-customer-item .alert-cust-name {
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.alert-customer-item .alert-cust-name .alert-cust-level {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 500;
+}
+.alert-customer-item .alert-cust-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.alert-customer-item .alert-cust-agenda {
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.alert-customer-item .alert-cust-badge {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.alert-cust-badge.risk-high { background: #fef2f2; color: #dc2626; }
+.alert-cust-badge.risk-medium { background: #fffbeb; color: #d97706; }
+.alert-cust-badge.risk-low { background: #f0fdf4; color: #16a34a; }
+.alert-cust-badge.follow-overdue { background: #fef2f2; color: #dc2626; }
+.alert-cust-badge.follow-today { background: #eff6ff; color: #2563eb; }
+.alert-cust-badge.follow-upcoming { background: #f0fdf4; color: #16a34a; }
+.dark .alert-cust-badge.risk-high { background: #2d0a0a; color: #ef4444; }
+.dark .alert-cust-badge.risk-medium { background: #422006; color: #f59e0b; }
+.dark .alert-cust-badge.risk-low { background: #052e16; color: #22c55e; }
+.dark .alert-cust-badge.follow-overdue { background: #2d0a0a; color: #ef4444; }
+.dark .alert-cust-badge.follow-today { background: #0c1929; color: #3b82f6; }
+.dark .alert-cust-badge.follow-upcoming { background: #052e16; color: #22c55e; }
+.alert-panel-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 28px 0;
+  font-size: 13px;
+}
+
+.customer-float-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+}
+.customer-float-overlay.active { opacity: 1; visibility: visible; }
+.customer-float-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  z-index: 10001;
+  width: 90%;
+  max-width: 480px;
+  max-height: 78vh;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+}
+.customer-float-panel.active {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+.customer-float-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.customer-float-header-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.customer-float-name { font-size: 16px; font-weight: 700; }
+.customer-float-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.customer-float-badges span {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #fff;
+}
+.customer-float-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+.customer-float-close:hover { color: var(--text-primary); background: var(--bg-secondary); transform: rotate(90deg); }
+.customer-float-body {
+  padding: 14px 18px;
+  overflow-y: auto;
+  flex: 1;
+}
+.customer-float-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.customer-float-item {
+  padding: 6px 0;
+}
+.customer-float-item.full { grid-column: 1 / -1; }
+.customer-float-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+.customer-float-value { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+.customer-float-footer {
+  padding: 10px 18px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.customer-float-agenda {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+.customer-float-agenda-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.customer-float-agenda-text {
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 .charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -519,94 +766,299 @@ input[type="checkbox"]:checked {
   text-align: center;
 }
 
-/* BI 看板 */
-.bi-kpi-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
+/* ========== BI 看板样式 ========== */
+@keyframes biKpiFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.bi-kpi-card {
+@keyframes biProgressIn {
+  from { width: 0 !important; }
+}
+@keyframes biCardIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes biTagBarIn {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
+.bi-section {
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
-  padding: 14px 16px;
+  padding: 20px 22px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.bi-kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.bi-kpi-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
-.bi-kpi-value { font-size: 24px; font-weight: 700; color: var(--accent); }
-.bi-kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.bi-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
   margin-bottom: 16px;
 }
-.bi-card {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-}
-.bi-card-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 10px;
+.bi-section-title {
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-primary);
-}
-.bi-chart-area {
-  width: 100%;
-  min-height: 200px;
-}
-.bi-chart-area canvas { width: 100%; height: auto; border-radius: 6px; }
-.bi-insights {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
   margin-bottom: 16px;
-}
-.bi-insight-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
-.bi-insight-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-}
-.bi-insight-item {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-primary);
-  font-size: 13px;
-  line-height: 1.6;
-}
-.bi-insight-item strong { color: var(--accent); }
-.bi-tag-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+.bi-section-icon { font-size: 18px; }
+.bi-section-meta {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+/* 顶部KPI行 */
+.bi-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.bi-kpi-card {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 14px 12px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+  transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+  animation: biKpiFadeUp 0.45s ease both;
+}
+.bi-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 12px 12px 0 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.bi-kpi-card[data-accent="success"]::before { background: linear-gradient(90deg, #16a34a, #4ade80); }
+.bi-kpi-card[data-accent="danger"]::before  { background: linear-gradient(90deg, #dc2626, #f87171); }
+.bi-kpi-card[data-accent="warn"]::before    { background: linear-gradient(90deg, #d97706, #fbbf24); }
+.bi-kpi-card[data-accent="info"]::before    { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+.bi-kpi-card:hover::before { opacity: 1; }
+.bi-kpi-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  border-color: var(--accent);
+}
+.bi-kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.4; letter-spacing: 0.3px; }
+.bi-kpi-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+.bi-kpi-sub { font-size: 10px; color: var(--text-muted); margin-top: 5px; }
+.bi-kpi-card[data-accent="success"] .bi-kpi-value { color: #16a34a; }
+.bi-kpi-card[data-accent="danger"]  .bi-kpi-value { color: #dc2626; }
+.bi-kpi-card[data-accent="warn"]    .bi-kpi-value { color: #d97706; }
+.bi-kpi-card[data-accent="info"]    .bi-kpi-value { color: #2563eb; }
+
+/* 客户数据分析矩阵 */
+.bi-analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.bi-analysis-card {
+  background: var(--bg-primary);
+  border-radius: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-color);
+  animation: biCardIn 0.4s ease both;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.bi-analysis-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  border-color: var(--accent);
+}
+.bi-analysis-title {
   font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  letter-spacing: 0.2px;
 }
-.bi-tag-bar-fill {
-  height: 18px;
-  border-radius: 4px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 4px;
+.bi-analysis-list {
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.8;
 }
-.bi-tag-bar-label { width: 70px; flex-shrink: 0; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bi-tag-bar-count { width: 30px; flex-shrink: 0; text-align: right; font-weight: 600; }
-@media (max-width: 768px) {
-  .bi-grid { grid-template-columns: 1fr; }
+.bi-analysis-item {
+  display: grid;
+  grid-template-columns: 90px 1fr 28px 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+.bi-analysis-item .bi-label {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bi-analysis-item .bi-value { font-weight: 700; color: var(--accent); font-size: 13px; text-align: right; }
+.bi-analysis-pct {
+  color: var(--text-muted);
+  font-size: 10.5px;
+  text-align: right;
+  white-space: nowrap;
+}
+.bi-progress-bar {
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bi-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  animation: biProgressIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+  transition: width 0.6s ease;
+}
+
+/* 图表卡片 */
+.bi-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.bi-card {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  grid-column: span 2;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+  animation: biCardIn 0.45s ease both;
+}
+.bi-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.bi-card-wide { grid-column: span 4; }
+.bi-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+.bi-card-icon { font-size: 15px; }
+.bi-chart-area {
+  width: 100%;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bi-canvas {
+  width: 100%;
+  height: 240px;
+  display: block;
+  border-radius: 8px;
+}
+
+/* 标签排行条 */
+.bi-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  margin-bottom: 6px;
+  transition: background 0.18s, transform 0.18s;
+  cursor: default;
+}
+.bi-tag-row:hover {
+  background: var(--bg-tertiary);
+  transform: translateX(2px);
+}
+.bi-tag-name {
+  width: 110px;
+  flex-shrink: 0;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.bi-tag-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.4);
+}
+.bi-tag-bar-track {
+  flex: 1;
+  height: 22px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.bi-tag-bar-fill2 {
+  height: 100%;
+  border-radius: 6px;
+  animation: biTagBarIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+  min-width: 8px;
+}
+.bi-tag-bar-text {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+.bi-tag-count {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  min-width: 36px;
+  text-align: right;
+}
+
+@media (max-width: 1024px) {
+  .bi-kpi-row { grid-template-columns: repeat(3, 1fr); }
+  .bi-analysis-grid { grid-template-columns: repeat(2, 1fr); }
+  .bi-chart-grid { grid-template-columns: 1fr; }
+  .bi-card { grid-column: span 1; }
+  .bi-card-wide { grid-column: span 1; }
+}
+@media (max-width: 640px) {
   .bi-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .bi-analysis-grid { grid-template-columns: 1fr; }
 }
 
 .quick-actions {
@@ -914,6 +1366,69 @@ table.data-table {
 }
 .timeline-time { font-size: 11px; color: var(--text-muted); }
 .timeline-content { font-size: 13px; margin-top: 2px; }
+.timeline-images { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.timeline-thumb { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.15s, box-shadow 0.15s; }
+.timeline-thumb:hover { transform: scale(1.1); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+/* 截图上传区域 */
+.image-dropzone { border: 2px dashed var(--border-color); border-radius: var(--radius-sm); padding: 12px; text-align: center; background: var(--bg-secondary); cursor: pointer; transition: border-color 0.2s, background 0.2s; min-height: 60px; }
+.image-dropzone.drag-over { border-color: var(--accent); background: var(--bg-tertiary); }
+.dropzone-hint { font-size: 12px; color: var(--text-muted); padding: 10px 0; }
+.image-preview-area { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.image-preview-item { position: relative; display: inline-block; }
+.image-preview-item img { width: 72px; height: 54px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color); }
+.image-preview-del { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #dc2626; color: #fff; border: none; font-size: 12px; line-height: 18px; text-align: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+/* 图片查看器浮层 */
+.img-viewer-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease; cursor: zoom-out; }
+.img-viewer-overlay.show { opacity: 1; }
+.img-viewer-overlay .img-viewer-close { position: absolute; top: 16px; right: 20px; font-size: 32px; color: #fff; cursor: pointer; opacity: 0.8; transition: opacity 0.15s; line-height: 1; }
+.img-viewer-overlay .img-viewer-close:hover { opacity: 1; }
+.img-viewer-overlay img { max-width: 90vw; max-height: 90vh; object-fit: contain; transition: transform 0.15s ease; cursor: grab; border-radius: 4px; box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+.img-viewer-overlay .img-viewer-info { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); font-size: 13px; background: rgba(0,0,0,0.5); padding: 6px 14px; border-radius: 20px; user-select: none; }
+.img-viewer-overlay .img-viewer-zoom-hint { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.6); font-size: 12px; background: rgba(0,0,0,0.4); padding: 4px 12px; border-radius: 16px; user-select: none; pointer-events: none; }
+
+/* BI 预警卡片 */
+.bi-alert-bar { margin-bottom: 14px; }
+.bi-alert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.bi-alert-card { border-radius: var(--radius-sm); padding: 12px; border: 1px solid; display: flex; align-items: flex-start; gap: 10px; }
+.bi-alert-card.warn { border-color: #fde68a; background: #fffbeb; }
+.bi-alert-card.danger { border-color: #fecaca; background: #fef2f2; }
+.bi-alert-card.success { border-color: #bbf7d0; background: #f0fdf4; }
+.bi-alert-card.info { border-color: #bfdbfe; background: #eff6ff; }
+.dark .bi-alert-card.warn { border-color: #92400e; background: #422006; }
+.dark .bi-alert-card.danger { border-color: #991b1b; background: #2d0a0a; }
+.dark .bi-alert-card.success { border-color: #166534; background: #052e16; }
+.dark .bi-alert-card.info { border-color: #1e40af; background: #0c1929; }
+.bi-alert-icon { font-size: 18px; line-height: 1.3; flex-shrink: 0; }
+.bi-alert-body { flex: 1; min-width: 0; }
+.bi-alert-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.bi-alert-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+.bi-alert-action { font-size: 11px; color: var(--accent); cursor: pointer; margin-top: 4px; display: inline-block; text-decoration: underline; }
+
+/* 流失预判列表 */
+.bi-churn-list { display: flex; flex-direction: column; gap: 6px; }
+.bi-churn-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; background: var(--bg-secondary); font-size: 12px; }
+.bi-churn-name { flex: 1; font-weight: 500; }
+.bi-churn-risk { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+.bi-churn-risk.high { background: #fecaca; color: #991b1b; }
+.bi-churn-risk.medium { background: #fed7aa; color: #9a3412; }
+.bi-churn-risk.low { background: #bbf7d0; color: #166534; }
+
+/* 报表区域 */
+.bi-report-section { margin-top: 14px; }
+.bi-report-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.bi-report-preview { background: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color); padding: 12px; max-height: 320px; overflow: auto; font-size: 12px; white-space: pre-wrap; font-family: 'Consolas','Courier New',monospace; line-height: 1.6; }
+
+/* 趋势预判 */
+.bi-predict-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.bi-predict-card { background: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color); padding: 12px; }
+.bi-predict-title { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+.bi-predict-value { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+.bi-predict-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.bi-predict-trend { font-size: 12px; margin-top: 4px; }
+.bi-predict-trend.up { color: #16a34a; }
+.bi-predict-trend.down { color: #dc2626; }
 
 /* ========================================
    数据安全中心（紧凑）
@@ -1101,6 +1616,20 @@ table.data-table {
   <div class="stat-popup-body" id="stat-popup-body"></div>
 </div>
 
+<!-- 客户浮层详情 -->
+<div class="customer-float-overlay" id="customer-float-overlay"></div>
+<div class="customer-float-panel" id="customer-float-panel">
+  <div class="customer-float-header">
+    <div class="customer-float-header-left">
+      <span class="customer-float-name" id="customer-float-name"></span>
+      <span class="customer-float-badges" id="customer-float-badges"></span>
+    </div>
+    <button class="customer-float-close" id="customer-float-close">×</button>
+  </div>
+  <div class="customer-float-body" id="customer-float-body"></div>
+  <div class="customer-float-footer" id="customer-float-footer"></div>
+</div>
+
 <!-- 解锁 / 初始化 视图容器 -->
 <div id="auth-view" class="auth-wrap" style="display:none;">
   <div class="auth-card">
@@ -1201,6 +1730,7 @@ table.data-table {
       <!-- 仪表盘 -->
       <section class="page active" id="page-dashboard">
         <div class="stats-grid" id="stats-grid"></div>
+        <div class="alert-section" id="alert-section"></div>
         <div class="charts-grid">
           <div class="chart-card">
             <div class="chart-title">客户来源分布</div>
@@ -1241,42 +1771,107 @@ table.data-table {
 
       <!-- BI 看板 -->
       <section class="page" id="page-bi">
-        <div class="bi-kpi-row" id="bi-kpi-row"></div>
-        <div class="bi-grid">
-          <div class="bi-card">
-            <div class="bi-card-title">📈 客户等级分布</div>
-            <div class="bi-chart-area"><canvas id="bi-chart-level" width="400" height="240"></canvas></div>
+        <!-- 客户数据分析 -->
+        <div class="bi-section bi-analysis-section">
+          <div class="bi-section-title">
+            <span class="bi-section-icon">📊</span>
+            <span>客户数据分析</span>
+            <span class="bi-section-meta" id="bi-data-meta"></span>
           </div>
-          <div class="bi-card">
-            <div class="bi-card-title">🔀 客户来源分布</div>
-            <div class="bi-chart-area"><canvas id="bi-chart-source" width="400" height="240"></canvas></div>
+          <div class="bi-kpi-row" id="bi-kpi-row"></div>
+          <div class="bi-analysis-grid" id="bi-analysis-grid"></div>
+        </div>
+
+        <!-- 图表分析区 -->
+        <div class="bi-section">
+          <div class="bi-section-title">
+            <span class="bi-section-icon">📈</span>
+            <span>图表分析</span>
           </div>
-          <div class="bi-card">
-            <div class="bi-card-title">🏆 成交转化漏斗</div>
-            <div class="bi-chart-area"><canvas id="bi-chart-funnel" width="400" height="240"></canvas></div>
-          </div>
-          <div class="bi-card">
-            <div class="bi-card-title">📊 月度新增趋势</div>
-            <div class="bi-chart-area"><canvas id="bi-chart-monthly" width="400" height="240"></canvas></div>
-          </div>
-          <div class="bi-card">
-            <div class="bi-card-title">🌍 渠道对比分析</div>
-            <div class="bi-chart-area"><canvas id="bi-chart-channel" width="400" height="240"></canvas></div>
-          </div>
-          <div class="bi-card">
-            <div class="bi-card-title">🏙️ 省份客户排行 TOP10</div>
-            <div class="bi-chart-area"><canvas id="bi-chart-province" width="400" height="240"></canvas></div>
-          </div>
-          <div class="bi-card">
-            <div class="bi-card-title">🏷️ 标签使用排行</div>
-            <div class="bi-chart-area" id="bi-tag-rank"></div>
-          </div>
-          <div class="bi-card">
-            <div class="bi-card-title">⏰ 跟进时效分析</div>
-            <div class="bi-chart-area"><canvas id="bi-chart-followup" width="400" height="240"></canvas></div>
+          <div class="bi-chart-grid">
+            <div class="bi-card">
+              <div class="bi-card-title"><span class="bi-card-icon">📊</span>客户等级分布</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-level" class="bi-canvas" data-chart="level"></canvas></div>
+            </div>
+            <div class="bi-card">
+              <div class="bi-card-title"><span class="bi-card-icon">🥧</span>客户来源分布</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-source" class="bi-canvas" data-chart="source"></canvas></div>
+            </div>
+            <div class="bi-card bi-card-wide">
+              <div class="bi-card-title"><span class="bi-card-icon">🏆</span>成交转化漏斗</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-funnel" class="bi-canvas" data-chart="funnel"></canvas></div>
+            </div>
+            <div class="bi-card bi-card-wide">
+              <div class="bi-card-title"><span class="bi-card-icon">📈</span>近12个月新增趋势</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-monthly" class="bi-canvas" data-chart="monthly"></canvas></div>
+            </div>
+            <div class="bi-card">
+              <div class="bi-card-title"><span class="bi-card-icon">🌍</span>渠道对比分析</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-channel" class="bi-canvas" data-chart="channel"></canvas></div>
+            </div>
+            <div class="bi-card">
+              <div class="bi-card-title"><span class="bi-card-icon">🏙️</span>省份排行 TOP10</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-province" class="bi-canvas" data-chart="province"></canvas></div>
+            </div>
+            <div class="bi-card">
+              <div class="bi-card-title"><span class="bi-card-icon">🏷️</span>标签使用排行</div>
+              <div class="bi-chart-area" id="bi-tag-rank"></div>
+            </div>
+            <div class="bi-card bi-card-wide">
+              <div class="bi-card-title"><span class="bi-card-icon">⏰</span>跟进时效分析</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-followup" class="bi-canvas" data-chart="followup"></canvas></div>
+            </div>
+            <div class="bi-card bi-card-wide">
+              <div class="bi-card-title"><span class="bi-card-icon">💰</span>意向产品 / 预算分布</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-product" class="bi-canvas" data-chart="product"></canvas></div>
+            </div>
+            <div class="bi-card bi-card-wide">
+              <div class="bi-card-title"><span class="bi-card-icon">👥</span>客户年龄与性别分布</div>
+              <div class="bi-chart-area"><canvas id="bi-chart-demographic" class="bi-canvas" data-chart="demographic"></canvas></div>
+            </div>
           </div>
         </div>
-        <div class="bi-insights" id="bi-insights"></div>
+
+        <!-- 异常智能预警 -->
+        <div class="bi-section">
+          <div class="bi-section-title">
+            <span class="bi-section-icon">🔔</span>
+            <span>异常智能预警</span>
+            <span class="bi-section-meta" id="bi-alert-meta"></span>
+          </div>
+          <div class="bi-alert-bar" id="bi-alert-bar"></div>
+        </div>
+
+        <!-- 业务漏斗与趋势预测 -->
+        <div class="bi-section">
+          <div class="bi-section-title">
+            <span class="bi-section-icon">🔮</span>
+            <span>趋势预测分析</span>
+          </div>
+          <div class="bi-predict-grid" id="bi-predict-grid"></div>
+          <div class="bi-card bi-card-wide" style="margin-top:10px;">
+            <div class="bi-card-title"><span class="bi-card-icon">⚠️</span>客户流失风险预判</div>
+            <div class="bi-churn-list" id="bi-churn-list"></div>
+          </div>
+        </div>
+
+        <!-- 自动化报表 -->
+        <div class="bi-section">
+          <div class="bi-section-title">
+            <span class="bi-section-icon">📋</span>
+            <span>自动化报表</span>
+            <span class="bi-section-meta">一键生成，替代人工统计</span>
+          </div>
+          <div class="bi-report-section">
+            <div class="bi-report-actions">
+              <button class="btn btn-sm btn-primary" id="btn-report-daily">📅 生成日报</button>
+              <button class="btn btn-sm btn-primary" id="btn-report-weekly">📆 生成周报</button>
+              <button class="btn btn-sm btn-primary" id="btn-report-monthly">📊 生成月报</button>
+              <button class="btn btn-sm btn-outline" id="btn-report-export">📤 一键导出CSV</button>
+            </div>
+            <div class="bi-report-preview" id="bi-report-preview">点击上方按钮生成报表</div>
+          </div>
+        </div>
       </section>
 
       <!-- 客户列表 -->
@@ -1290,11 +1885,6 @@ table.data-table {
             <div>
               <label class="label">客户等级</label>
               <select class="select" id="filter-level">
-                <option value="">全部</option>
-                <option value="A">A（意向最强）</option>
-                <option value="B">B（中等意向）</option>
-                <option value="C">C（低意向）</option>
-                <option value="D">D（无意向）</option>
               </select>
             </div>
             <div>
@@ -1433,6 +2023,28 @@ table.data-table {
             </div>
             <span id="followup-frequency-desc" style="font-size:13px;color:var(--text-muted);">新增客户超过3天未跟进时提醒</span>
           </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;">⭐ 客户等级管理</h2>
+            <button class="btn btn-primary btn-sm" id="btn-new-level">➕ 新增等级</button>
+          </div>
+          <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
+            自定义客户等级分类及对应颜色，修改等级名称将同步更新所有关联客户。删除等级不会影响已关联客户的历史数据（等级如被使用则无法删除）。
+          </div>
+          <div id="level-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:18px;">📋 客户来源管理</h2>
+            <button class="btn btn-primary btn-sm" id="btn-new-source">➕ 新增来源</button>
+          </div>
+          <div style="margin-bottom:20px;font-size:13px;color:var(--text-secondary);">
+            自定义客户来源分类，修改来源名称将同步更新所有关联客户。删除来源不会影响已关联客户的历史数据（来源如被使用则无法删除）。
+          </div>
+          <div id="source-list" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
         </div>
 
         <div class="card" style="margin-bottom:16px;">
@@ -1597,6 +2209,20 @@ function uuid() {
   return 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
 }
 
+// roundRect polyfill（某些浏览器不支持 CanvasRenderingContext2D.roundRect）
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+    const r = typeof radii === 'number' ? radii : (Array.isArray(radii) ? radii[0] : 0);
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+    return this;
+  };
+}
+
 // Toast 提示
 function showToast(msg, type = 'success', duration = 3000) {
   const container = document.getElementById('toast-container');
@@ -1707,6 +2333,46 @@ async function sha256(text) {
   return bytesToHex(new Uint8Array(hash));
 }
 
+function getDefaultLevels() {
+  return [
+    { id: 'cl_a', name: 'A', color: '#dc2626', sort: 1 },
+    { id: 'cl_b', name: 'B', color: '#d97706', sort: 2 },
+    { id: 'cl_c', name: 'C', color: '#2563eb', sort: 3 },
+    { id: 'cl_d', name: 'D', color: '#9ca3af', sort: 4 }
+  ];
+}
+
+function getLevels() {
+  return (Store.data.customerLevels || []).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function getLevelByName(name) {
+  return (Store.data.customerLevels || []).find(l => l.name === name);
+}
+
+function getLevelOptions() {
+  return getLevels().map(l => l.name);
+}
+
+function getDefaultSources() {
+  return [
+    { id: 'cs_a', name: '老客户介绍', sort: 1 },
+    { id: 'cs_b', name: '网络推广', sort: 2 },
+    { id: 'cs_c', name: '线下活动', sort: 3 },
+    { id: 'cs_d', name: '电话销售', sort: 4 },
+    { id: 'cs_e', name: '自然到店', sort: 5 },
+    { id: 'cs_f', name: '其他', sort: 6 }
+  ];
+}
+
+function getSources() {
+  return (Store.data.customerSources || []).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function getSourceOptions() {
+  return getSources().map(s => s.name);
+}
+
 /* ================================================================
    模块 2：数据存储层（localStorage 加密 + 本地文件夹同步）
    ================================================================ */
@@ -1715,7 +2381,7 @@ const Store = {
   // 运行态内存：解锁成功后保存
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
-  data: { customers: [], tags: [], logs: [], versions: [] }, // 明文内存
+  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [] }, // 明文内存
   settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
@@ -1727,17 +2393,23 @@ const Store = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        this.data = { customers: [], tags: [], logs: [], versions: [] };
+        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [] };
         return;
       }
       const plain = await decryptData(raw, this.password);
       const parsed = JSON.parse(plain);
-      this.data = Object.assign({ customers: [], tags: [], logs: [], versions: [] }, parsed);
+      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [] }, parsed);
       // 确保关键字段存在
       if (!Array.isArray(this.data.customers)) this.data.customers = [];
       if (!Array.isArray(this.data.tags)) this.data.tags = [];
       if (!Array.isArray(this.data.logs)) this.data.logs = [];
       if (!Array.isArray(this.data.versions)) this.data.versions = [];
+      if (!Array.isArray(this.data.customerLevels) || this.data.customerLevels.length === 0) {
+        this.data.customerLevels = getDefaultLevels();
+      }
+      if (!Array.isArray(this.data.customerSources) || this.data.customerSources.length === 0) {
+        this.data.customerSources = getDefaultSources();
+      }
       // 数据迁移：将旧的等级值转换为新的 A/B/C/D 格式
       this.data.customers.forEach(c => {
         if (c.level === 'VIP') c.level = 'A';
@@ -1761,6 +2433,8 @@ const Store = {
     const snapshot = JSON.parse(JSON.stringify({
       customers: this.data.customers,
       tags: this.data.tags,
+      customerLevels: this.data.customerLevels,
+      customerSources: this.data.customerSources,
       createdAt: Date.now()
     }));
     if (this.data.versions.length === 0 ||
@@ -2123,8 +2797,8 @@ function openCustomerForm(customer) {
         { key: 'phone', label: '手机号', type: 'text', required: true, max: 11 },
         { key: 'wechat', label: '微信', type: 'text', max: 50 },
         { key: 'email', label: '邮箱', type: 'email', max: 80 },
-        { key: 'source', label: '客户来源', type: 'select', options: ['', '老客户介绍', '网络推广', '线下活动', '电话销售', '自然到店', '其他'] },
-        { key: 'level', label: '客户等级', type: 'select', options: ['A', 'B', 'C', 'D'] },
+        { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
+        { key: 'level', label: '客户等级', type: 'select', options: getLevelOptions() },
         { key: 'channel', label: '所属渠道', type: 'select', options: ['', 'geo', '360', 'bing'] },
       ]
     },
@@ -2185,6 +2859,15 @@ function openCustomerForm(customer) {
         html += `<div class="form-group" style="grid-column:1/-1;">
           <label class="label">${escapeHTML(f.label)}</label>
           <textarea class="textarea" data-key="${f.key}" maxlength="${f.max || 500}" rows="3">${escapeHTML(val)}</textarea></div>`;
+        if (f.key === 'remark') {
+          html += `<div class="form-group" style="grid-column:1/-1;">
+            <label class="label">截图保存</label>
+            <div class="image-dropzone" id="image-dropzone">
+              <div class="dropzone-hint">粘贴图片 (Ctrl+V) 或拖拽图片到此处</div>
+              <div class="image-preview-area" id="image-preview-area"></div>
+            </div>
+          </div>`;
+        }
       } else {
         html += `<div class="form-group">
           <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
@@ -2251,6 +2934,60 @@ function openCustomerForm(customer) {
         };
       });
 
+      // 截图粘贴 / 拖拽支持
+      const formImages = [];
+      const dropzone = document.getElementById('image-dropzone');
+      const previewArea = document.getElementById('image-preview-area');
+      function addImageToForm(dataUrl) {
+        const id = uuid();
+        formImages.push({ id, dataUrl, name: '截图_' + new Date().toLocaleString('zh-CN') });
+        const item = document.createElement('div');
+        item.className = 'image-preview-item';
+        item.dataset.imgId = id;
+        item.innerHTML = `<img src="${dataUrl}" alt="截图"><button class="image-preview-del" data-img-id="${id}">×</button>`;
+        previewArea.appendChild(item);
+        item.querySelector('.image-preview-del').onclick = (e) => {
+          e.stopPropagation();
+          const idx = formImages.findIndex(x => x.id === id);
+          if (idx !== -1) formImages.splice(idx, 1);
+          item.remove();
+          if (formImages.length === 0) document.querySelector('.dropzone-hint').style.display = '';
+        };
+        document.querySelector('.dropzone-hint').style.display = 'none';
+      }
+      if (dropzone) {
+        // 监听模态框内所有粘贴事件（用户可能在文本框内Ctrl+V粘贴截图）
+        document.getElementById('modal-box').addEventListener('paste', (e) => {
+          const items = e.clipboardData && e.clipboardData.items;
+          if (!items) return;
+          for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+              const blob = items[i].getAsFile();
+              if (blob && blob.size > 0) {
+                e.preventDefault();
+                const reader = new FileReader();
+                reader.onload = (ev) => addImageToForm(ev.target.result);
+                reader.readAsDataURL(blob);
+              }
+            }
+          }
+        });
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+        dropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('drag-over');
+          const files = e.dataTransfer.files;
+          for (let i = 0; i < files.length; i++) {
+            if (files[i].type.indexOf('image') !== -1) {
+              const reader = new FileReader();
+              reader.onload = (ev) => addImageToForm(ev.target.result);
+              reader.readAsDataURL(files[i]);
+            }
+          }
+        });
+      }
+
       // 草稿自动保存
       const collect = () => {
         const d = {};
@@ -2305,7 +3042,7 @@ function openCustomerForm(customer) {
         if (errors.length) { showToast(errors[0], 'error'); return; }
 
         // HTML 实体转义（跳过备注字段，备注存储原始文本仅在显示时转义）
-        const noEscapeKeys = ['remark', 'remarkHistory'];
+        const noEscapeKeys = ['remark', 'remarkHistory', 'images'];
         const safe = {};
         for (const k of Object.keys(d)) {
           if (Array.isArray(d[k])) safe[k] = d[k];
@@ -2323,7 +3060,7 @@ function openCustomerForm(customer) {
           });
           if (safe.remark && safe.remark !== (c.lastRemark || '')) {
             old.remarkHistory = old.remarkHistory || [];
-            old.remarkHistory.unshift({ time: Date.now(), text: safe.remark });
+            old.remarkHistory.unshift({ time: Date.now(), text: safe.remark, images: formImages.slice() });
             old.lastRemark = safe.remark;
           }
           old.updatedAt = Date.now();
@@ -2337,7 +3074,7 @@ function openCustomerForm(customer) {
           return;
         } else {
           const newC = { ...safe, id: c.id, createdAt: Date.now(), remarkHistory: [] };
-          if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark });
+          if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark, images: formImages.slice() });
           Store.data.customers.unshift(newC);
           try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
           await Store.saveWithLog('新增客户', '客户：' + newC.name);
@@ -2373,9 +3110,19 @@ function renderFilterSources() {
   if (!sel) return;
   const sources = new Set();
   (Store.data.customers || []).forEach(c => { if (c.source) sources.add(c.source); });
+  (Store.data.customerSources || []).forEach(s => { if (s.name) sources.add(s.name); });
   const cur = sel.value;
   sel.innerHTML = '<option value="">全部</option>' +
     Array.from(sources).map(s => `<option value="${escapeHTML(s)}" ${s === cur ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('');
+}
+
+function renderFilterLevels() {
+  const sel = document.getElementById('filter-level');
+  if (!sel) return;
+  const levels = getLevels();
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">全部</option>' +
+    levels.map(l => `<option value="${escapeHTML(l.name)}" ${l.name === cur ? 'selected' : ''}>${escapeHTML(l.name)}</option>`).join('');
 }
 
 function applyListFilters() {
@@ -2667,9 +3414,8 @@ function renderTrashPage() {
 }
 
 function levelColor(level) {
-  if (level === 'A') return '#dc2626';
-  if (level === 'B') return '#d97706';
-  if (level === 'C') return '#2563eb';
+  const l = getLevelByName(level);
+  if (l) return l.color;
   return '#9ca3af';
 }
 function statusClass(s) {
@@ -2708,7 +3454,7 @@ function openCustomerDetail(c, fromPopup) {
         <div class="detail-item"><div class="detail-label">微信</div><div class="detail-value">${escapeHTML(c.wechat || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(c.email || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">性别 / 年龄</div><div class="detail-value">${escapeHTML((c.gender || '-') + ' / ' + (c.age || '-'))}</div></div>
-        <div class="detail-item"><div class="detail-label">客户等级</div><div class="detail-value">${escapeHTML(c.level || 'C')}</div></div>
+        <div class="detail-item"><div class="detail-label">客户等级</div><div class="detail-value">${escapeHTML(c.level || (getLevels()[0] || {}).name || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">客户来源</div><div class="detail-value">${escapeHTML(c.source || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">成交状态</div><div class="detail-value">${escapeHTML(c.status || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">意向产品</div><div class="detail-value">${escapeHTML(c.product || '-')}</div></div>
@@ -2726,9 +3472,14 @@ function openCustomerDetail(c, fromPopup) {
       html += `<div style="color:var(--text-muted);font-size:13px;">暂无跟进记录</div>`;
     } else {
       for (const r of c.remarkHistory) {
+        let imgHtml = '';
+        if (r.images && r.images.length) {
+          imgHtml = `<div class="timeline-images">${r.images.map((img, idx) => `<img class="timeline-thumb" src="${escapeHTML(img.dataUrl)}" alt="截图" data-img-src="${escapeHTML(img.dataUrl)}">`).join('')}</div>`;
+        }
         html += `<div class="timeline-item">
           <div class="timeline-time">${formatDate(r.time)}</div>
           <div class="timeline-content">${escapeHTML(r.text)}</div>
+          ${imgHtml}
         </div>`;
       }
     }
@@ -2737,6 +3488,11 @@ function openCustomerDetail(c, fromPopup) {
     openModal({
       title: '客户详情', size: 'md', bodyHTML: html,
       onClose: fromPopup ? _restoreStatPopup : undefined,
+      onOpen: () => {
+        document.querySelectorAll('.timeline-thumb').forEach(el => {
+          el.onclick = () => openImageViewer(el.dataset.imgSrc || el.src);
+        });
+      },
       footer: (f) => {
         const cl = document.createElement('button'); cl.className = 'btn btn-sm btn-outline'; safeText(cl, '关闭');
         f.appendChild(cl); cl.onclick = () => { closeModal(); if (fromPopup) setTimeout(_restoreStatPopup, 100); };
@@ -2848,7 +3604,9 @@ function renderDashboard() {
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
   const todayCount = list.filter(c => c.createdAt >= todayStart.getTime()).length;
   const monthCount = list.filter(c => c.createdAt >= monthStart.getTime()).length;
-  const vipCount = list.filter(c => c.level === 'A' || c.level === 'B').length;
+  const topLevelNames = getLevels().slice(0, 2).map(l => l.name);
+  const topLevelLabel = topLevelNames.join('/');
+  const vipCount = list.filter(c => topLevelNames.includes(c.level)).length;
   const followCount = list.filter(c => {
     if (c.status === '跟进中') return true;
     if (!c.nextFollowDate) return false;
@@ -2861,7 +3619,7 @@ function renderDashboard() {
     { label: '客户总数', value: total, hint: '全部录入客户', type: 'total' },
     { label: '今日新增', value: todayCount, hint: '今日 0 点后录入', type: 'today' },
     { label: '本月新增', value: monthCount, hint: '本月 1 号后录入', type: 'month' },
-    { label: 'A/B 级客户', value: vipCount, hint: '等级为 A 或 B', type: 'vip' },
+    { label: topLevelLabel + ' 级客户', value: vipCount, hint: '等级为 ' + topLevelLabel, type: 'vip' },
     { label: '待跟进客户', value: followCount, hint: '状态为跟进中 或 下次跟进日期 >= 今日', type: 'follow' }
   ];
   const el = document.getElementById('stats-grid');
@@ -2893,6 +3651,9 @@ function renderDashboard() {
   // 来源饼图
   drawSourcePie();
   drawTrendBar();
+
+  // 客户预警及待跟进提醒
+  renderAlertSection(list, todayStart);
 }
 
 // 显示统计浮层
@@ -2918,8 +3679,8 @@ function showStatPopup(type) {
       title = '本月新增 (' + customers.length + ')';
       break;
     case 'vip':
-      customers = list.filter(c => c.level === 'A' || c.level === 'B');
-      title = 'A/B 级客户 (' + customers.length + ')';
+      customers = list.filter(c => topLevelNames.includes(c.level));
+      title = topLevelLabel + ' 级客户 (' + customers.length + ')';
       break;
     case 'follow':
       customers = list.filter(c => {
@@ -2947,7 +3708,7 @@ function showStatPopup(type) {
   } else {
     popupBody.innerHTML = customers.map(c => `
       <div class="stat-popup-item" data-customer-id="${c.id}">
-        <div class="stat-popup-item-name">${escapeHTML(c.name || '未命名')} ${c.level ? '<span style="margin-left:8px;padding:2px 8px;border-radius:4px;background:' + (c.level === 'A' ? '#dc2626' : c.level === 'B' ? '#f59e0b' : c.level === 'C' ? '#3b82f6' : '#6b7280') + ';color:#fff;font-size:11px;">' + c.level + '</span>' : ''}</div>
+        <div class="stat-popup-item-name">${escapeHTML(c.name || '未命名')} ${c.level ? '<span style="margin-left:8px;padding:2px 8px;border-radius:4px;background:' + levelColor(c.level) + ';color:#fff;font-size:11px;">' + c.level + '</span>' : ''}</div>
         <div class="stat-popup-item-info">
           ${c.phone ? '📱 ' + escapeHTML(c.phone) + ' &nbsp;' : ''}
           ${c.wechat ? '💬 ' + escapeHTML(c.wechat) + ' &nbsp;' : ''}
@@ -2994,6 +3755,299 @@ function _restoreStatPopup() {
   }
 }
 
+function renderAlertSection(list, todayStart) {
+  const el = document.getElementById('alert-section');
+  if (!el) return;
+  if (!list || !list.length) {
+    el.innerHTML = '<div class="alert-panel" style="grid-column:1/-1;"><div class="alert-panel-header"><span class="alert-panel-icon">📋</span><span>客户预警及待跟进</span></div><div class="alert-panel-body"><div class="alert-panel-empty">暂无客户数据</div></div></div>';
+    return;
+  }
+  try {
+  const now = Date.now();
+  const followupDays = (Store.settings && Store.settings.followupDays) || 3;
+  const ts = (todayStart && typeof todayStart.getTime === 'function') ? todayStart.getTime() : (() => { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
+  const threeDaysLater = ts + 3 * 86400000;
+
+  // ===== Panel 1: 超期未联系提醒 =====
+  const overdueList = list.filter(c => {
+    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
+    const daysSinceLast = c.remarkHistory && c.remarkHistory.length > 0
+      ? Math.floor((now - c.remarkHistory[0].time) / 86400000)
+      : Math.floor((now - c.createdAt) / 86400000);
+    const ft = c.nextFollowDate ? (typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate)) : null;
+    const isOverdue = ft !== null && ft < ts;
+    const isLongSilent = daysSinceLast > followupDays;
+    return isOverdue || isLongSilent;
+  }).map(c => {
+    const daysSinceLast = c.remarkHistory && c.remarkHistory.length > 0
+      ? Math.floor((now - c.remarkHistory[0].time) / 86400000)
+      : Math.floor((now - c.createdAt) / 86400000);
+    const ft = c.nextFollowDate ? (typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate)) : null;
+    const isOverdue = ft !== null && ft < ts;
+    const overdueDays = isOverdue && ft !== null ? Math.floor((ts - ft) / 86400000) : 0;
+    const severity = daysSinceLast > 30 || overdueDays > 14 ? 'high' : daysSinceLast > 14 || overdueDays > 7 ? 'medium' : 'low';
+    const severityLabel = severity === 'high' ? '严重' : severity === 'medium' ? '警告' : '关注';
+    const reason = isOverdue ? '逾期' + overdueDays + '天' : daysSinceLast + '天未联系';
+    return Object.assign({}, c, { _daysSinceLast: daysSinceLast, _isOverdue: isOverdue, _overdueDays: overdueDays, _severity: severity, _severityLabel: severityLabel, _reason: reason, _lastDate: dateOnly(c.remarkHistory && c.remarkHistory.length > 0 ? c.remarkHistory[0].time : c.createdAt) });
+  }).sort((a, b) => {
+    if (a._isOverdue !== b._isOverdue) return a._isOverdue ? -1 : 1;
+    if (a._isOverdue) return b._overdueDays - a._overdueDays;
+    return b._daysSinceLast - a._daysSinceLast;
+  }).slice(0, 8);
+
+  // ===== Panel 2: 临近联系日期提醒 =====
+  const upcomingList = list.filter(c => {
+    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    if (ft === null) return false;
+    return ft >= ts && ft < threeDaysLater;
+  }).map(c => {
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    const isToday = ft >= ts && ft < ts + 86400000;
+    const daysUntil = Math.ceil((ft - ts) / 86400000);
+    const label = isToday ? '今天' : daysUntil + '天后';
+    const cssClass = isToday ? 'follow-today' : 'follow-upcoming';
+    return Object.assign({}, c, { _isToday: isToday, _daysUntil: daysUntil, _label: label, _cssClass: cssClass, _followText: formatNextFollowDate(c.nextFollowDate) });
+  }).sort((a, b) => {
+    const ftA = typeof a.nextFollowDate === 'number' ? a.nextFollowDate : (parseDateStr(a.nextFollowDate) || 0);
+    const ftB = typeof b.nextFollowDate === 'number' ? b.nextFollowDate : (parseDateStr(b.nextFollowDate) || 0);
+    return ftA - ftB;
+  }).slice(0, 8);
+
+  // ===== Panel 3: 下次沟通事项提醒 =====
+  const agendaList = list.filter(c => {
+    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    if (ft === null) return false;
+    return ft >= ts;
+  }).map(c => {
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    const lastRemark = c.remarkHistory && c.remarkHistory.length > 0 ? c.remarkHistory[0].text : (c.remark || '');
+    const productInfo = [c.product, c.budget].filter(Boolean).join(' · ');
+    return { ...c, _agenda: lastRemark || productInfo || '暂无沟通要点', _followText: formatNextFollowDate(c.nextFollowDate), _productInfo: productInfo };
+  }).sort((a, b) => {
+    const ftA = typeof a.nextFollowDate === 'number' ? a.nextFollowDate : (parseDateStr(a.nextFollowDate) || 0);
+    const ftB = typeof b.nextFollowDate === 'number' ? b.nextFollowDate : (parseDateStr(b.nextFollowDate) || 0);
+    return ftA - ftB;
+  }).slice(0, 8);
+
+  const avatarColors = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#65a30d','#db2777'];
+
+  function renderOverdueItem(c) {
+    const initial = (c.name || '?').charAt(0);
+    const levelColorVal = levelColor(c.level);
+    const colorIdx = (c.name || '').length % avatarColors.length;
+    return `<div class="alert-customer-item" data-customer-id="${c.id}" data-source="overdue">
+      <div class="alert-cust-avatar" style="background:${avatarColors[colorIdx]};">${escapeHTML(initial)}</div>
+      <div class="alert-cust-info">
+        <div class="alert-cust-name">
+          ${escapeHTML(c.name || '未命名')}
+          ${c.level ? '<span class="alert-cust-level" style="background:' + levelColorVal + ';">' + escapeHTML(c.level) + '</span>' : ''}
+        </div>
+        <div class="alert-cust-meta">
+          <span>${c._reason}</span>
+          <span>最后: ${c._lastDate}</span>
+        </div>
+      </div>
+      <span class="alert-cust-badge risk-${c._severity}">${c._severityLabel}</span>
+    </div>`;
+  }
+
+  function renderUpcomingItem(c) {
+    const initial = (c.name || '?').charAt(0);
+    const levelColorVal = levelColor(c.level);
+    const colorIdx = (c.name || '').length % avatarColors.length;
+    return `<div class="alert-customer-item" data-customer-id="${c.id}" data-source="upcoming">
+      <div class="alert-cust-avatar" style="background:${avatarColors[colorIdx]};">${escapeHTML(initial)}</div>
+      <div class="alert-cust-info">
+        <div class="alert-cust-name">
+          ${escapeHTML(c.name || '未命名')}
+          ${c.level ? '<span class="alert-cust-level" style="background:' + levelColorVal + ';">' + escapeHTML(c.level) + '</span>' : ''}
+        </div>
+        <div class="alert-cust-meta">
+          <span>联系日期: ${c._followText}</span>
+          ${c.source ? '<span>' + escapeHTML(c.source) + '</span>' : ''}
+        </div>
+      </div>
+      <span class="alert-cust-badge ${c._cssClass}">${c._label}</span>
+    </div>`;
+  }
+
+  function renderAgendaItem(c) {
+    const initial = (c.name || '?').charAt(0);
+    const levelColorVal = levelColor(c.level);
+    const colorIdx = (c.name || '').length % avatarColors.length;
+    return `<div class="alert-customer-item" data-customer-id="${c.id}" data-source="agenda">
+      <div class="alert-cust-avatar" style="background:${avatarColors[colorIdx]};">${escapeHTML(initial)}</div>
+      <div class="alert-cust-info">
+        <div class="alert-cust-name">
+          ${escapeHTML(c.name || '未命名')}
+          ${c.level ? '<span class="alert-cust-level" style="background:' + levelColorVal + ';">' + escapeHTML(c.level) + '</span>' : ''}
+        </div>
+        <div class="alert-cust-meta">
+          <span>下次: ${c._followText}</span>
+        </div>
+        <div class="alert-cust-agenda">💬 ${escapeHTML(c._agenda.length > 40 ? c._agenda.slice(0, 40) + '…' : c._agenda)}</div>
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = `
+    <div class="alert-panel">
+      <div class="alert-panel-header">
+        <span class="alert-panel-icon">🔴</span>
+        <span>超期未联系提醒</span>
+        <span class="alert-panel-count ${overdueList.length > 0 ? 'danger' : 'info'}">${overdueList.length} 位</span>
+      </div>
+      <div class="alert-panel-body">
+        ${overdueList.length === 0
+          ? '<div class="alert-panel-empty">✅ 所有客户跟进正常</div>'
+          : overdueList.map(renderOverdueItem).join('')}
+      </div>
+    </div>
+    <div class="alert-panel">
+      <div class="alert-panel-header">
+        <span class="alert-panel-icon">🟡</span>
+        <span>临近联系日期提醒</span>
+        <span class="alert-panel-count ${upcomingList.filter(c => c._isToday).length > 0 ? 'warn' : 'info'}">${upcomingList.length} 位</span>
+      </div>
+      <div class="alert-panel-body">
+        ${upcomingList.length === 0
+          ? '<div class="alert-panel-empty">📅 近3天无待联系客户</div>'
+          : upcomingList.map(renderUpcomingItem).join('')}
+      </div>
+    </div>
+    <div class="alert-panel">
+      <div class="alert-panel-header">
+        <span class="alert-panel-icon">📋</span>
+        <span>下次沟通事项提醒</span>
+        <span class="alert-panel-count ${agendaList.length > 0 ? 'warn' : 'info'}">${agendaList.length} 位</span>
+      </div>
+      <div class="alert-panel-body">
+        ${agendaList.length === 0
+          ? '<div class="alert-panel-empty">📋 暂无待沟通事项</div>'
+          : agendaList.map(renderAgendaItem).join('')}
+      </div>
+    </div>
+  `;
+
+  el.querySelectorAll('.alert-customer-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const customerId = item.dataset.customerId;
+      const customer = Store.data.customers.find(c => c.id === customerId);
+      if (customer) {
+        showCustomerFloat(customer, item.dataset.source);
+      }
+    });
+  });
+  } catch(e) {
+    el.innerHTML = '<div class="alert-panel" style="grid-column:1/-1;"><div class="alert-panel-header"><span class="alert-panel-icon">⚠️</span><span>预警模块加载异常</span></div><div class="alert-panel-body"><div class="alert-panel-empty">数据加载中，请刷新页面重试</div></div></div>';
+    console.error('renderAlertSection error:', e);
+  }
+}
+
+function showCustomerFloat(customer, source) {
+  const overlay = document.getElementById('customer-float-overlay');
+  const panel = document.getElementById('customer-float-panel');
+  const nameEl = document.getElementById('customer-float-name');
+  const badgesEl = document.getElementById('customer-float-badges');
+  const bodyEl = document.getElementById('customer-float-body');
+  const footerEl = document.getElementById('customer-float-footer');
+
+  const now = Date.now();
+  const levelColorVal = levelColor(customer.level);
+  const tags = Store.data.tags || [];
+  const tagHtml = (customer.tags || []).map(tid => {
+    const t = tags.find(x => x.id === tid);
+    return t ? '<span style="background:' + t.color + ';padding:2px 8px;border-radius:4px;font-size:10px;">' + escapeHTML(t.name) + '</span>' : '';
+  }).join('');
+
+  const daysSinceLast = customer.remarkHistory && customer.remarkHistory.length > 0
+    ? Math.floor((now - customer.remarkHistory[0].time) / 86400000)
+    : Math.floor((now - customer.createdAt) / 86400000);
+  const lastFollowText = customer.remarkHistory && customer.remarkHistory.length > 0
+    ? customer.remarkHistory[0].text
+    : '暂无跟进记录';
+  const lastFollowDate = customer.remarkHistory && customer.remarkHistory.length > 0
+    ? formatDate(customer.remarkHistory[0].time)
+    : formatDate(customer.createdAt);
+
+  const followupDays = (Store.settings && Store.settings.followupDays) || 3;
+  let riskHtml = '';
+  if (customer.status !== '已成交' && customer.status !== '流失' && daysSinceLast > followupDays) {
+    const riskLevel = daysSinceLast > 30 ? '高风险' : daysSinceLast > 14 ? '中风险' : '关注';
+    const riskColor = daysSinceLast > 30 ? '#dc2626' : daysSinceLast > 14 ? '#d97706' : '#16a34a';
+    riskHtml = '<span class="customer-float-item full"><div class="customer-float-label">流失预警</div><div class="customer-float-value" style="color:' + riskColor + ';font-weight:700;">' + riskLevel + ' · ' + daysSinceLast + '天未跟进 · 最后跟进: ' + lastFollowDate + '</div></span>';
+  }
+
+  const channelMap = { geo: 'GEO', '360': '360', bing: 'Bing' };
+  const channelLabel = channelMap[customer.channel] || (customer.channel || '未分配');
+
+  nameEl.textContent = customer.name || '未命名';
+  badgesEl.innerHTML = (customer.level ? '<span style="background:' + levelColorVal + ';">' + escapeHTML(customer.level) + '级</span>' : '') +
+    (customer.status ? '<span style="background:' + (customer.status === '已成交' ? '#16a34a' : customer.status === '流失' ? '#dc2626' : '#6b7280') + ';">' + escapeHTML(customer.status) + '</span>' : '') +
+    (source === 'overdue' ? '<span style="background:#dc2626;">超期未联系</span>' : '') +
+    (source === 'upcoming' ? '<span style="background:#d97706;">临近联系日</span>' : '') +
+    (source === 'agenda' ? '<span style="background:#2563eb;">待沟通</span>' : '') +
+    tagHtml;
+
+  bodyEl.innerHTML = '<div class="customer-float-grid">' +
+    '<div class="customer-float-item"><div class="customer-float-label">手机号</div><div class="customer-float-value">' + escapeHTML(customer.phone || '-') + '</div></div>' +
+    '<div class="customer-float-item"><div class="customer-float-label">微信</div><div class="customer-float-value">' + escapeHTML(customer.wechat || '-') + '</div></div>' +
+    '<div class="customer-float-item"><div class="customer-float-label">来源</div><div class="customer-float-value">' + escapeHTML(customer.source || '-') + '</div></div>' +
+    '<div class="customer-float-item"><div class="customer-float-label">渠道</div><div class="customer-float-value">' + escapeHTML(channelLabel) + '</div></div>' +
+    '<div class="customer-float-item"><div class="customer-float-label">意向产品</div><div class="customer-float-value">' + escapeHTML(customer.product || '-') + '</div></div>' +
+    '<div class="customer-float-item"><div class="customer-float-label">预算</div><div class="customer-float-value">' + escapeHTML(customer.budget || '-') + '</div></div>' +
+    '<div class="customer-float-item"><div class="customer-float-label">最后跟进</div><div class="customer-float-value">' + escapeHTML(lastFollowDate) + '</div></div>' +
+    '<div class="customer-float-item"><div class="customer-float-label">下次跟进</div><div class="customer-float-value">' + formatNextFollowDate(customer.nextFollowDate) + '</div></div>' +
+    (riskHtml || '') +
+    '<div class="customer-float-item full"><div class="customer-float-label">最近跟进记录</div><div class="customer-float-value" style="font-weight:400;font-size:12px;">' + escapeHTML(lastFollowText) + '</div></div>' +
+    '</div>' +
+    '<div class="customer-float-agenda">' +
+      '<div class="customer-float-agenda-title">📋 下次沟通事项</div>' +
+      '<div class="customer-float-agenda-text">' + buildAgendaContent(customer, lastFollowText) + '</div>' +
+    '</div>';
+
+  footerEl.innerHTML = '<button class="btn btn-sm btn-outline" id="float-close-btn">关闭</button>' +
+    '<button class="btn btn-sm btn-primary" id="float-detail-btn">查看完整详情</button>';
+
+  overlay.classList.add('active');
+  panel.classList.add('active');
+
+  document.getElementById('float-close-btn').onclick = closeCustomerFloat;
+  document.getElementById('float-detail-btn').onclick = () => {
+    closeCustomerFloat();
+    setTimeout(() => openCustomerDetail(customer, false), 150);
+  };
+  overlay.onclick = closeCustomerFloat;
+  document.getElementById('customer-float-close').onclick = closeCustomerFloat;
+}
+
+function closeCustomerFloat() {
+  document.getElementById('customer-float-overlay').classList.remove('active');
+  document.getElementById('customer-float-panel').classList.remove('active');
+}
+
+function buildAgendaContent(customer, lastFollowText) {
+  const items = [];
+  const nextFollowText = formatNextFollowDate(customer.nextFollowDate);
+  items.push('🔹 下次联系日期：' + (nextFollowText !== '-' ? nextFollowText : '未设定'));
+  if (customer.product) items.push('🔹 意向产品：' + escapeHTML(customer.product));
+  if (customer.budget) items.push('🔹 预算范围：' + escapeHTML(customer.budget));
+  if (lastFollowText && lastFollowText !== '暂无跟进记录') {
+    items.push('🔹 上次沟通要点：' + escapeHTML(lastFollowText.length > 60 ? lastFollowText.slice(0, 60) + '…' : lastFollowText));
+  }
+  if (customer.remark && customer.remark !== (customer.remarkHistory && customer.remarkHistory.length > 0 ? customer.remarkHistory[0].text : '')) {
+    items.push('🔹 跟进备注：' + escapeHTML(customer.remark.length > 60 ? customer.remark.slice(0, 60) + '…' : customer.remark));
+  }
+  if (items.length === 1) {
+    items.push('🔹 暂无详细沟通要点，请补充客户信息');
+  }
+  return items.join('\n');
+}
+
 function drawSourcePie() {
   const canvas = document.getElementById('chart-source');
   if (!canvas) return;
@@ -3001,7 +4055,7 @@ function drawSourcePie() {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
   const counts = {};
-  (Store.data.customers || []).forEach(c => {
+  (Store.data.customers || []).filter(c => c.deleted !== true).forEach(c => {
     const k = c.source || '未填写';
     counts[k] = (counts[k] || 0) + 1;
   });
@@ -3063,7 +4117,7 @@ function drawTrendBar() {
     const next = new Date(d); next.setMonth(next.getMonth() + 1);
     months.push({ label: (d.getMonth()+1) + '月', start: startMs, end: next.getTime(), count: 0 });
   }
-  (Store.data.customers || []).forEach(c => {
+  (Store.data.customers || []).filter(c => c.deleted !== true).forEach(c => {
     const m = months.find(m => c.createdAt >= m.start && c.createdAt < m.end);
     if (m) m.count++;
   });
@@ -3091,156 +4145,721 @@ function drawTrendBar() {
 /* ================================================================
    模块 11：BI 看板 - 商业智能数据分析
    ================================================================ */
+// Canvas初始化 - 宽度从父容器获取，同时锁定style.width防止CSS拉伸
+function initHiDPSCanvas(canvas, h) {
+  const dpr = window.devicePixelRatio || 1;
+  const parent = canvas.parentElement;
+  let w = Math.max(parent ? parent.clientWidth : 400, 200);
+  h = Math.max(Math.round(h), 40);
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
+  return { ctx, W: w, H: h, dpr };
+}
+
+// 约束Y坐标不超出可见区域
+function clampY(y, minY, maxY) { return Math.max(minY, Math.min(y, maxY)); }
+
+// ── 共用绘图工具 ──────────────────────────────────────────────
+// 圆角矩形（兼容旧浏览器）
+function roundRect(ctx, x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  r = Math.max(r, 0);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+// 只有顶部圆角的矩形（用于柱状图）
+function roundRectTop(ctx, x, y, w, h, r) {
+  if (h <= 0) { ctx.beginPath(); return; }
+  if (h < r) r = h;
+  r = Math.max(r, 0);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function lightenColor(hex, factor) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const lr = Math.min(255, Math.round(r + (255 - r) * factor));
+  const lg = Math.min(255, Math.round(g + (255 - g) * factor));
+  const lb = Math.min(255, Math.round(b + (255 - b) * factor));
+  return '#' + [lr, lg, lb].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+// easeOut 缓动动画帧驱动器（DURATION ms）
+function animateChart(duration, drawFn) {
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+    drawFn(ease);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+// 读取主题颜色
+function getThemeColors() {
+  const style = getComputedStyle(document.documentElement);
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return {
+    isDark,
+    bg:       style.getPropertyValue('--bg-primary').trim()    || (isDark ? '#0f172a' : '#ffffff'),
+    bgSec:    style.getPropertyValue('--bg-secondary').trim()  || (isDark ? '#1e293b' : '#f8fafc'),
+    bgTer:    style.getPropertyValue('--bg-tertiary').trim()   || (isDark ? '#334155' : '#f1f5f9'),
+    text:     isDark ? '#f1f5f9' : '#1e293b',
+    textSec:  isDark ? '#94a3b8' : '#64748b',
+    textMut:  isDark ? '#64748b' : '#94a3b8',
+    border:   style.getPropertyValue('--border-color').trim()  || (isDark ? '#334155' : '#e2e8f0'),
+    accent:   '#2563eb',
+  };
+}
+// 标准 Canvas 字体（防止系统字体差异导致错位）
+const BI_FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+// 绘制 Y 轴辅助线
+function drawGridLines(ctx, W, H, padding, maxVal, steps, tc) {
+  ctx.setLineDash([3, 4]);
+  ctx.lineWidth = 0.8;
+  for (let i = 1; i <= steps; i++) {
+    const y = padding.top + (H - padding.top - padding.bottom) * (1 - i / steps);
+    ctx.strokeStyle = tc.isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+    ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(W - padding.right, y); ctx.stroke();
+    const label = Math.round(maxVal * i / steps);
+    ctx.fillStyle = tc.textMut;
+    ctx.font = `10px ${BI_FONT}`;
+    ctx.textAlign = 'right';
+    ctx.fillText(label, padding.left - 5, y + 3.5);
+  }
+  ctx.setLineDash([]);
+}
+
+function renderAllBICharts(list) {
+  const charts = [
+    { name: 'BILevel',       fn: drawBILevelChart },
+    { name: 'BISource',      fn: drawBISourceChart },
+    { name: 'BIFunnel',      fn: drawBIFunnelChart },
+    { name: 'BIMonthly',     fn: drawBIMonthlyChart },
+    { name: 'BIChannel',     fn: drawBIChannelChart },
+    { name: 'BIProvince',    fn: drawBIProvinceChart },
+    { name: 'BITagRank',     fn: drawBITagRank },
+    { name: 'BIFollowup',    fn: drawBIFollowupChart },
+    { name: 'BIProduct',     fn: drawBIProductChart },
+    { name: 'BIDemographic', fn: drawBIDemographicChart }
+  ];
+  for (const c of charts) {
+    try { c.fn(list); } catch (e) { console.error('BI chart error [' + c.name + ']:', e); }
+  }
+}
+
+// ========== 异常智能预警 ==========
+function renderBIAlerts(list, total, todayStart) {
+  const bar = document.getElementById('bi-alert-bar');
+  const meta = document.getElementById('bi-alert-meta');
+  if (!bar) return;
+  const now = Date.now();
+  const alerts = [];
+
+  // 业绩缺口预警：本月成交 vs 本月新增客户期望转化率(30%)
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const monthDeal = list.filter(c => c.status === '已成交' && c.updatedAt >= monthStart.getTime()).length;
+  const monthNewCount = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+  const expectedDeal = Math.max(Math.round(monthNewCount * 0.3), 1);
+  if (monthNewCount > 0 && monthDeal < expectedDeal) {
+    alerts.push({ type: 'danger', icon: '📉', title: '业绩缺口', desc: `本月成交 ${monthDeal} 单，低于本月新增客户预期转化 ${expectedDeal} 单，缺口 ${expectedDeal - monthDeal} 单` });
+  }
+
+  // 跟进逾期预警
+  const overdueList = list.filter(c => c.status === '跟进中' && c.nextFollowDate).filter(c => {
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft < now;
+  });
+  if (overdueList.length > 0) {
+    alerts.push({ type: 'danger', icon: '⏰', title: '跟进逾期', desc: `${overdueList.length} 位客户已过跟进日期，最早逾期 ${overdueList.slice(0,3).map(c => c.name).join('、')} 等` });
+  }
+
+  // 高价值客户异动（A级客户最近7天未跟进）
+  const weekAgo = now - 7 * 86400000;
+  const topLevels = getLevels().slice(0, 2).map(l => l.name);
+  const topLevelName = topLevels[0] || (getLevels()[0] || {}).name || '';
+  const stagnantA = list.filter(c => topLevels.includes(c.level) && c.status !== '已成交' && c.status !== '流失' && (!c.remarkHistory || c.remarkHistory.length === 0 || c.remarkHistory[0].time < weekAgo));
+  if (stagnantA.length > 0) {
+    alerts.push({ type: 'warn', icon: '👑', title: '高价值客户异动', desc: `${stagnantA.length} 位${topLevelName}级客户超过7天未跟进，请优先联系 ${stagnantA.slice(0,2).map(c => c.name).join('、')} 等` });
+  }
+
+  // 流失风险预警
+  const lostCount = list.filter(c => c.status === '流失').length;
+  if (total > 0 && lostCount > 0) {
+    const lostRate = (lostCount / total * 100).toFixed(1);
+    if (parseFloat(lostRate) > 10) {
+      alerts.push({ type: 'warn', icon: '🚩', title: '流失率偏高', desc: `客户流失率 ${lostRate}%，超过10%警戒线，共 ${lostCount} 位客户流失` });
+    }
+  }
+
+  // 今日待跟进
+  const todayFollow = list.filter(c => {
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft >= todayStart.getTime() && ft < todayStart.getTime() + 86400000;
+  }).length;
+  if (todayFollow > 0) {
+    alerts.unshift({ type: 'info', icon: '📌', title: '今日待跟进', desc: `今天有 ${todayFollow} 位客户需要跟进` });
+  }
+
+  if (alerts.length === 0) {
+    alerts.push({ type: 'success', icon: '✅', title: '一切正常', desc: '当前无异常预警，所有指标均在合理范围内' });
+  }
+
+  bar.innerHTML = `<div class="bi-alert-grid">${alerts.map(a => `
+    <div class="bi-alert-card ${a.type}">
+      <span class="bi-alert-icon">${a.icon}</span>
+      <div class="bi-alert-body">
+        <div class="bi-alert-title">${escapeHTML(a.title)}</div>
+        <div class="bi-alert-desc">${escapeHTML(a.desc)}</div>
+      </div>
+    </div>
+  `).join('')}</div>`;
+  if (meta) meta.textContent = `${alerts.filter(a => a.type === 'danger' || a.type === 'warn').length} 项告警`;
+}
+
+// ========== 趋势预测分析 ==========
+function renderBIPredictions(list, total) {
+  const grid = document.getElementById('bi-predict-grid');
+  const churnList = document.getElementById('bi-churn-list');
+  if (!grid) return;
+  if (!churnList) { /* churnList DOM 缺失时只渲染预测卡片，不报错 */ }
+  const now = Date.now();
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const lastMonthStart = new Date(monthStart); lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+  const weekAgo = now - 7 * 86400000;
+
+  // 月度新增速度
+  const monthNew = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+  const lastMonthNew = list.filter(c => c.createdAt >= lastMonthStart.getTime() && c.createdAt < monthStart.getTime()).length;
+  const growthRate = lastMonthNew > 0 ? (((monthNew - lastMonthNew) / lastMonthNew) * 100).toFixed(1) : monthNew > 0 ? '+100' : '0';
+
+  // 预计本月成交（基于半月的成交速度推算）
+  const halfMonthDeal = list.filter(c => c.status === '已成交' && c.updatedAt >= monthStart.getTime() && c.updatedAt < now).length;
+  const daysPassed = Math.max((now - monthStart.getTime()) / 86400000, 1);
+  const predictedMonthDeal = Math.round(halfMonthDeal / daysPassed * 30);
+  const expectedMonthDeal = Math.round(total * 0.15);
+
+  // 跟进转化率趋势
+  const recentFollowups = list.filter(c => c.remarkHistory && c.remarkHistory.length > 0 && c.remarkHistory[0].time > weekAgo).length;
+  const recentDeals = list.filter(c => c.status === '已成交' && c.updatedAt > weekAgo).length;
+  const followConversion = recentFollowups > 0 ? ((recentDeals / recentFollowups) * 100).toFixed(1) : '0';
+
+  // 预估业绩
+  const avgDealValue = list.filter(c => c.status === '已成交' && c.budget).reduce((s, c) => {
+    const m = String(c.budget).match(/(\d+)/);
+    return m ? s + parseInt(m[1]) * (c.budget.includes('万') ? 10000 : 1) : s;
+  }, 0) / Math.max(list.filter(c => c.status === '已成交').length, 1);
+
+  // 预计本月新增：按已过天数线性外推到整月
+  const daysPassedNew = Math.max((Date.now() - monthStart.getTime()) / 86400000, 1);
+  const daysInMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0).getDate();
+  const predictedMonthNew = daysPassedNew >= daysInMonth ? monthNew : Math.round(monthNew / daysPassedNew * daysInMonth);
+  const cards = [
+    { title: '预计本月新增', value: predictedMonthNew, sub: `当前 ${monthNew} · 增速 ${growthRate}%`, trend: parseFloat(growthRate) >= 0 ? 'up' : 'down' },
+    { title: '预计本月成交', value: predictedMonthDeal, sub: `当前 ${halfMonthDeal} · 日进度 ${(halfMonthDeal / daysPassed).toFixed(1)} 单/天`, trend: predictedMonthDeal >= expectedMonthDeal ? 'up' : 'down' },
+    { title: '跟进转化率', value: followConversion + '%', sub: `近7天 ${recentDeals} 单成交`, trend: parseFloat(followConversion) >= 15 ? 'up' : 'down' },
+    { title: '预估平均客单价', value: avgDealValue >= 10000 ? (avgDealValue/10000).toFixed(1) + '万' : Math.round(avgDealValue).toLocaleString(), sub: '已成交客户均值', trend: 'up' }
+  ];
+
+  grid.innerHTML = cards.map(c => `
+    <div class="bi-predict-card">
+      <div class="bi-predict-title">${escapeHTML(c.title)}</div>
+      <div class="bi-predict-value">${c.value}</div>
+      <div class="bi-predict-sub">${escapeHTML(c.sub)}</div>
+      <div class="bi-predict-trend ${c.trend}">${c.trend === 'up' ? '📈 增长趋势' : '📉 需关注'}</div>
+    </div>
+  `).join('');
+
+  // 流失风险预判
+  const atRisk = list.filter(c => {
+    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
+    const daysSinceLast = c.remarkHistory && c.remarkHistory.length > 0
+      ? Math.floor((now - c.remarkHistory[0].time) / 86400000)
+      : Math.floor((now - c.createdAt) / 86400000);
+    return daysSinceLast > 14;
+  }).sort((a, b) => {
+    const aDays = a.remarkHistory && a.remarkHistory.length > 0 ? Math.floor((now - a.remarkHistory[0].time) / 86400000) : Math.floor((now - a.createdAt) / 86400000);
+    const bDays = b.remarkHistory && b.remarkHistory.length > 0 ? Math.floor((now - b.remarkHistory[0].time) / 86400000) : Math.floor((now - b.createdAt) / 86400000);
+    return bDays - aDays;
+  }).slice(0, 8);
+
+  if (!churnList) { /* DOM 不存在时跳过渲染 */ }
+  else if (atRisk.length === 0) {
+    churnList.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px;">暂无流失风险客户</div>';
+  } else {
+    churnList.innerHTML = atRisk.map(c => {
+      const days = c.remarkHistory && c.remarkHistory.length > 0
+        ? Math.floor((now - c.remarkHistory[0].time) / 86400000)
+        : Math.floor((now - c.createdAt) / 86400000);
+      const risk = days > 30 ? 'high' : days > 21 ? 'medium' : 'low';
+      const riskLabel = days > 30 ? '高风险' : days > 21 ? '中风险' : '低风险';
+      return `<div class="bi-churn-item">
+        <span class="bi-churn-name">${escapeHTML(c.name)}</span>
+        <span style="font-size:11px;color:var(--text-muted);">${c.level || ''}级 · ${days}天未跟进</span>
+        <span class="bi-churn-risk ${risk}">${riskLabel}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ========== 自动化报表 ==========
+let _lastReport = '';
+
+function generateBIReport(type) {
+  const list = (Store.data.customers || []).filter(c => c.deleted !== true);
+  const now = Date.now();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay()); weekStart.setHours(0,0,0,0);
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const lastMonthStart = new Date(monthStart); lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+
+  let timeRange, title;
+  if (type === 'daily') { timeRange = '今日'; title = '日报'; }
+  else if (type === 'weekly') { timeRange = '本周'; title = '周报'; }
+  else { timeRange = '本月'; title = '月报'; }
+
+  const timeStart = type === 'daily' ? today.getTime() : type === 'weekly' ? weekStart.getTime() : monthStart.getTime();
+  const timeLabel = type === 'daily' ? `今日 ${new Date().toLocaleDateString('zh-CN')}` :
+    type === 'weekly' ? `本周 ${weekStart.toLocaleDateString('zh-CN')} - ${new Date().toLocaleDateString('zh-CN')}` :
+    `本月 ${monthStart.toLocaleDateString('zh-CN')} - ${new Date().toLocaleDateString('zh-CN')}`;
+
+  const newCount = list.filter(c => c.createdAt >= timeStart).length;
+  const dealCount = list.filter(c => c.status === '已成交').length;
+  const followCount = list.filter(c => c.status === '跟进中').length;
+  const uncontacted = list.filter(c => c.status === '未沟通').length;
+  const lostCount = list.filter(c => c.status === '流失').length;
+  const topLevelsReport = getLevels().slice(0, 2).map(l => l.name);
+  const overdue = list.filter(c => c.status === '跟进中' && c.nextFollowDate).filter(c => {
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft < now;
+  }).length;
+  const channelGeo = list.filter(c => c.channel === 'geo').length;
+  const channel360 = list.filter(c => c.channel === '360').length;
+  const channelBing = list.filter(c => c.channel === 'bing').length;
+
+  const total = list.length;
+  const lines = [];
+  lines.push(`==============================`);
+  lines.push(`  CRM ${title} - ${timeLabel}`);
+  lines.push(`  生成时间: ${new Date().toLocaleString('zh-CN')}`);
+  lines.push(`  数据范围: ${timeRange}`);
+  lines.push(`==============================`);
+  lines.push('');
+  lines.push(`【客户总览】`);
+  lines.push(`  有效客户总数: ${total} 位`);
+  lines.push(`  ${timeRange}新增: ${newCount} 位`);
+  if (type !== 'daily') {
+    const lastCount = list.filter(c => c.createdAt >= lastMonthStart.getTime() && c.createdAt < monthStart.getTime()).length;
+    lines.push(`  上月新增: ${lastCount} 位`);
+  }
+  lines.push('');
+  lines.push(`【成交分析】`);
+  lines.push(`  累计成交: ${dealCount} 位 (${total ? (dealCount/total*100).toFixed(1) : 0}%)`);
+  lines.push(`  跟进中: ${followCount} 位 (${total ? (followCount/total*100).toFixed(1) : 0}%)`);
+  lines.push(`  未联系: ${uncontacted} 位 (${total ? (uncontacted/total*100).toFixed(1) : 0}%)`);
+  lines.push(`  已流失: ${lostCount} 位`);
+  lines.push('');
+  lines.push(`【等级分布】`);
+  const allLevels = getLevels();
+  allLevels.forEach(l => {
+    const cnt = list.filter(c => c.level === l.name).length;
+    lines.push(`  ${l.name}级客户: ${cnt} 位 (${total ? (cnt/total*100).toFixed(1) : 0}%)`);
+  });
+  lines.push('');
+  lines.push(`【渠道分布】`);
+  lines.push(`  GEO: ${channelGeo} 位`);
+  lines.push(`  360: ${channel360} 位`);
+  lines.push(`  Bing: ${channelBing} 位`);
+  lines.push(`  未分配: ${total - list.filter(c => c.channel).length} 位`);
+  lines.push('');
+  lines.push(`【预警信息】`);
+  lines.push(`  跟进逾期: ${overdue} 位`);
+  lines.push(`  今日待跟进: ${list.filter(c => {
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft >= today.getTime() && ft < today.getTime() + 86400000;
+  }).length} 位`);
+  lines.push(`  超过14天未跟进: ${list.filter(c => {
+    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
+    const days = c.remarkHistory && c.remarkHistory.length > 0 ? Math.floor((now - c.remarkHistory[0].time) / 86400000) : Math.floor((now - c.createdAt) / 86400000);
+    return days > 14;
+  }).length} 位`);
+  lines.push('');
+  lines.push(`【操作建议】`);
+  if (overdue > 0) lines.push(`  ⚠️ ${overdue} 位客户跟进已逾期，请优先联系`);
+  if (uncontacted > 0) lines.push(`  💡 ${uncontacted} 位客户尚未沟通，建议分配跟进`);
+  if (topLevelsReport.length > 0 && overdue > 0) lines.push(`  🔔 关注${topLevelsReport[0]}级客户跟进状态，防止高价值客户流失`);
+  lines.push(`  报表由CRM系统自动生成`);
+
+  _lastReport = lines.join('\n');
+  const preview = document.getElementById('bi-report-preview');
+  if (preview) preview.textContent = _lastReport;
+  showToast(`${title}已生成`, 'success');
+}
+
+function exportBIReportCSV() {
+  if (!_lastReport) { showToast('请先生成报表', 'error'); return; }
+  // 生成带 BOM 的 UTF-8 文本文件，确保 Excel / 记事本正常显示中文
+  const bom = '\uFEFF';
+  const content = bom + _lastReport;
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `CRM报表_${new Date().toISOString().slice(0,10)}.txt`;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  showToast('报表已导出', 'success');
+}
+
 function renderBIPage() {
   const list = (Store.data.customers || []).filter(c => c.deleted !== true);
+  const allCustomers = Store.data.customers || [];
+  const now = Date.now();
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay()); weekStart.setHours(0,0,0,0);
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
-  const now = Date.now();
+  const lastMonthStart = new Date(monthStart); lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
 
-  // ========== KPI 指标卡 ==========
+  // 数据元信息
+  const metaEl = document.getElementById('bi-data-meta');
+  if (metaEl) metaEl.textContent = `数据更新: ${new Date().toLocaleString('zh-CN')} | 有效客户 ${list.length} 位`;
+
+  // ========== 12项核心KPI ==========
   const total = list.length;
   const weekNew = list.filter(c => c.createdAt >= weekStart.getTime()).length;
   const monthNew = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+  const lastMonthNew = list.filter(c => c.createdAt >= lastMonthStart.getTime() && c.createdAt < monthStart.getTime()).length;
   const dealCount = list.filter(c => c.status === '已成交').length;
   const followCount = list.filter(c => c.status === '跟进中').length;
-  const contactRate = total ? Math.round((list.filter(c => c.status !== '未沟通').length / total) * 100) : 0;
+  const uncontacted = list.filter(c => c.status === '未沟通').length;
+  const contactRate = total ? ((total - uncontacted) / total * 100).toFixed(1) : '0';
+  const monthDeal = list.filter(c => c.status === '已成交' && c.updatedAt >= monthStart.getTime()).length;
+  const sortedLevels = getLevels();
+  const topLevelA = sortedLevels[0] ? list.filter(c => c.level === sortedLevels[0].name).length : 0;
+  const topLevelB = sortedLevels[1] ? list.filter(c => c.level === sortedLevels[1].name).length : 0;
+  const topLevelAName = sortedLevels[0] ? sortedLevels[0].name : '-';
+  const topLevelBName = sortedLevels[1] ? sortedLevels[1].name : '-';
+  const hasChannel = list.filter(c => c.channel).length;
+  const deletedCount = allCustomers.filter(c => c.deleted === true).length;
+
   const kpis = [
-    { label: '客户总数', value: total, sub: '总保有量' },
-    { label: '本周新增', value: weekNew, sub: '本周新增客户' },
-    { label: '本月新增', value: monthNew, sub: '本月新增客户' },
-    { label: '本月成交', value: list.filter(c => c.status === '已成交' && c.updatedAt >= monthStart.getTime()).length, sub: '本月成交客户' },
-    { label: '跟进中', value: followCount, sub: '占比 ' + (total ? (followCount/total*100).toFixed(1) : '0') + '%' },
-    { label: '成交客户', value: dealCount, sub: '成交率 ' + (total ? (dealCount/total*100).toFixed(1) : '0') + '%' },
-    { label: '联系率', value: contactRate + '%', sub: '已联系占比' },
-    { label: '作废客户', value: (Store.data.customers || []).filter(c => c.deleted === true).length, sub: '已作废' }
+    { label: '客户总数', value: total, sub: '总保有量', accent: 'info' },
+    { label: '本周新增', value: weekNew, sub: '本周录入', accent: 'info' },
+    { label: '本月新增', value: monthNew, sub: lastMonthNew ? `环比 ${lastMonthNew} ${monthNew >= lastMonthNew ? '↑' : '↓'}` : '', accent: monthNew >= (lastMonthNew || 0) ? 'success' : 'danger' },
+    { label: '本月成交', value: monthDeal, sub: '本月成交客户', accent: 'success' },
+    { label: '跟进中', value: followCount, sub: `占比 ${total ? (followCount/total*100).toFixed(1) : 0}%`, accent: 'warn' },
+    { label: '成交客户', value: dealCount, sub: `成交率 ${total ? (dealCount/total*100).toFixed(1) : 0}%`, accent: 'success' },
+    { label: '未联系', value: uncontacted, sub: `占比 ${total ? (uncontacted/total*100).toFixed(1) : 0}%`, accent: uncontacted > 0 ? 'danger' : 'success' },
+    { label: '联系率', value: contactRate + '%', sub: '已联系占比', accent: parseFloat(contactRate) >= 80 ? 'success' : 'warn' },
+    { label: topLevelAName + '级客户', value: topLevelA, sub: `高意向 ${total ? (topLevelA/total*100).toFixed(1) : 0}%`, accent: 'success' },
+    { label: topLevelBName + '级客户', value: topLevelB, sub: `中等意向`, accent: 'warn' },
+    { label: '渠道分配', value: hasChannel, sub: `分配率 ${total ? (hasChannel/total*100).toFixed(1) : 0}%`, accent: 'info' },
+    { label: '作废客户', value: deletedCount, sub: '已作废', accent: 'danger' }
   ];
   const kpiEl = document.getElementById('bi-kpi-row');
   if (kpiEl) {
-    kpiEl.innerHTML = kpis.map(k => `<div class="bi-kpi-card"><div class="bi-kpi-label">${escapeHTML(k.label)}</div><div class="bi-kpi-value">${k.value}</div><div class="bi-kpi-sub">${escapeHTML(k.sub)}</div></div>`).join('');
+    kpiEl.innerHTML = kpis.map((k, i) => `<div class="bi-kpi-card" data-accent="${k.accent}" style="animation-delay:${i * 40}ms"><div class="bi-kpi-label">${escapeHTML(k.label)}</div><div class="bi-kpi-value">${k.value}</div><div class="bi-kpi-sub">${escapeHTML(k.sub)}</div></div>`).join('');
   }
 
-  // 渲染各个图表
-  drawBILevelChart(list);
-  drawBISourceChart(list);
-  drawBIFunnelChart(list);
-  drawBIMonthlyChart(list);
-  drawBIChannelChart(list);
-  drawBIProvinceChart(list);
-  drawBITagRank(list);
-  drawBIFollowupChart(list);
-  drawBIInsights(list);
+  // ========== 多维数据分析矩阵 ==========
+  renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, hasChannel, todayStart);
+
+  // ========== 异常智能预警 ==========
+  renderBIAlerts(list, total, todayStart);
+
+  // ========== 趋势预测分析 ==========
+  renderBIPredictions(list, total);
+
+  // ========== 图表渲染（延迟到布局完成后再绘制） ==========
+  setTimeout(() => renderAllBICharts(list), 50);
 }
 
-// 等级分布柱状图
+// 多维数据分析矩阵
+function renderBIAnalysisGrid(list, total, dealCount, followCount, uncontacted, hasChannel, todayStart) {
+  const el = document.getElementById('bi-analysis-grid');
+  if (!el) return;
+  const allLevels = getLevels();
+  const geoCount = list.filter(c => c.channel === 'geo').length;
+  const count360 = list.filter(c => c.channel === '360').length;
+  const bingCount = list.filter(c => c.channel === 'bing').length;
+  const noChannel = total - hasChannel;
+
+  const levelItems = allLevels.map(l => {
+    const cnt = list.filter(c => c.level === l.name).length;
+    return { label: l.name + '级', value: cnt, pct: total ? (cnt/total*100).toFixed(1) : 0, color: l.color };
+  });
+
+  const cards = [
+    {
+      title: '📊 等级分布',
+      items: levelItems
+    },
+    {
+      title: '📈 状态分布',
+      items: [
+        { label: '已成交', value: dealCount, pct: total ? (dealCount/total*100).toFixed(1) : 0, color: '#16a34a' },
+        { label: '跟进中', value: followCount, pct: total ? (followCount/total*100).toFixed(1) : 0, color: '#f59e0b' },
+        { label: '未沟通', value: uncontacted, pct: total ? (uncontacted/total*100).toFixed(1) : 0, color: '#6b7280' }
+      ]
+    },
+    {
+      title: '🌍 渠道分布',
+      items: [
+        { label: 'GEO渠道', value: geoCount, pct: total ? (geoCount/total*100).toFixed(1) : 0, color: '#2563eb' },
+        { label: '360渠道', value: count360, pct: total ? (count360/total*100).toFixed(1) : 0, color: '#16a34a' },
+        { label: 'Bing渠道', value: bingCount, pct: total ? (bingCount/total*100).toFixed(1) : 0, color: '#d97706' },
+        { label: '未分配', value: noChannel, pct: total ? (noChannel/total*100).toFixed(1) : 0, color: '#9ca3af' }
+      ]
+    },
+    {
+      title: '⏰ 跟进提醒',
+      items: (() => {
+        const now2 = Date.now();
+        const overdue = list.filter(c => c.status === '跟进中' && c.nextFollowDate).filter(c => {
+          const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+          return ft !== null && ft < now2;
+        }).length;
+        const todayFollow = list.filter(c => {
+          if (!c.nextFollowDate) return false;
+          const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+          return ft !== null && ft >= todayStart.getTime() && ft < todayStart.getTime() + 86400000;
+        }).length;
+        return [
+          { label: '今日待跟进', value: todayFollow, pct: '', color: '#2563eb' },
+          { label: '已逾期', value: overdue, pct: overdue > 0 ? '需处理' : '', color: overdue > 0 ? '#dc2626' : '#16a34a' }
+        ];
+      })()
+    }
+  ];
+
+  el.innerHTML = cards.map((card, ci) => `
+    <div class="bi-analysis-card" style="animation-delay:${ci * 60}ms">
+      <div class="bi-analysis-title">${card.title}</div>
+      <div class="bi-analysis-list">
+        ${card.items.map((item, ii) => `
+          <div class="bi-analysis-item">
+            <span class="bi-label">${escapeHTML(item.label)}</span>
+            <div class="bi-progress-bar">
+              <div class="bi-progress-fill" style="width:0%;background:linear-gradient(90deg,${item.color},${item.color}aa);transition:width 0.7s cubic-bezier(.4,0,.2,1) ${(ci * 4 + ii) * 55}ms;" data-w="${item.pct || 0}"></div>
+            </div>
+            <span class="bi-value">${item.value}</span>
+            <span class="bi-analysis-pct">${item.pct ? item.pct + '%' : ''}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  // 下一帧触发进度条动画
+  requestAnimationFrame(() => {
+    el.querySelectorAll('.bi-progress-fill').forEach(bar => {
+      bar.style.width = bar.dataset.w + '%';
+    });
+  });
+}
+
+// 等级分布柱状图（动画 + 圆角 + 高清）
 function drawBILevelChart(list) {
   const canvas = document.getElementById('bi-chart-level'); if (!canvas) return;
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-  const W = canvas.width, H = canvas.height;
-  const counts = { A: 0, B: 0, C: 0, D: 0 };
-  list.forEach(c => { const k = c.level || 'C'; if (counts[k] !== undefined) counts[k]++; });
-  const entries = Object.entries(counts);
-  const maxVal = Math.max(...entries.map(e=>e[1]), 1);
-  const padding = { top: 20, bottom: 30, left: 30, right: 10 };
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 260);
+  const tc = getThemeColors();
+  const levels = getLevels();
+  const counts = {};
+  levels.forEach(l => { counts[l.name] = 0; });
+  list.forEach(c => { const k = c.level || (levels[0] ? levels[0].name : ''); if (counts[k] !== undefined) counts[k]++; else counts[k] = 1; });
+  const entries = levels.map(l => [l.name, counts[l.name] || 0]);
+  const maxVal = Math.max(...entries.map(e => e[1]), 1);
+  const padding = { top: 44, bottom: 40, left: 44, right: 18 };
   const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
-  const barW = chartW / entries.length * 0.6;
-  const colors = ['#dc2626', '#f59e0b', '#3b82f6', '#6b7280'];
-  ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
-  entries.forEach((e, i) => {
-    const x = padding.left + i * (chartW / entries.length) + (chartW / entries.length - barW) / 2;
-    const bh = (e[1] / maxVal) * chartH;
-    const y = padding.top + chartH - bh;
-    ctx.fillStyle = colors[i];
-    ctx.beginPath(); ctx.roundRect(x, y, barW, bh, 4); ctx.fill();
-    ctx.fillStyle = '#9ca3af'; ctx.fillText(e[0], x + barW/2, H - padding.bottom + 14);
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#111';
-    ctx.font = 'bold 13px sans-serif'; ctx.fillText(String(e[1]), x + barW/2, y - 6);
-    ctx.font = '12px sans-serif';
+  const barW = Math.min(chartW / Math.max(entries.length, 1) * 0.52, 56);
+  const gap = chartW / Math.max(entries.length, 1);
+  const colors = entries.map(e => { const l = getLevelByName(e[0]); return l ? l.color : '#94a3b8'; });
+  const gradEnds = entries.map(e => { const l = getLevelByName(e[0]); return l ? lightenColor(l.color, 0.4) : '#cbd5e1'; });
+  const labels = entries.map(e => e[0]);
+
+  drawGridLines(ctx, W, H, padding, maxVal, 4, tc);
+
+  animateChart(600, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+    drawGridLines(ctx, W, H, padding, maxVal, 4, tc);
+    ctx.textAlign = 'center';
+    entries.forEach((e, i) => {
+      const x = padding.left + i * gap + (gap - barW) / 2;
+      const fullH = Math.max((e[1] / maxVal) * chartH, 2);
+      const bh = fullH * ease;
+      const y = padding.top + chartH - bh;
+      const grad = ctx.createLinearGradient(x, y, x, padding.top + chartH);
+      grad.addColorStop(0, colors[i]);
+      grad.addColorStop(1, gradEnds[i]);
+      ctx.fillStyle = grad;
+      roundRectTop(ctx, x, y, barW, bh, 5);
+      ctx.fill();
+      ctx.fillStyle = tc.textSec;
+      ctx.font = `12px ${BI_FONT}`;
+      ctx.fillText(labels[i], x + barW / 2, H - padding.bottom + 18);
+      if (ease > 0.7) {
+        const valY = clampY(y - 6, 14, H - 4);
+        ctx.fillStyle = tc.text;
+        ctx.font = `bold 13px ${BI_FONT}`;
+        ctx.fillText(String(e[1]), x + barW / 2, valY);
+        const pct = list.length ? (e[1] / list.length * 100).toFixed(1) : 0;
+        const pctY = clampY(y - 20, 2, H - 4);
+        ctx.fillStyle = tc.textMut;
+        ctx.font = `10px ${BI_FONT}`;
+        ctx.fillText(pct + '%', x + barW / 2, pctY);
+      }
+    });
   });
 }
 
-// 来源分布（环形图）
+// 来源分布（环形图动画 + 高清）
 function drawBISourceChart(list) {
   const canvas = document.getElementById('bi-chart-source'); if (!canvas) return;
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-  const W = canvas.width, H = canvas.height;
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 260);
+  const tc = getThemeColors();
   const counts = {}; list.forEach(c => { const k = c.source || '未填写'; counts[k] = (counts[k]||0)+1; });
-  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 8);
   const total = entries.reduce((s,e) => s+e[1], 0);
   if (total === 0) {
-    ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = tc.textMut; ctx.font = `14px ${BI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('暂无数据', W/2, H/2); return;
   }
-  const cx = W/2, cy = H/2, R = Math.min(W,H)/2 - 30;
-  const palette = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#65a30d','#db2777','#334155'];
-  let start = -Math.PI/2;
-  entries.forEach((e, i) => {
-    const angle = (e[1] / total) * Math.PI * 2;
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, start, start + angle); ctx.closePath();
-    ctx.fillStyle = palette[i % palette.length]; ctx.fill();
-    start += angle;
+  const legendW = 120;
+  const cx = (W - legendW) / 2, cy = H / 2;
+  const R = Math.min(cx - 10, H / 2 - 16);
+  const palette = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#65a30d','#db2777'];
+  const angles = entries.map(e => (e[1] / total) * Math.PI * 2);
+
+  animateChart(700, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+    // 扇形（按进度绘制）
+    let start = -Math.PI / 2;
+    const totalAngle = Math.PI * 2 * ease;
+    let drawn = 0;
+    entries.forEach((e, i) => {
+      const a = angles[i];
+      if (drawn >= totalAngle) return;
+      const drawA = Math.min(a, totalAngle - drawn);
+      ctx.beginPath(); ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, start, start + drawA); ctx.closePath();
+      ctx.fillStyle = palette[i % palette.length]; ctx.fill();
+      // 细白间隔
+      ctx.strokeStyle = tc.bg; ctx.lineWidth = 1.5; ctx.stroke();
+      start += a; drawn += drawA;
+    });
+    // 内圈
+    ctx.beginPath(); ctx.arc(cx, cy, R * 0.56, 0, Math.PI * 2);
+    ctx.fillStyle = tc.bg; ctx.fill();
+    if (ease > 0.6) {
+      ctx.fillStyle = tc.text; ctx.font = `bold 22px ${BI_FONT}`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(total), cx, cy - 9);
+      ctx.font = `11px ${BI_FONT}`; ctx.fillStyle = tc.textMut;
+      ctx.fillText('客户总数', cx, cy + 11);
+    }
+    // 图例（右侧固定列，精确对齐）
+    const lx = W - legendW + 8;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    entries.forEach((e, i) => {
+      const ly = 20 + i * 26;
+      if (ly + 10 > H) return;
+      // 圆角色块
+      roundRect(ctx, lx, ly - 5, 11, 11, 3);
+      ctx.fillStyle = palette[i % palette.length]; ctx.fill();
+      const pct = (e[1] / total * 100).toFixed(1);
+      const txt = e[0].length > 5 ? e[0].slice(0,5) + '…' : e[0];
+      ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`;
+      ctx.fillText(txt, lx + 16, ly);
+      ctx.fillStyle = tc.text; ctx.font = `bold 11px ${BI_FONT}`;
+      ctx.fillText(e[1] + ' · ' + pct + '%', lx + 16, ly + 13);
+    });
   });
-  // 内圈
-  ctx.beginPath(); ctx.arc(cx, cy, R * 0.55, 0, Math.PI * 2);
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-secondary').trim() || '#fff'; ctx.fill();
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#111';
-  ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(String(total), cx, cy - 6);
-  ctx.font = '11px sans-serif'; ctx.fillStyle = '#6b7280'; ctx.fillText('客户', cx, cy + 12);
-  // 图例（在canvas下方，通过DOM展示）
-  const parent = canvas.parentElement;
-  const oldLegend = parent.querySelector('.bi-source-legend');
-  if (oldLegend) oldLegend.remove();
-  const legend = document.createElement('div');
-  legend.className = 'bi-source-legend';
-  legend.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;color:var(--text-muted);';
-  legend.innerHTML = entries.map((e,i) => `<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:${palette[i%palette.length]};"></span>${escapeHTML(e[0])} ${e[1]}</span>`).join('');
-  parent.appendChild(legend);
 }
 
-// 成交转化漏斗
+// 成交转化漏斗（动画 + 圆角 + 高清）
 function drawBIFunnelChart(list) {
   const canvas = document.getElementById('bi-chart-funnel'); if (!canvas) return;
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-  const W = canvas.width, H = canvas.height;
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 220);
+  const tc = getThemeColors();
   const stages = ['未沟通','跟进中','已成交'];
   const stageCounts = stages.map(s => list.filter(c => c.status === s).length);
   const maxCount = Math.max(...stageCounts, 1);
-  const padding = { top: 10, bottom: 10, left: 70, right: 10 };
+  const padding = { top: 18, bottom: 18, left: 90, right: 90 };
   const chartW = W - padding.left - padding.right;
-  const barH = 40;
-  const gap = 12;
-  const colors = ['#6b7280', '#f59e0b', '#16a34a'];
-  const totalH = stages.length * barH + (stages.length - 1) * gap;
-  const startY = (H - totalH) / 2;
-  stages.forEach((s, i) => {
-    const w = (stageCounts[i] / maxCount) * chartW;
-    const x = padding.left + (chartW - w) / 2;
-    const y = startY + i * (barH + gap);
-    ctx.fillStyle = colors[i];
-    ctx.beginPath();
-    const r = 6;
-    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + barH - r); ctx.quadraticCurveTo(x + w, y + barH, x + w - r, y + barH);
-    ctx.lineTo(x + r, y + barH); ctx.quadraticCurveTo(x, y + barH, x, y + barH - r);
-    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(s + ': ' + stageCounts[i], W/2, y + barH/2 + 4);
-    // 转化率箭头
-    if (i < stages.length - 1 && stageCounts[i] > 0) {
-      const rate = (stageCounts[i+1] / stageCounts[i] * 100).toFixed(1);
-      ctx.fillStyle = '#9ca3af'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('↓ ' + rate + '%', W/2, y + barH + gap - 2);
-    }
+  const barH = 46;
+  const gap = 18;
+  const colors = ['#94a3b8','#f59e0b','#16a34a'];
+  const gradEnds = ['#cbd5e1','#fde68a','#86efac'];
+  const startY = (H - stages.length * barH - (stages.length-1) * gap) / 2;
+
+  animateChart(650, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+    stages.forEach((s, i) => {
+      const fullW = Math.max((stageCounts[i] / maxCount) * chartW, 48);
+      const w = fullW * ease;
+      const x = W / 2 - w / 2;
+      const y = startY + i * (barH + gap);
+      const grad = ctx.createLinearGradient(x, y, x + w, y + barH);
+      grad.addColorStop(0, colors[i]);
+      grad.addColorStop(1, gradEnds[i]);
+      ctx.fillStyle = grad;
+      roundRect(ctx, x, y, Math.max(w, 2), barH, 8);
+      ctx.fill();
+      if (ease > 0.55) {
+        // 阶段名称
+        ctx.fillStyle = '#fff'; ctx.font = `bold 13px ${BI_FONT}`; ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 4;
+        ctx.fillText(s, W / 2, y + barH / 2 - 5);
+        ctx.fillText(String(stageCounts[i]), W / 2, y + barH / 2 + 12);
+        ctx.shadowBlur = 0;
+        // 左侧百分比
+        const total = stageCounts.reduce((a,b) => a+b, 0);
+        const pct = total > 0 ? (stageCounts[i] / total * 100).toFixed(1) : '0';
+        ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`; ctx.textAlign = 'right';
+        ctx.fillText(pct + '%', x - 8, y + barH / 2 + 4);
+      }
+      // 转化率箭头
+      if (i < stages.length - 1 && stageCounts[i] > 0 && ease > 0.8) {
+        const rate = (stageCounts[i+1] / stageCounts[i] * 100).toFixed(1);
+        ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`; ctx.textAlign = 'center';
+        ctx.fillText('↓ 转化 ' + rate + '%', W / 2, y + barH + gap / 2 + 3);
+      }
+    });
   });
 }
 
-// 月度新增趋势
+// 月度新增趋势（动画折线+柱 + 高清）
 function drawBIMonthlyChart(list) {
   const canvas = document.getElementById('bi-chart-monthly'); if (!canvas) return;
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-  const W = canvas.width, H = canvas.height;
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 250);
+  const tc = getThemeColors();
   const now2 = new Date();
   const months = [];
   for (let i = 11; i >= 0; i--) {
@@ -3253,193 +4872,521 @@ function drawBIMonthlyChart(list) {
     return list.filter(c => c.createdAt >= start && c.createdAt < end).length;
   });
   const maxVal = Math.max(...counts, 1);
-  const padding = { top: 20, bottom: 25, left: 30, right: 10 };
+  const padding = { top: 32, bottom: 32, left: 38, right: 22 };
   const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
-  const barW = chartW / months.length * 0.7;
-  const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
-  gradient.addColorStop(0, '#2563eb'); gradient.addColorStop(1, '#93c5fd');
-  months.forEach((m, i) => {
-    const x = padding.left + i * (chartW / months.length) + (chartW / months.length - barW) / 2;
-    const bh = (counts[i] / maxVal) * chartH;
-    const y = padding.top + chartH - bh;
-    ctx.fillStyle = gradient;
-    ctx.beginPath(); ctx.roundRect(x, y, barW, Math.max(bh, 1), 3); ctx.fill();
-    ctx.fillStyle = '#9ca3af'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(m.label, x + barW/2, H - padding.bottom + 14);
-    if (counts[i] > 0) { ctx.fillStyle = '#6b7280'; ctx.font = '10px sans-serif'; ctx.fillText(String(counts[i]), x + barW/2, y - 4); }
-  });
-  // 平均线
+  const barW = Math.min(chartW / months.length * 0.6, 30);
+  const gap = chartW / months.length;
   const avg = counts.reduce((s,v)=>s+v, 0) / counts.length;
-  const avgY = padding.top + chartH - (avg / maxVal) * chartH;
-  ctx.strokeStyle = '#dc2626'; ctx.setLineDash([4,4]); ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(padding.left, avgY); ctx.lineTo(W - padding.right, avgY); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = '#dc2626'; ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
-  ctx.fillText('月均 ' + avg.toFixed(1), W - padding.right - 50, avgY - 4);
+
+  animateChart(700, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+    drawGridLines(ctx, W, H, padding, maxVal, 4, tc);
+
+    // 柱状
+    months.forEach((m, i) => {
+      const x = padding.left + i * gap + (gap - barW) / 2;
+      const bh = Math.max((counts[i] / maxVal) * chartH * ease, 1);
+      const y = padding.top + chartH - bh;
+      const isCurrent = i === months.length - 1;
+      const grad = ctx.createLinearGradient(x, y, x, padding.top + chartH);
+      grad.addColorStop(0, isCurrent ? '#f59e0b' : '#3b82f6');
+      grad.addColorStop(1, isCurrent ? '#fde68a' : '#bfdbfe');
+      ctx.fillStyle = grad;
+      roundRectTop(ctx, x, y, barW, bh, 4);
+      ctx.fill();
+      // X轴标签（每2个显示一次，防拥挤）
+      if (i % 2 === 0 || i === months.length - 1) {
+        ctx.fillStyle = tc.textMut; ctx.font = `9.5px ${BI_FONT}`; ctx.textAlign = 'center';
+        ctx.fillText(m.label, x + barW / 2, H - padding.bottom + 14);
+      }
+      // 数值标注
+      if (ease > 0.85 && counts[i] > 0) {
+        ctx.fillStyle = isCurrent ? '#d97706' : tc.textSec;
+        ctx.font = `bold 10px ${BI_FONT}`; ctx.textAlign = 'center';
+        ctx.fillText(String(counts[i]), x + barW / 2, clampY(y - 5, 10, H - 4));
+      }
+    });
+
+    // 折线（叠加趋势线）
+    if (ease > 0.3) {
+      const pts = months.map((m, i) => ({
+        x: padding.left + i * gap + gap / 2,
+        y: padding.top + chartH - (counts[i] / maxVal) * chartH
+      }));
+      ctx.beginPath();
+      pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+      ctx.strokeStyle = 'rgba(99,102,241,0.55)'; ctx.lineWidth = 1.8; ctx.setLineDash([4,3]);
+      ctx.stroke(); ctx.setLineDash([]);
+      // 数据点
+      pts.forEach(p => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#6366f1'; ctx.fill();
+      });
+    }
+
+    // 平均线
+    if (ease > 0.7) {
+      const avgY = padding.top + chartH - (avg / maxVal) * chartH;
+      ctx.strokeStyle = '#ef4444'; ctx.setLineDash([5,4]); ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(padding.left, avgY); ctx.lineTo(W - padding.right, avgY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#ef4444'; ctx.font = `bold 10px ${BI_FONT}`; ctx.textAlign = 'right';
+      ctx.fillText('均 ' + avg.toFixed(1), W - padding.right - 2, avgY - 5);
+    }
+  });
 }
 
-// 渠道对比分析
+// 渠道对比分析（动画 + 圆角 + 高清）
 function drawBIChannelChart(list) {
   const canvas = document.getElementById('bi-chart-channel'); if (!canvas) return;
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-  const W = canvas.width, H = canvas.height;
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 260);
+  const tc = getThemeColors();
   const channels = [
-    { key: 'geo', label: 'GEO', color: '#2563eb' },
-    { key: '360', label: '360', color: '#16a34a' },
-    { key: 'bing', label: 'Bing', color: '#d97706' }
+    { key: 'geo', label: 'GEO', color: '#2563eb', light: '#bfdbfe' },
+    { key: '360', label: '360', color: '#16a34a', light: '#bbf7d0' },
+    { key: 'bing', label: 'Bing', color: '#d97706', light: '#fde68a' }
   ];
   const groups = [
-    { label: '客户数', fn: (list, k) => list.filter(c => c.channel === k).length },
-    { label: '成交', fn: (list, k) => list.filter(c => c.channel === k && c.status === '已成交').length },
-    { label: '跟进', fn: (list, k) => list.filter(c => c.channel === k && c.status === '跟进中').length }
+    { label: '客户总数', fn: (l, k) => l.filter(c => c.channel === k).length },
+    { label: '已成交',   fn: (l, k) => l.filter(c => c.channel === k && c.status === '已成交').length },
+    { label: '跟进中',   fn: (l, k) => l.filter(c => c.channel === k && c.status === '跟进中').length }
   ];
-  const padding = { top: 15, bottom: 25, left: 30, right: 10 };
+  const padding = { top: 40, bottom: 34, left: 38, right: 14 };
   const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
   const groupW = chartW / groups.length;
-  const barW = groupW / channels.length * 0.6;
-  // 找最大值
+  const barW = Math.min(groupW / channels.length * 0.55, 28);
   let maxVal = 1;
   groups.forEach(g => channels.forEach(ch => { maxVal = Math.max(maxVal, g.fn(list, ch.key)); }));
-  groups.forEach((g, gi) => {
-    channels.forEach((ch, ci) => {
-      const v = g.fn(list, ch.key);
-      const x = padding.left + gi * groupW + ci * (groupW / channels.length) + (groupW / channels.length - barW) / 2;
-      const bh = (v / maxVal) * chartH;
-      const y = padding.top + chartH - bh;
-      ctx.fillStyle = ch.color;
-      ctx.beginPath(); ctx.roundRect(x, y, barW, Math.max(bh, 1), 3); ctx.fill();
-      if (v > 0) { ctx.fillStyle = '#6b7280'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(String(v), x + barW/2, y - 2); }
+
+  animateChart(650, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+    drawGridLines(ctx, W, H, padding, maxVal, 4, tc);
+    // 图例
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    channels.forEach((ch, i) => {
+      const lx = padding.left + i * 58;
+      roundRect(ctx, lx, 10, 11, 11, 3); ctx.fillStyle = ch.color; ctx.fill();
+      ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`;
+      ctx.fillText(ch.label, lx + 15, 16);
     });
-    ctx.fillStyle = '#9ca3af'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(g.label, padding.left + gi * groupW + groupW/2, H - padding.bottom + 14);
-  });
-  // 图例
-  ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
-  channels.forEach((ch, i) => {
-    const lx = padding.left + i * 80;
-    ctx.fillStyle = ch.color; ctx.fillRect(lx, 6, 10, 10);
-    ctx.fillStyle = '#6b7280'; ctx.fillText(ch.label, lx + 14, 15);
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'center';
+    groups.forEach((g, gi) => {
+      channels.forEach((ch, ci) => {
+        const v = g.fn(list, ch.key);
+        const slotW = groupW / channels.length;
+        const x = padding.left + gi * groupW + ci * slotW + (slotW - barW) / 2;
+        const bh = Math.max((v / maxVal) * chartH * ease, 1);
+        const y = padding.top + chartH - bh;
+        const grad = ctx.createLinearGradient(x, y, x, padding.top + chartH);
+        grad.addColorStop(0, ch.color); grad.addColorStop(1, ch.light);
+        ctx.fillStyle = grad;
+        roundRectTop(ctx, x, y, barW, bh, 4);
+        ctx.fill();
+        if (v > 0 && ease > 0.85) {
+          ctx.fillStyle = tc.textSec; ctx.font = `9.5px ${BI_FONT}`;
+          ctx.fillText(String(v), x + barW / 2, clampY(y - 4, 12, H - 4));
+        }
+      });
+      ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`;
+      ctx.fillText(g.label, padding.left + gi * groupW + groupW / 2, H - padding.bottom + 17);
+    });
   });
 }
 
-// 省份排行 TOP10 水平条
+// 省份排行 TOP10（动画 + 圆角 + 高清）
 function drawBIProvinceChart(list) {
   const canvas = document.getElementById('bi-chart-province'); if (!canvas) return;
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-  const W = canvas.width, H = canvas.height;
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 260);
+  const tc = getThemeColors();
   const counts = {}; list.forEach(c => { const p = c.province || '未知'; counts[p] = (counts[p]||0)+1; });
   const top = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 10);
   if (top.length === 0) {
-    ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('暂无数据', W/2, H/2); return;
+    ctx.fillStyle = tc.textMut; ctx.font = `14px ${BI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('暂无省份数据', W/2, H/2); return;
   }
   const maxVal = top[0][1];
-  const padding = { top: 10, bottom: 10, left: 75, right: 40 };
+  const padding = { top: 8, bottom: 8, left: 72, right: 42 };
   const chartW = W - padding.left - padding.right;
-  const barH = Math.min(18, (H - padding.top - padding.bottom) / top.length - 4);
-  const palette = ['#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#16a34a','#22c55e','#4ade80','#d97706','#f59e0b'];
-  top.forEach((e, i) => {
-    const x = padding.left;
-    const y = padding.top + i * (barH + 4);
-    const bw = Math.max((e[1] / maxVal) * chartW, 4);
-    ctx.fillStyle = palette[i % palette.length];
-    ctx.beginPath(); ctx.roundRect(x, y, bw, barH, 3); ctx.fill();
-    ctx.fillStyle = '#6b7280'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(e[0], x - 4, y + barH/2 + 4);
-    ctx.fillStyle = '#6b7280'; ctx.textAlign = 'left'; ctx.font = '11px sans-serif';
-    ctx.fillText(String(e[1]), x + bw + 4, y + barH/2 + 4);
+  const totalH = H - padding.top - padding.bottom;
+  const rowH = Math.min(22, totalH / top.length - 3);
+  const rowGap = Math.min(4, (totalH - rowH * top.length) / Math.max(top.length - 1, 1));
+  const palette = ['#2563eb','#3b82f6','#60a5fa','#0891b2','#06b6d4','#16a34a','#22c55e','#d97706','#f59e0b','#f472b6'];
+
+  animateChart(600, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+    top.forEach((e, i) => {
+      const x = padding.left;
+      const y = padding.top + i * (rowH + rowGap);
+      const fullW = Math.max((e[1] / maxVal) * chartW, 4);
+      const bw = fullW * ease;
+      // 背景轨道
+      roundRect(ctx, x, y, chartW, rowH, 4);
+      ctx.fillStyle = tc.bgTer; ctx.fill();
+      // 进度条
+      if (bw > 0) {
+        const grad = ctx.createLinearGradient(x, 0, x + fullW, 0);
+        grad.addColorStop(0, palette[i % palette.length]);
+        grad.addColorStop(1, palette[i % palette.length] + '99');
+        ctx.fillStyle = grad;
+        roundRect(ctx, x, y, bw, rowH, 4); ctx.fill();
+      }
+      // 省份名称
+      const label = e[0].length > 4 ? e[0].slice(0,4) + '…' : e[0];
+      ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, x - 6, y + rowH / 2);
+      // 数值
+      if (ease > 0.5) {
+        ctx.fillStyle = tc.text; ctx.font = `bold 11px ${BI_FONT}`; ctx.textAlign = 'left';
+        ctx.fillText(String(e[1]), x + bw + 6, y + rowH / 2);
+        // 百分比
+        const pct = (e[1] / maxVal * 100).toFixed(0);
+        ctx.fillStyle = tc.textMut; ctx.font = `10px ${BI_FONT}`; ctx.textAlign = 'right';
+        ctx.fillText(pct + '%', W - 2, y + rowH / 2);
+      }
+    });
+    ctx.textBaseline = 'alphabetic';
   });
 }
 
-// 标签使用排行（HTML 水平条）
+// 标签使用排行（HTML + CSS动画）
 function drawBITagRank(list) {
   const el = document.getElementById('bi-tag-rank'); if (!el) return;
   const tags = Store.data.tags || [];
-  if (tags.length === 0) { el.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:30px 0;">暂无标签</div>'; return; }
+  if (tags.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px;">暂无标签数据</div>';
+    return;
+  }
   const counts = tags.map(t => ({ tag: t, count: list.filter(c => (c.tags||[]).indexOf(t.id) !== -1).length }));
   counts.sort((a,b) => b.count - a.count);
-  const maxCount = Math.max(...counts.map(c => c.count), 1);
-  el.innerHTML = counts.map(c => `
-    <div class="bi-tag-bar">
-      <span class="bi-tag-bar-label">${escapeHTML(c.tag.name)}</span>
-      <div style="flex:1;background:var(--bg-tertiary);border-radius:4px;overflow:hidden;">
-        <div class="bi-tag-bar-fill" style="width:${(c.count/maxCount*100).toFixed(1)}%;background:${c.tag.color};"></div>
+  const top = counts.slice(0, 10);
+  const maxCount = Math.max(...top.map(c => c.count), 1);
+  // 先渲染宽度0，然后触发动画
+  el.innerHTML = top.map((c, i) => {
+    const pct = (c.count / maxCount * 100).toFixed(1);
+    const textColor = c.count > 0 ? '#fff' : 'transparent';
+    return `<div class="bi-tag-row" style="animation-delay:${i * 50}ms">
+      <span class="bi-tag-name">
+        <span class="bi-tag-dot" style="background:${c.tag.color};"></span>
+        ${escapeHTML(c.tag.name)}
+      </span>
+      <div class="bi-tag-bar-track">
+        <div class="bi-tag-bar-fill2" style="width:0%;background:linear-gradient(90deg,${c.tag.color},${c.tag.color}cc);transition:width 0.7s cubic-bezier(.4,0,.2,1) ${i * 60}ms;" data-pct="${pct}"></div>
+        <span class="bi-tag-bar-text" style="color:${textColor}">${c.count > 0 ? c.count : ''}</span>
       </div>
-      <span class="bi-tag-bar-count">${c.count}</span>
-    </div>
-  `).join('');
+      <span class="bi-tag-count">${c.count}</span>
+    </div>`;
+  }).join('');
+  // 下一帧触发宽度动画
+  requestAnimationFrame(() => {
+    el.querySelectorAll('.bi-tag-bar-fill2').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  });
 }
 
-// 跟进时效分析
+// 跟进时效分析（动画 + 圆角 + 高清）- 只统计活跃客户
 function drawBIFollowupChart(list) {
   const canvas = document.getElementById('bi-chart-followup'); if (!canvas) return;
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-  const W = canvas.width, H = canvas.height;
-  // 统计各客户的跟进天数（从最近一次跟进到今日）
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 250);
+  const tc = getThemeColors();
   const now2 = Date.now();
   const ranges = [
-    { min: 0, max: 1, label: '今日/昨日' },
-    { min: 2, max: 3, label: '2-3天' },
-    { min: 4, max: 7, label: '4-7天' },
-    { min: 8, max: 14, label: '1-2周' },
-    { min: 15, max: 30, label: '2周-1月' },
-    { min: 31, max: Infinity, label: '超过1月' }
+    { min: 0,  max: 1,        label: '今昨日' },
+    { min: 2,  max: 3,        label: '2-3天' },
+    { min: 4,  max: 7,        label: '4-7天' },
+    { min: 8,  max: 14,       label: '1-2周' },
+    { min: 15, max: 30,       label: '2周-1月' },
+    { min: 31, max: Infinity, label: '>1月' }
   ];
   const counts = ranges.map(() => 0);
-  list.forEach(c => {
-    if (!c.remarkHistory || c.remarkHistory.length === 0) {
-      counts[counts.length-1]++;
-      return;
-    }
-    const lastRemark = c.remarkHistory[0];
-    const days = (now2 - lastRemark.time) / 86400000;
+  const activeList = list.filter(c => c.status !== '已成交' && c.status !== '流失');
+  activeList.forEach(c => {
+    const lastFollowTime = c.remarkHistory && c.remarkHistory.length > 0 ? c.remarkHistory[0].time : null;
+    const refTime = lastFollowTime || c.createdAt;
+    const days = (now2 - refTime) / 86400000;
     for (let i = 0; i < ranges.length; i++) {
       if (days >= ranges[i].min && days <= ranges[i].max) { counts[i]++; break; }
     }
   });
   const maxVal = Math.max(...counts, 1);
-  const padding = { top: 15, bottom: 25, left: 30, right: 10 };
+  const padding = { top: 36, bottom: 34, left: 38, right: 16 };
   const chartW = W - padding.left - padding.right, chartH = H - padding.top - padding.bottom;
-  const barW = chartW / ranges.length * 0.6;
-  const colors = ['#16a34a','#22c55e','#f59e0b','#f97316','#ef4444','#dc2626'];
-  ranges.forEach((r, i) => {
-    const x = padding.left + i * (chartW / ranges.length) + (chartW / ranges.length - barW) / 2;
-    const bh = (counts[i] / maxVal) * chartH;
-    const y = padding.top + chartH - bh;
-    ctx.fillStyle = colors[i];
-    ctx.beginPath(); ctx.roundRect(x, y, barW, Math.max(bh, 1), 3); ctx.fill();
-    ctx.fillStyle = '#9ca3af'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(r.label, x + barW/2, H - padding.bottom + 14);
-    ctx.fillStyle = '#6b7280'; ctx.font = '10px sans-serif';
-    ctx.fillText(String(counts[i]), x + barW/2, y - 4);
+  const barW = Math.min(chartW / ranges.length * 0.58, 36);
+  const gap = chartW / ranges.length;
+  const colors = ['#16a34a','#22c55e','#facc15','#f59e0b','#f97316','#ef4444'];
+  const lights = ['#bbf7d0','#d1fae5','#fef9c3','#fde68a','#fed7aa','#fecaca'];
+
+  animateChart(600, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+    drawGridLines(ctx, W, H, padding, maxVal, 4, tc);
+    ctx.textAlign = 'center';
+    ranges.forEach((r, i) => {
+      const x = padding.left + i * gap + (gap - barW) / 2;
+      const bh = Math.max((counts[i] / maxVal) * chartH * ease, 1);
+      const y = padding.top + chartH - bh;
+      const grad = ctx.createLinearGradient(x, y, x, padding.top + chartH);
+      grad.addColorStop(0, colors[i]); grad.addColorStop(1, lights[i]);
+      ctx.fillStyle = grad;
+      roundRectTop(ctx, x, y, barW, bh, 5); ctx.fill();
+      // X标签
+      ctx.fillStyle = tc.textMut; ctx.font = `9.5px ${BI_FONT}`;
+      ctx.fillText(r.label, x + barW / 2, H - padding.bottom + 16);
+      // 数值
+      if (ease > 0.8) {
+        ctx.fillStyle = counts[i] > 0 ? colors[i] : tc.textMut;
+        ctx.font = `bold 11px ${BI_FONT}`;
+        ctx.fillText(String(counts[i]), x + barW / 2, clampY(y - 6, 10, H - 4));
+      }
+    });
   });
 }
 
-// 经营洞察
-function drawBIInsights(list) {
-  const el = document.getElementById('bi-insights'); if (!el) return;
-  const total = list.length;
-  if (total === 0) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">暂无客户数据，无法生成洞察分析</div>'; return; }
-  const dealCount = list.filter(c => c.status === '已成交').length;
-  const followCount = list.filter(c => c.status === '跟进中').length;
-  const uncontacted = list.filter(c => c.status === '未沟通').length;
-  const levelA = list.filter(c => c.level === 'A').length;
-  const levelD = list.filter(c => c.level === 'D').length;
-  const hasChannel = list.filter(c => c.channel).length;
-  const channelRate = (hasChannel / total * 100).toFixed(1);
-  const now2 = Date.now();
-  const overdueFollow = list.filter(c => c.status === '跟进中' && c.nextFollowDate).filter(c => {
-    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
-    return ft !== null && ft < now2;
-  }).length;
-  const insights = [
-    `📊 <strong>${total}</strong> 位客户中，已成交 <strong>${dealCount}</strong> 位（${(dealCount/total*100).toFixed(1)}%），跟进中 <strong>${followCount}</strong> 位，未联系 <strong>${uncontacted}</strong> 位（${(uncontacted/total*100).toFixed(1)}%）需要尽快跟进。`,
-    `🏆 A级客户 <strong>${levelA}</strong> 位，D级客户 <strong>${levelD}</strong> 位，高意向客户占比 ${(levelA/total*100).toFixed(1)}%。`,
-    overdueFollow > 0 ? `⏰ 已超过跟进日期的客户有 <strong>${overdueFollow}</strong> 位，建议立即安排联系。` : `✅ 所有跟进中的客户均在计划时间内，继续保持。`,
-    `🌍 已分配渠道的客户 <strong>${hasChannel}</strong> 位，渠道分配率 ${channelRate}%。`,
-    `📈 ${uncontacted > 0 ? '当前有 ' + uncontacted + ' 位客户从未联系，建议优先进行初次沟通以提升转化率。' : '所有客户均有初步联系记录，继续保持。'}`
+// 意向产品/预算分布（动画 + 圆角 + 精准对齐）
+function drawBIProductChart(list) {
+  const canvas = document.getElementById('bi-chart-product'); if (!canvas) return;
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 250);
+  const tc = getThemeColors();
+  // 产品分布
+  const productCounts = {};
+  list.forEach(c => { if (c.product) { productCounts[c.product] = (productCounts[c.product]||0)+1; } });
+  const productEntries = Object.entries(productCounts).sort((a,b) => b[1]-a[1]).slice(0, 6);
+  // 预算分布
+  const budgetRanges = [
+    { label: '<1万',  min: 0,      max: 10000 },
+    { label: '1-5万', min: 10000,  max: 50000 },
+    { label: '5-10万',min: 50000,  max: 100000 },
+    { label: '>10万', min: 100000, max: Infinity }
   ];
-  el.innerHTML = `<div class="bi-insight-title">💡 经营洞察</div><div class="bi-insight-grid">${insights.map(i => `<div class="bi-insight-item">${i}</div>`).join('')}</div>`;
+  const budgetCounts = budgetRanges.map(r => list.filter(c => {
+    if (!c.budget) return false;
+    const match = c.budget.match(/(\d+)/);
+    if (!match) return false;
+    const v = parseInt(match[1]) * (c.budget.includes('万') ? 10000 : 1);
+    return v >= r.min && v < r.max;
+  }).length);
+
+  const divider = W / 2;
+  const leftPad  = { left: 8, right: 12, top: 28, bottom: 8 };
+  const rightPad = { left: 12, right: 8, top: 28, bottom: 28 };
+  const leftW  = divider - leftPad.left - leftPad.right;
+  const rightW = W - divider - rightPad.left - rightPad.right;
+  const leftH  = H - leftPad.top - leftPad.bottom;
+  const rightH = H - rightPad.top - rightPad.bottom;
+  const maxP = productEntries.length > 0 ? productEntries[0][1] : 1;
+  const maxB = Math.max(...budgetCounts, 1);
+
+  // 竖向分隔线
+  ctx.strokeStyle = tc.border; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(divider, 14); ctx.lineTo(divider, H - 8); ctx.stroke();
+  ctx.setLineDash([]);
+
+  animateChart(650, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+    // 分隔线
+    ctx.strokeStyle = tc.border; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(divider, 14); ctx.lineTo(divider, H - 8); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 左标题
+    ctx.fillStyle = tc.textSec; ctx.font = `bold 11px ${BI_FONT}`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('意向产品 TOP6', leftPad.left, leftPad.top - 6);
+    // 左侧：水平条
+    if (productEntries.length > 0) {
+      const rowH = Math.min(22, leftH / productEntries.length - 4);
+      productEntries.forEach((e, i) => {
+        const y = leftPad.top + i * (rowH + 4);
+        const fullBW = Math.max((e[1] / maxP) * leftW, 4);
+        const bw = fullBW * ease;
+        // 轨道
+        roundRect(ctx, leftPad.left, y, leftW, rowH, 4);
+        ctx.fillStyle = tc.bgTer; ctx.fill();
+        // 进度条
+        if (bw > 0) {
+          const grad = ctx.createLinearGradient(leftPad.left, 0, leftPad.left + fullBW, 0);
+          grad.addColorStop(0, '#2563eb'); grad.addColorStop(1, '#93c5fd');
+          ctx.fillStyle = grad;
+          roundRect(ctx, leftPad.left, y, bw, rowH, 4); ctx.fill();
+        }
+        const label = e[0].length > 7 ? e[0].slice(0,7) + '…' : e[0];
+        if (ease > 0.5) {
+          // 条内文字
+          ctx.fillStyle = '#fff'; ctx.font = `bold 10px ${BI_FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+          if (bw > 30) ctx.fillText(label, leftPad.left + 6, y + rowH / 2);
+          // 数值
+          ctx.fillStyle = tc.textSec; ctx.font = `10px ${BI_FONT}`; ctx.textAlign = 'right';
+          ctx.fillText(e[1], leftPad.left + leftW - 2, y + rowH / 2);
+        }
+      });
+    } else {
+      ctx.fillStyle = tc.textMut; ctx.font = `12px ${BI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('暂无产品数据', divider / 2, H / 2);
+    }
+
+    // 右标题
+    ctx.fillStyle = tc.textSec; ctx.font = `bold 11px ${BI_FONT}`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('预算分布', divider + rightPad.left, rightPad.top - 6);
+    // 右侧：柱状图
+    const bw = Math.min(rightW / budgetRanges.length * 0.6, 28);
+    const gap = rightW / budgetRanges.length;
+    budgetRanges.forEach((r, i) => {
+      const x = divider + rightPad.left + i * gap + (gap - bw) / 2;
+      const bh = Math.max((budgetCounts[i] / maxB) * rightH * ease, 1);
+      const y = rightPad.top + rightH - bh;
+      const grad = ctx.createLinearGradient(x, y, x, rightPad.top + rightH);
+      grad.addColorStop(0, '#16a34a'); grad.addColorStop(1, '#86efac');
+      ctx.fillStyle = grad;
+      roundRectTop(ctx, x, y, bw, bh, 5); ctx.fill();
+      ctx.fillStyle = tc.textMut; ctx.font = `9.5px ${BI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(r.label, x + bw / 2, H - rightPad.bottom + 14);
+      if (ease > 0.8 && budgetCounts[i] > 0) {
+        ctx.fillStyle = '#16a34a'; ctx.font = `bold 10px ${BI_FONT}`;
+        ctx.fillText(String(budgetCounts[i]), x + bw / 2, clampY(y - 4, 10, H - 4));
+      }
+    });
+    ctx.textBaseline = 'alphabetic';
+  });
+}
+
+// 客户年龄与性别分布（动画 + 精准圆心 + 高清）
+function drawBIDemographicChart(list) {
+  const canvas = document.getElementById('bi-chart-demographic'); if (!canvas) return;
+  const { ctx, W, H } = initHiDPSCanvas(canvas, 250);
+  const tc = getThemeColors();
+
+  const divider = W * 0.52;
+  const leftPad  = { left: 36, right: 12, top: 28, bottom: 28 };
+  const rightPad = { left: 12, right: 12, top: 28, bottom: 8 };
+
+  // 年龄分布
+  const ageRanges = [
+    { label: '<25',   min: 0,  max: 25 },
+    { label: '25-35', min: 25, max: 35 },
+    { label: '35-45', min: 35, max: 45 },
+    { label: '45-55', min: 45, max: 55 },
+    { label: '>55',   min: 55, max: Infinity }
+  ];
+  const ageCounts = ageRanges.map(r => list.filter(c => {
+    const age = parseInt(c.age);
+    return !isNaN(age) && age >= r.min && age < r.max;
+  }).length);
+  const maxAge = Math.max(...ageCounts, 1);
+
+  // 性别分布
+  const maleCount   = list.filter(c => c.gender === '男').length;
+  const femaleCount = list.filter(c => c.gender === '女').length;
+  const genderTotal = maleCount + femaleCount;
+
+  // 右侧圆心精确计算
+  const rightAreaX = divider + rightPad.left;
+  const rightAreaW = W - rightAreaX - rightPad.right;
+  const cx = rightAreaX + rightAreaW / 2;
+  const cy = H / 2 + 6;
+  const chartH = H - leftPad.top - leftPad.bottom;
+  const R = Math.min(rightAreaW / 2, chartH / 2) - 8;
+
+  // 年龄柱参数
+  const leftW = divider - leftPad.left - leftPad.right;
+  const barW = Math.min(leftW / ageRanges.length * 0.55, 28);
+  const gap = leftW / ageRanges.length;
+
+  animateChart(700, (ease) => {
+    ctx.clearRect(0, 0, W, H);
+
+    // 左标题
+    ctx.fillStyle = tc.textSec; ctx.font = `bold 11px ${BI_FONT}`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('年龄分布', leftPad.left, leftPad.top - 6);
+
+    // Y轴
+    drawGridLines(ctx, divider - 4, H, leftPad, maxAge, 3, tc);
+
+    // 柱状
+    ctx.textAlign = 'center';
+    ageRanges.forEach((r, i) => {
+      const x = leftPad.left + i * gap + (gap - barW) / 2;
+      const bh = Math.max((ageCounts[i] / maxAge) * chartH * ease, 1);
+      const y = leftPad.top + chartH - bh;
+      const grad = ctx.createLinearGradient(x, y, x, leftPad.top + chartH);
+      grad.addColorStop(0, '#6366f1'); grad.addColorStop(1, '#c7d2fe');
+      ctx.fillStyle = grad;
+      roundRectTop(ctx, x, y, barW, bh, 5); ctx.fill();
+      ctx.fillStyle = tc.textMut; ctx.font = `9.5px ${BI_FONT}`; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(r.label, x + barW / 2, H - leftPad.bottom + 14);
+      if (ease > 0.8 && ageCounts[i] > 0) {
+        ctx.fillStyle = '#6366f1'; ctx.font = `bold 10px ${BI_FONT}`;
+        ctx.fillText(String(ageCounts[i]), x + barW / 2, clampY(y - 5, 10, H - 4));
+      }
+    });
+
+    // 右标题
+    ctx.fillStyle = tc.textSec; ctx.font = `bold 11px ${BI_FONT}`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('性别分布', divider + rightPad.left, rightPad.top - 6);
+
+    if (genderTotal === 0) {
+      ctx.fillStyle = tc.textMut; ctx.font = `12px ${BI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('暂无性别数据', cx, cy); return;
+    }
+
+    // 扇形动画
+    const maleAngle = (maleCount / genderTotal) * Math.PI * 2 * ease;
+    const totalDrawAngle = Math.PI * 2 * ease;
+    // 男性扇形
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, -Math.PI/2, -Math.PI/2 + maleAngle); ctx.closePath();
+    ctx.fillStyle = '#3b82f6'; ctx.fill();
+    // 女性扇形
+    if (totalDrawAngle > maleAngle) {
+      ctx.beginPath(); ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, -Math.PI/2 + maleAngle, -Math.PI/2 + totalDrawAngle); ctx.closePath();
+      ctx.fillStyle = '#f472b6'; ctx.fill();
+    }
+    // 内圈
+    ctx.beginPath(); ctx.arc(cx, cy, R * 0.54, 0, Math.PI * 2);
+    ctx.fillStyle = tc.bg; ctx.fill();
+    // 中心文字
+    if (ease > 0.7) {
+      ctx.fillStyle = tc.text; ctx.font = `bold 18px ${BI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(genderTotal), cx, cy - 8);
+      ctx.fillStyle = tc.textMut; ctx.font = `10px ${BI_FONT}`;
+      ctx.fillText('总人数', cx, cy + 10);
+    }
+    // 图例
+    if (ease > 0.9) {
+      const ly = cy + R + 10;
+      if (ly + 12 < H) {
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        roundRect(ctx, cx - 42, ly - 5, 10, 10, 3); ctx.fillStyle = '#3b82f6'; ctx.fill();
+        ctx.fillStyle = tc.textSec; ctx.font = `11px ${BI_FONT}`;
+        ctx.fillText(`男 ${maleCount} (${(maleCount/genderTotal*100).toFixed(0)}%)`, cx - 28, ly);
+        roundRect(ctx, cx + 6, ly - 5, 10, 10, 3); ctx.fillStyle = '#f472b6'; ctx.fill();
+        ctx.fillStyle = tc.textSec;
+        ctx.fillText(`女 ${femaleCount} (${(femaleCount/genderTotal*100).toFixed(0)}%)`, cx + 20, ly);
+      }
+    }
+    ctx.textBaseline = 'alphabetic';
+  });
+}
+
+// 图片查看器浮层（支持鼠标滚轮缩放）
+function openImageViewer(dataUrl) {
+  const overlay = document.createElement('div');
+  overlay.className = 'img-viewer-overlay';
+  overlay.innerHTML = `<span class="img-viewer-close">&times;</span><img src="${escapeHTML(dataUrl)}" alt="查看截图"><div class="img-viewer-zoom-hint">滚轮缩放 · 点击关闭</div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+  const img = overlay.querySelector('img');
+  let scale = 1;
+  overlay.querySelector('.img-viewer-close').onclick = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 250); };
+  overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 250); } };
+  overlay.onwheel = (e) => {
+    e.preventDefault();
+    scale = Math.max(0.3, Math.min(5, scale - e.deltaY * 0.002));
+    img.style.transform = 'scale(' + scale + ')';
+  };
 }
 
 /* ================================================================
@@ -3482,10 +5429,28 @@ function renderSettingsPage() {
   // 渲染标签列表
   renderTagsList();
   
+  // 渲染等级列表
+  renderLevelsList();
+
+  // 渲染来源列表
+  renderSourcesList();
+
   // 新增标签按钮事件
   const btnNewTag = document.getElementById('btn-new-tag');
   if (btnNewTag) {
     btnNewTag.onclick = () => openTagEditor(null);
+  }
+
+  // 新增等级按钮事件
+  const btnNewLevel = document.getElementById('btn-new-level');
+  if (btnNewLevel) {
+    btnNewLevel.onclick = () => openLevelEditor(null);
+  }
+
+  // 新增来源按钮事件
+  const btnNewSource = document.getElementById('btn-new-source');
+  if (btnNewSource) {
+    btnNewSource.onclick = () => openSourceEditor(null);
   }
 }
 
@@ -3565,6 +5530,179 @@ function openTagEditor(tag) {
   });
 }
 
+function renderLevelsList() {
+  const el = document.getElementById('level-list');
+  if (!el) return;
+  const levels = getLevels();
+  el.innerHTML = '';
+  levels.forEach(l => {
+    const chip = document.createElement('div');
+    chip.style.cssText = `display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);`;
+    chip.innerHTML = `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${l.color};"></span>
+      <span style="font-weight:500;">${escapeHTML(l.name)}</span>
+      <span style="color:var(--text-muted);font-size:12px;">${escapeHTML(l.color)}</span>
+      <span style="color:var(--text-muted);font-size:12px;">排序: ${l.sort}</span>
+      <button class="btn btn-sm btn-outline" style="margin-left:auto;">编辑</button>
+      <button class="btn btn-sm btn-danger">删除</button>`;
+    el.appendChild(chip);
+    const [editBtn, delBtn] = chip.querySelectorAll('button');
+    editBtn.onclick = () => openLevelEditor(l);
+    delBtn.onclick = () => {
+      const used = (Store.data.customers || []).some(c => c.level === l.name);
+      if (used) { showToast('该等级已被客户使用，无法删除', 'warning'); return; }
+      confirmDialog('删除等级', '确认删除等级 "' + l.name + '" ？', true, async () => {
+        Store.data.customerLevels = (Store.data.customerLevels || []).filter(x => x.id !== l.id);
+        await Store.saveWithLog('删除等级', '等级：' + l.name);
+        renderLevelsList(); showToast('已删除', 'success');
+      });
+    };
+  });
+}
+
+function openLevelEditor(level) {
+  const isNew = !level;
+  const l = level || { id: 'cl_' + Date.now(), name: '', color: '#2563eb', sort: (getLevels().length + 1) };
+  const oldName = level ? level.name : '';
+  openModal({
+    title: isNew ? '新增客户等级' : '编辑客户等级', size: 'sm',
+    bodyHTML: `<div class="form-group">
+      <label class="label required">等级名称</label>
+      <input type="text" class="input" id="lname" value="${escapeHTML(l.name)}" maxlength="30">
+    </div>
+    <div class="form-group">
+      <label class="label">等级颜色</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        ${['#dc2626','#d97706','#2563eb','#16a34a','#7c3aed','#0891b2','#db2777','#334155','#9ca3af'].map(c =>
+          `<span data-color="${c}" style="display:inline-block;width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:${c===l.color?'3px solid #111':'2px solid transparent'};box-sizing:border-box;"></span>`).join('')}
+      </div>
+      <div style="margin-top:8px;"><input type="color" id="lcolor" value="${l.color}"> 自定义</div>
+    </div>
+    <div class="form-group">
+      <label class="label">排序（数值越小越靠前）</label>
+      <input type="number" class="input" id="lsort" value="${l.sort}" min="1" max="99">
+    </div>`,
+    footer: (f) => {
+      const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+      const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '保存');
+      f.appendChild(cc); f.appendChild(ok);
+      let chosenColor = l.color;
+      document.querySelectorAll('span[data-color]').forEach(sp => {
+        sp.onclick = () => {
+          chosenColor = sp.dataset.color;
+          document.querySelectorAll('span[data-color]').forEach(x => { x.style.border = (x.dataset.color === chosenColor ? '3px solid #111' : '2px solid transparent'); });
+          document.getElementById('lcolor').value = chosenColor;
+        };
+      });
+      document.getElementById('lcolor').onchange = (e) => { chosenColor = e.target.value;
+        document.querySelectorAll('span[data-color]').forEach(x => { x.style.border = '2px solid transparent'; }); };
+      cc.onclick = closeModal;
+      ok.onclick = async () => {
+        const name = document.getElementById('lname').value.trim();
+        if (!name) { showToast('请填写等级名称', 'error'); return; }
+        const sort = parseInt(document.getElementById('lsort').value) || 1;
+        if (isNew) {
+          const exists = (Store.data.customerLevels || []).some(x => x.name === name);
+          if (exists) { showToast('等级名称已存在', 'error'); return; }
+          l.name = escapeHTML(name); l.color = chosenColor; l.sort = sort;
+          Store.data.customerLevels = Store.data.customerLevels || [];
+          Store.data.customerLevels.push(l);
+        } else {
+          if (name !== oldName) {
+            const exists = (Store.data.customerLevels || []).some(x => x.id !== l.id && x.name === name);
+            if (exists) { showToast('等级名称已存在', 'error'); return; }
+            const oldNameVal = l.name;
+            l.name = escapeHTML(name);
+            (Store.data.customers || []).forEach(c => {
+              if (c.level === oldNameVal) c.level = l.name;
+            });
+          }
+          l.color = chosenColor;
+          l.sort = sort;
+        }
+        await Store.saveWithLog(isNew ? '新增等级' : '编辑等级', '等级：' + l.name);
+        showToast(isNew ? '等级已新增' : '等级已更新', 'success');
+        closeModal(); renderLevelsList();
+      };
+    }
+  });
+}
+
+function renderSourcesList() {
+  const el = document.getElementById('source-list');
+  if (!el) return;
+  const sources = getSources();
+  el.innerHTML = '';
+  sources.forEach(s => {
+    const chip = document.createElement('div');
+    chip.style.cssText = `display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);`;
+    chip.innerHTML = `<span style="font-weight:500;">${escapeHTML(s.name)}</span>
+      <span style="color:var(--text-muted);font-size:12px;">排序: ${s.sort}</span>
+      <button class="btn btn-sm btn-outline" style="margin-left:auto;">编辑</button>
+      <button class="btn btn-sm btn-danger">删除</button>`;
+    el.appendChild(chip);
+    const [editBtn, delBtn] = chip.querySelectorAll('button');
+    editBtn.onclick = () => openSourceEditor(s);
+    delBtn.onclick = () => {
+      const used = (Store.data.customers || []).some(c => c.source === s.name);
+      if (used) { showToast('该来源已被客户使用，无法删除', 'warning'); return; }
+      confirmDialog('删除来源', '确认删除来源 "' + s.name + '" ？', true, async () => {
+        Store.data.customerSources = (Store.data.customerSources || []).filter(x => x.id !== s.id);
+        await Store.saveWithLog('删除来源', '来源：' + s.name);
+        renderSourcesList(); showToast('已删除', 'success');
+      });
+    };
+  });
+}
+
+function openSourceEditor(source) {
+  const isNew = !source;
+  const s = source || { id: 'cs_' + Date.now(), name: '', sort: (getSources().length + 1) };
+  const oldName = source ? source.name : '';
+  openModal({
+    title: isNew ? '新增客户来源' : '编辑客户来源', size: 'sm',
+    bodyHTML: `<div class="form-group">
+      <label class="label required">来源名称</label>
+      <input type="text" class="input" id="sname" value="${escapeHTML(s.name)}" maxlength="30">
+    </div>
+    <div class="form-group">
+      <label class="label">排序（数值越小越靠前）</label>
+      <input type="number" class="input" id="ssort" value="${s.sort}" min="1" max="99">
+    </div>`,
+    footer: (f) => {
+      const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+      const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '保存');
+      f.appendChild(cc); f.appendChild(ok);
+      cc.onclick = closeModal;
+      ok.onclick = async () => {
+        const name = document.getElementById('sname').value.trim();
+        if (!name) { showToast('请填写来源名称', 'error'); return; }
+        const sort = parseInt(document.getElementById('ssort').value) || 1;
+        if (isNew) {
+          const exists = (Store.data.customerSources || []).some(x => x.name === name);
+          if (exists) { showToast('来源名称已存在', 'error'); return; }
+          s.name = escapeHTML(name); s.sort = sort;
+          Store.data.customerSources = Store.data.customerSources || [];
+          Store.data.customerSources.push(s);
+        } else {
+          if (name !== oldName) {
+            const exists = (Store.data.customerSources || []).some(x => x.id !== s.id && x.name === name);
+            if (exists) { showToast('来源名称已存在', 'error'); return; }
+            const oldNameVal = s.name;
+            s.name = escapeHTML(name);
+            (Store.data.customers || []).forEach(c => {
+              if (c.source === oldNameVal) c.source = s.name;
+            });
+          }
+          s.sort = sort;
+        }
+        await Store.saveWithLog(isNew ? '新增来源' : '编辑来源', '来源：' + s.name);
+        showToast(isNew ? '来源已新增' : '来源已更新', 'success');
+        closeModal(); renderSourcesList();
+      };
+    }
+  });
+}
+
 function renderLogsPage() {
   const el = document.getElementById('log-list');
   if (!el) return;
@@ -3613,7 +5751,7 @@ function navigate(pageName) {
   safeText(document.getElementById('page-subtitle'), t[1]);
   if (pageName === 'dashboard') renderDashboard();
   else if (pageName === 'bi') renderBIPage();
-  else if (pageName === 'list') { renderFilterSources(); renderCustomerTable(); }
+  else if (pageName === 'list') { renderFilterSources(); renderFilterLevels(); renderCustomerTable(); }
   else if (pageName === 'geo') renderChannelPage('geo');
   else if (pageName === '360') renderChannelPage('360');
   else if (pageName === 'bing') renderChannelPage('bing');
@@ -3685,6 +5823,12 @@ function ensureSeedData() {
       { id: 't_c', name: 'C级客户', color: '#2563eb' },
       { id: 't_new', name: '新客户', color: '#16a34a' }
     ];
+  }
+  if (!Store.data.customerLevels || Store.data.customerLevels.length === 0) {
+    Store.data.customerLevels = getDefaultLevels();
+  }
+  if (!Store.data.customerSources || Store.data.customerSources.length === 0) {
+    Store.data.customerSources = getDefaultSources();
   }
 }
 
@@ -3763,6 +5907,13 @@ async function enterApp(password) {
   // 进入应用时清空草稿
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
   showToast('欢迎回来，已解锁系统', 'success');
+  // 解锁后触发猫咪宠物首次扫描提醒（延迟 1.2 秒等渲染完成）
+  setTimeout(() => {
+    console.log('[🐱猫咪] enterApp 触发首次扫描，CRMPet=', !!window.CRMPet, 'check=', typeof (window.CRMPet && window.CRMPet.check));
+    if (window.CRMPet && typeof window.CRMPet.check === 'function') {
+      window.CRMPet.check();
+    }
+  }, 1200);
 }
 
 function initAuthPage() {
@@ -3943,7 +6094,7 @@ document.addEventListener('DOMContentLoaded', function () {
               c.updatedAt = Date.now();
             }
           });
-          selectedIds.clear();
+          listState.selected.clear();
           await Store.saveWithLog('批量添加客户到渠道', `${count} 位客户 → ${channel}`);
           showToast(`已将 ${count} 位客户添加到渠道`, 'success');
           closeModal();
@@ -3960,6 +6111,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // 仪表盘统计浮层关闭事件
   document.getElementById('stat-popup-close').onclick = closeStatPopup;
   document.getElementById('stat-popup-overlay').onclick = closeStatPopup;
+
+  // 客户浮层详情关闭事件
+  document.getElementById('customer-float-close').onclick = closeCustomerFloat;
+  document.getElementById('customer-float-overlay').onclick = closeCustomerFloat;
 
   document.getElementById('qa-backup').onclick = async () => {
     await Store.save();
@@ -4019,7 +6174,7 @@ document.addEventListener('DOMContentLoaded', function () {
             district: row[8] || '',
             address: row[9] || '',
             source: row[10] || '',
-            level: row[11] || 'C',
+            level: row[11] || (getLevels()[Math.floor(getLevels().length / 2)] || {}).name || '',
             status: row[12] || '未沟通',
             product: row[13] || '',
             budget: row[14] || '',
@@ -4036,7 +6191,9 @@ document.addEventListener('DOMContentLoaded', function () {
             remark: row[18] || '',
             channel: row[19] || '',
             createdBy: 'import',
-            updatedAt: Date.now()
+            updatedAt: Date.now(),
+            remarkHistory: [],
+            deleted: false
           };
           imported.push(customer);
         }
@@ -4281,7 +6438,28 @@ document.addEventListener('DOMContentLoaded', function () {
     showToast('日志已导出', 'success');
   };
 
+  // 报表按钮绑定
+  const reportBtns = ['btn-report-daily', 'btn-report-weekly', 'btn-report-monthly'];
+  reportBtns.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const type = id.replace('btn-report-', '');
+      el.onclick = () => generateBIReport(type);
+    }
+  });
+  const exportBtn = document.getElementById('btn-report-export');
+  if (exportBtn) exportBtn.onclick = exportBIReportCSV;
+
   // 注：自动锁屏监控已在 setupIdleDetection 中统一处理
+});
+
+// 窗口大小改变时重新渲染BI图表
+window.addEventListener('resize', () => {
+  const active = document.querySelector('.page.active');
+  if (active && active.id === 'page-bi') {
+    const list = (Store.data.customers || []).filter(c => c.deleted !== true);
+    renderAllBICharts(list);
+  }
 });
 
 function refreshUI() {
@@ -4290,7 +6468,7 @@ function refreshUI() {
   if (!active) { navigate('dashboard'); return; }
   if (active.id === 'page-dashboard') renderDashboard();
   else if (active.id === 'page-bi') renderBIPage();
-  else if (active.id === 'page-list') { renderFilterSources(); renderCustomerTable(); }
+  else if (active.id === 'page-list') { renderFilterSources(); renderFilterLevels(); renderCustomerTable(); }
   else if (active.id === 'page-geo') renderChannelPage('geo');
   else if (active.id === 'page-360') renderChannelPage('360');
   else if (active.id === 'page-bing') renderChannelPage('bing');
@@ -4298,6 +6476,702 @@ function refreshUI() {
   else if (active.id === 'page-settings') renderSettingsPage();
   else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); }
 }
+
+/* ================================================================
+   模块：猫咪小宠物浮层 - 实时提醒未跟进客户
+   ================================================================ */
+(function () {
+  'use strict';
+
+  // ── 样式注入 ──────────────────────────────────────────────────
+  const style = document.createElement('style');
+  style.textContent = `
+    /* 整体浮层容器 */
+    #crm-pet-widget {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      user-select: none;
+      cursor: grab;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.18));
+      transition: filter 0.2s;
+    }
+    #crm-pet-widget:active { cursor: grabbing; }
+    #crm-pet-widget:hover { filter: drop-shadow(0 6px 24px rgba(0,0,0,0.26)); }
+
+    /* 猫咪 SVG 容器 */
+    #crm-pet-body {
+      width: 80px;
+      height: 80px;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    /* 气泡提醒 */
+    #crm-pet-bubble {
+      position: absolute;
+      bottom: 88px;
+      right: 0;
+      min-width: 180px;
+      max-width: 260px;
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px 14px 4px 14px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #1e293b;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.13);
+      display: none;
+      pointer-events: auto;
+      animation: petBubbleIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    [data-theme="dark"] #crm-pet-bubble {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f1f5f9;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    #crm-pet-bubble.show { display: block; }
+    #crm-pet-bubble-title {
+      font-weight: 700;
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    [data-theme="dark"] #crm-pet-bubble-title { color: #94a3b8; }
+    #crm-pet-bubble-text { font-size: 13px; }
+    #crm-pet-bubble-close {
+      position: absolute;
+      top: 6px; right: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #94a3b8;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    #crm-pet-bubble-close:hover { color: #ef4444; background: #fee2e2; }
+    /* 客户列表行 - 可点击跳转 */
+    .pet-customer-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 7px;
+      border-radius: 7px;
+      margin: 3px 0;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 12.5px;
+    }
+    .pet-customer-row:hover { background: #f0f6ff; }
+    [data-theme="dark"] .pet-customer-row:hover { background: #1e3a5f; }
+    .pet-customer-tag {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pet-customer-tag.urgent { background: #fee2e2; color: #dc2626; }
+    .pet-customer-tag.warn   { background: #fef3c7; color: #d97706; }
+    [data-theme="dark"] .pet-customer-tag.urgent { background: #450a0a; color: #fca5a5; }
+    [data-theme="dark"] .pet-customer-tag.warn   { background: #451a03; color: #fcd34d; }
+    .pet-customer-name {
+      font-weight: 600;
+      color: #1e293b;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    [data-theme="dark"] .pet-customer-name { color: #f1f5f9; }
+    .pet-customer-days {
+      font-size: 11px;
+      color: #94a3b8;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pet-customer-days.urgent { color: #ef4444; font-weight: 600; }
+    .pet-customer-days.warn   { color: #f59e0b; }
+    .pet-bubble-footer {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #e2e8f0;
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: center;
+    }
+    [data-theme="dark"] .pet-bubble-footer { border-top-color: #334155; color: #64748b; }
+
+    /* ── 缩小（mini）模式 ── */
+    #crm-pet-widget.mini #crm-pet-bubble { display: none !important; }
+    #crm-pet-widget.mini #crm-pet-body {
+      width: 36px;
+      height: 36px;
+    }
+    #crm-pet-widget.mini #crm-pet-svg {
+      width: 36px;
+      height: 36px;
+    }
+    #crm-pet-widget.mini #crm-pet-badge {
+      top: -4px; right: -4px;
+      min-width: 14px; height: 14px;
+      font-size: 9px;
+      padding: 0 3px;
+    }
+    #crm-pet-widget.mini #crm-pet-status-dot {
+      width: 7px; height: 7px;
+      top: 1px; right: 1px;
+    }
+    @keyframes petMiniIn {
+      from { transform: scale(1.15); opacity: 0.7; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    #crm-pet-widget.mini #crm-pet-body {
+      animation: petMiniIn 0.22s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    /* mini 模式提示 tooltip */
+    #crm-pet-widget.mini::after {
+      content: attr(data-mini-tip);
+      position: absolute;
+      bottom: 40px;
+      right: 0;
+      background: rgba(30,41,59,0.82);
+      color: #fff;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    #crm-pet-widget.mini:hover::after { opacity: 1; }
+
+    /* 猫咪状态标记 */
+    #crm-pet-status-dot {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: #22c55e;
+      transition: background 0.4s;
+    }
+    #crm-pet-status-dot.alert { background: #f59e0b; animation: petPulse 1s infinite; }
+    #crm-pet-status-dot.urgent { background: #ef4444; animation: petPulse 0.6s infinite; }
+
+    /* 徽章数字 */
+    #crm-pet-badge {
+      position: absolute;
+      top: -2px; right: -2px;
+      min-width: 18px; height: 18px;
+      border-radius: 9px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 2px solid #fff;
+      line-height: 1;
+    }
+    #crm-pet-badge.show { display: flex; }
+    [data-theme="dark"] #crm-pet-badge { border-color: #1e293b; }
+
+    /* 猫咪动画帧 */
+    @keyframes petBubbleIn {
+      from { opacity: 0; transform: scale(0.7) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes petPulse {
+      0%,100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(1.4); opacity: 0.7; }
+    }
+    @keyframes petTailWag {
+      0%,100% { transform-origin: bottom left; transform: rotate(0deg); }
+      25%      { transform: rotate(12deg); }
+      75%      { transform: rotate(-12deg); }
+    }
+    @keyframes petEarTwitch {
+      0%,80%,100% { transform: rotate(0deg); }
+      85%          { transform: rotate(-8deg); }
+      90%          { transform: rotate(5deg); }
+    }
+    @keyframes petBodyBounce {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+    @keyframes petSleep {
+      0%,100% { transform: scaleY(1); }
+      50%      { transform: scaleY(0.92); }
+    }
+    @keyframes petZzz {
+      0%   { opacity: 0; transform: translate(0,0) scale(0.5); }
+      50%  { opacity: 1; }
+      100% { opacity: 0; transform: translate(10px,-14px) scale(1.1); }
+    }
+
+    /* 动画应用 */
+    #crm-pet-svg.idle #pet-tail { animation: petTailWag 1.8s ease-in-out infinite; }
+    #crm-pet-svg.idle #pet-body-group { animation: petBodyBounce 3s ease-in-out infinite; }
+    #crm-pet-svg.idle #pet-ear-l, #crm-pet-svg.idle #pet-ear-r { animation: petEarTwitch 4s ease-in-out infinite; }
+    #crm-pet-svg.alert #pet-tail { animation: petTailWag 0.8s ease-in-out infinite; }
+    #crm-pet-svg.alert #pet-body-group { animation: petBodyBounce 0.6s ease-in-out infinite; }
+    #crm-pet-svg.happy #pet-tail { animation: petTailWag 0.5s ease-in-out infinite; }
+    #crm-pet-svg.happy #pet-body-group { animation: petBodyBounce 0.4s ease-in-out infinite; }
+    #crm-pet-svg.sleep #pet-body-group { animation: petSleep 3s ease-in-out infinite; }
+    #crm-pet-svg.sleep .pet-zzz { animation: petZzz 2s ease-out infinite; }
+    #crm-pet-svg.sleep .pet-zzz:nth-child(2) { animation-delay: 0.7s; }
+    #crm-pet-svg.sleep .pet-zzz:nth-child(3) { animation-delay: 1.4s; }
+
+    /* 点击涟漪 */
+    @keyframes petRipple {
+      from { transform: translate(-50%,-50%) scale(0.3); opacity: 0.7; }
+      to   { transform: translate(-50%,-50%) scale(2.2); opacity: 0; }
+    }
+    .pet-ripple {
+      position: absolute;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: rgba(255,180,100,0.35);
+      pointer-events: none;
+      animation: petRipple 0.5s ease-out forwards;
+      top: 50%; left: 50%;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ── HTML 注入 ──────────────────────────────────────────────────
+  const widget = document.createElement('div');
+  widget.id = 'crm-pet-widget';
+  widget.innerHTML = `
+    <div id="crm-pet-bubble">
+      <span id="crm-pet-bubble-close" title="关闭">×</span>
+      <div id="crm-pet-bubble-title">🐱 喵提醒</div>
+      <div id="crm-pet-bubble-text"></div>
+    </div>
+    <div id="crm-pet-body">
+      <span id="crm-pet-badge">0</span>
+      <span id="crm-pet-status-dot"></span>
+      ${buildCatSVG()}
+    </div>
+  `;
+  document.body.appendChild(widget);
+
+  // ── SVG 猫咪绘制 ──────────────────────────────────────────────
+  function buildCatSVG() {
+    return `
+    <svg id="crm-pet-svg" class="idle" viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+      <!-- 尾巴（在身体后面渲染） -->
+      <path id="pet-tail"
+        d="M26 60 Q10 58 12 46 Q14 38 22 42"
+        stroke="#e8a87c" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <!-- 身体+头部整体组 -->
+      <g id="pet-body-group">
+        <!-- 身体 -->
+        <ellipse id="pet-body" cx="42" cy="58" rx="18" ry="14" fill="#f5c98a"/>
+        <!-- 肚皮 -->
+        <ellipse cx="42" cy="60" rx="11" ry="9" fill="#fde8c8"/>
+        <!-- 头部 -->
+        <ellipse id="pet-head" cx="42" cy="36" rx="18" ry="16" fill="#f5c98a"/>
+        <!-- 左耳 -->
+        <polygon id="pet-ear-l" points="26,24 24,10 35,20" fill="#f5c98a"/>
+        <polygon points="27,22 26,13 34,21" fill="#f4a0b0"/>
+        <!-- 右耳 -->
+        <polygon id="pet-ear-r" points="58,24 56,10 45,20" fill="#f5c98a"/>
+        <polygon points="57,22 54,13 46,21" fill="#f4a0b0"/>
+        <!-- 眼睛（默认睁开） -->
+        <g id="pet-eyes-open">
+          <ellipse cx="36" cy="36" rx="4" ry="4.5" fill="#fff"/>
+          <ellipse cx="48" cy="36" rx="4" ry="4.5" fill="#fff"/>
+          <circle cx="36.8" cy="36.5" r="2.8" fill="#4a3728"/>
+          <circle cx="48.8" cy="36.5" r="2.8" fill="#4a3728"/>
+          <circle cx="37.8" cy="35.5" r="1" fill="#fff"/>
+          <circle cx="49.8" cy="35.5" r="1" fill="#fff"/>
+        </g>
+        <!-- 眼睛（睡眠弧形） -->
+        <g id="pet-eyes-sleep" display="none">
+          <path d="M32 37 Q36 33 40 37" stroke="#4a3728" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path d="M44 37 Q48 33 52 37" stroke="#4a3728" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        </g>
+        <!-- 眼睛（高兴弧形） -->
+        <g id="pet-eyes-happy" display="none">
+          <path d="M32 35 Q36 39 40 35" stroke="#4a3728" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M44 35 Q48 39 52 35" stroke="#4a3728" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </g>
+        <!-- 眼睛（警觉大眼） -->
+        <g id="pet-eyes-alert" display="none">
+          <ellipse cx="36" cy="36" rx="5" ry="5.5" fill="#fff"/>
+          <ellipse cx="48" cy="36" rx="5" ry="5.5" fill="#fff"/>
+          <circle cx="36" cy="36.5" r="3.2" fill="#4a3728"/>
+          <circle cx="48" cy="36.5" r="3.2" fill="#4a3728"/>
+          <circle cx="37.2" cy="35.2" r="1.1" fill="#fff"/>
+          <circle cx="49.2" cy="35.2" r="1.1" fill="#fff"/>
+        </g>
+        <!-- 鼻子 -->
+        <ellipse cx="42" cy="42" rx="2" ry="1.4" fill="#f4829a"/>
+        <!-- 嘴 -->
+        <path id="pet-mouth-normal" d="M42 43.4 Q38 46 37 45" stroke="#d97070" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path id="pet-mouth-normal2" d="M42 43.4 Q46 46 47 45" stroke="#d97070" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <!-- 腮红 -->
+        <ellipse cx="32" cy="42" rx="4" ry="2.5" fill="#f9b8c8" opacity="0.55"/>
+        <ellipse cx="52" cy="42" rx="4" ry="2.5" fill="#f9b8c8" opacity="0.55"/>
+        <!-- 胡须 -->
+        <line x1="20" y1="41" x2="33" y2="42" stroke="#b0895a" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+        <line x1="20" y1="44" x2="33" y2="43.5" stroke="#b0895a" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+        <line x1="51" y1="42" x2="64" y2="41" stroke="#b0895a" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+        <line x1="51" y1="43.5" x2="64" y2="44" stroke="#b0895a" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+        <!-- 四肢 -->
+        <ellipse cx="30" cy="70" rx="7" ry="5" fill="#f5c98a"/>
+        <ellipse cx="54" cy="70" rx="7" ry="5" fill="#f5c98a"/>
+        <ellipse cx="30" cy="72" rx="5.5" ry="3.5" fill="#fde8c8"/>
+        <ellipse cx="54" cy="72" rx="5.5" ry="3.5" fill="#fde8c8"/>
+        <!-- 睡眠 Zzz -->
+        <text class="pet-zzz" x="60" y="25" font-size="9" fill="#60a5fa" font-weight="700" opacity="0">z</text>
+        <text class="pet-zzz" x="63" y="18" font-size="11" fill="#93c5fd" font-weight="700" opacity="0">z</text>
+        <text class="pet-zzz" x="67" y="10" font-size="13" fill="#bfdbfe" font-weight="700" opacity="0">Z</text>
+      </g>
+    </svg>
+    `;
+  }
+
+  // ── 状态机 ────────────────────────────────────────────────────
+  const PET = {
+    state: 'idle',        // idle | alert | happy | sleep
+    urgentList: [],       // 今日严重未跟进
+    alertList: [],        // 一般提醒
+    bubbleTimer: null,
+    sleepTimer: null,
+    checkTimer: null,
+    lastInteract: Date.now(),
+    isDragging: false,
+    dragOffX: 0,
+    dragOffY: 0,
+
+    setState(s) {
+      this.state = s;
+      const svg = document.getElementById('crm-pet-svg');
+      if (!svg) return;
+      svg.className.baseVal = s;
+
+      // 切换眼睛状态
+      const eyeIds = ['pet-eyes-open','pet-eyes-sleep','pet-eyes-happy','pet-eyes-alert'];
+      const eyeMap = { idle:'pet-eyes-open', alert:'pet-eyes-alert', happy:'pet-eyes-happy', sleep:'pet-eyes-sleep' };
+      eyeIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('display', id === eyeMap[s] ? 'inline' : 'none');
+      });
+
+      // 状态点颜色
+      const dot = document.getElementById('crm-pet-status-dot');
+      if (dot) {
+        dot.className = s === 'alert' ? 'alert' : s === 'sleep' ? '' : s === 'happy' ? '' : '';
+        if (s === 'alert' && this.urgentList.length > 0) dot.className = 'urgent';
+        else if (s === 'alert') dot.className = 'alert';
+        else dot.className = '';
+        dot.style.background = s === 'idle' ? '#22c55e' : s === 'alert' ? '' : s === 'happy' ? '#f59e0b' : '#94a3b8';
+      }
+    },
+
+    // 扫描未跟进客户
+    scan() {
+      if (!window.Store || !Store.data || !Store.data.customers) {
+        console.log('[🐱猫咪] scan 退出：Store 未就绪', { Store: !!window.Store, data: !!(window.Store && Store.data), customers: !!(window.Store && Store.data && Store.data.customers) });
+        return 0;
+      }
+      const customers = (Store.data.customers || []).filter(c => c.deleted !== true);
+      const now = Date.now();
+      const threeDays = 3 * 86400000;
+      const sevenDays = 7 * 86400000;
+
+      this.urgentList = [];
+      this.alertList = [];
+
+      customers.forEach(c => {
+        if (c.status === '已成交' || c.status === '流失') return;
+        const lastTime = (c.remarkHistory && c.remarkHistory.length > 0)
+          ? c.remarkHistory[0].time
+          : c.createdAt;
+        const elapsed = now - (lastTime || c.createdAt || now);
+        const days = Math.floor(elapsed / 86400000);
+
+        if (elapsed >= sevenDays) {
+          console.log(`[🐱猫咪] 逾期: ${c.name} | 状态=${c.status} | ${days}天未跟进 | lastTime=${lastTime ? new Date(lastTime).toISOString().slice(0,10) : '无'}`);
+          this.urgentList.push(c);
+        } else if (elapsed >= threeDays) {
+          console.log(`[🐱猫咪] 待跟进: ${c.name} | 状态=${c.status} | ${days}天未跟进`);
+          this.alertList.push(c);
+        }
+      });
+
+      // 更新徽章
+      const total = this.urgentList.length + this.alertList.length;
+      console.log(`[🐱猫咪] scan 完成 | 客户总数=${customers.length} | 逾期=${this.urgentList.length} | 待跟进=${this.alertList.length} | 合计=${total}`);
+      const badge = document.getElementById('crm-pet-badge');
+      if (badge) {
+        if (total > 0) {
+          badge.textContent = total > 99 ? '99+' : String(total);
+          badge.classList.add('show');
+        } else {
+          badge.classList.remove('show');
+        }
+      }
+
+      return total;
+    },
+
+    // 计算距今天数（保留1位小数取整）
+    daysSince(c) {
+      const now = Date.now();
+      const lastTime = (c.remarkHistory && c.remarkHistory.length > 0)
+        ? c.remarkHistory[0].time : c.createdAt;
+      return Math.floor((now - (lastTime || now)) / 86400000);
+    },
+
+    showBubble(title, html, state) {
+      console.log('[🐱猫咪] showBubble 调用 | title=' + title + ' | state=' + (state || 'alert') + ' | bubble DOM=' + !!document.getElementById('crm-pet-bubble'));
+      clearTimeout(this.bubbleTimer);
+      this.setState(state || 'alert');
+      const bubble = document.getElementById('crm-pet-bubble');
+      const titleEl = document.getElementById('crm-pet-bubble-title');
+      const textEl  = document.getElementById('crm-pet-bubble-text');
+      if (!bubble) return;
+
+      if (titleEl) titleEl.innerHTML = title;
+      if (textEl)  textEl.innerHTML  = html;
+
+      // 强制重放动画
+      bubble.classList.remove('show');
+      void bubble.offsetWidth;
+      bubble.classList.add('show');
+
+      // 客户行点击：跳转到列表并用客户姓名预填搜索框
+      textEl && textEl.querySelectorAll('.pet-customer-row[data-name]').forEach(row => {
+        row.addEventListener('click', e => {
+          e.stopPropagation();
+          const name = row.dataset.name || '';
+          // 预填搜索关键词，让用户直接看到该客户
+          if (window.listState) {
+            window.listState.searchQ = name;
+            window.listState.page = 1;
+          }
+          const searchInput = document.getElementById('search-input');
+          if (searchInput) searchInput.value = name;
+          if (typeof navigate === 'function') navigate('list');
+          PET.hideBubble();
+        });
+      });
+
+      this.bubbleTimer = setTimeout(() => this.hideBubble(), 15000);
+    },
+
+    hideBubble() {
+      const bubble = document.getElementById('crm-pet-bubble');
+      if (bubble) bubble.classList.remove('show');
+      if (this.state !== 'sleep') this.setState('idle');
+    },
+
+    // 主动检查并提醒
+    check() {
+      const total = this.scan() || 0;
+      console.log('[🐱猫咪] check() 调用 | total=' + total + ' | urgent=' + this.urgentList.length + ' | alert=' + this.alertList.length);
+      clearTimeout(this.sleepTimer);
+
+      if (total === 0) {
+        console.log('[🐱猫咪] 无待跟进客户，显示健康报告');
+        const idleMsgs = [
+          '今天所有客户都跟进啦！继续保持 🎉',
+          '喵~ 客户数据很健康，无待跟进',
+          '暂时没有紧急跟进任务，放松一下吧！(=^･ω･^=)'
+        ];
+        const msg = idleMsgs[Math.floor(Math.random() * idleMsgs.length)];
+        this.showBubble('🐱 喵喵报告',
+          `<div style="color:var(--text-secondary,#64748b);font-size:13px;padding:4px 0;">${msg}</div>`,
+          'happy');
+        this.sleepTimer = setTimeout(() => this.setState('sleep'), 20000);
+        return;
+      }
+
+      const now = Date.now();
+      // 合并列表：紧急在前，按天数降序
+      const allList = [
+        ...this.urgentList.map(c => ({ c, days: this.daysSince(c), level: 'urgent' })),
+        ...this.alertList.map(c  => ({ c, days: this.daysSince(c), level: 'warn'   }))
+      ].sort((a, b) => b.days - a.days);
+
+      const show = allList.slice(0, 5); // 最多展示5条
+      const more = allList.length - show.length;
+
+      const urgentCount = this.urgentList.length;
+
+      const rowsHTML = show.map(({ c, days, level }) => {
+        const tagLabel = level === 'urgent' ? '逾期' : '待跟进';
+        const daysText = days === 0 ? '今日' : `${days}天未联系`;
+        const safeName = escapeHTML(c.name || '未命名');
+        return `<div class="pet-customer-row" data-name="${safeName}" title="点击搜索该客户">
+          <span class="pet-customer-tag ${level}">${tagLabel}</span>
+          <span class="pet-customer-name">${safeName}</span>
+          <span class="pet-customer-days ${level}">${daysText}</span>
+        </div>`;
+      }).join('');
+
+      const footerHTML = more > 0
+        ? `<div class="pet-bubble-footer">还有 ${more} 位客户待跟进，<span style="color:#2563eb;cursor:pointer;" onclick="if(typeof navigate==='function')navigate('list');CRMPet.hideBubble();">点击查看全部 →</span></div>`
+        : `<div class="pet-bubble-footer">点击客户名跳转列表</div>`;
+
+      const title = urgentCount > 0
+        ? `⚠️ ${urgentCount} 位客户逾期未联系`
+        : `🔔 ${total} 位客户待跟进`;
+
+      this.showBubble(title, rowsHTML + footerHTML, urgentCount > 0 ? 'alert' : 'alert');
+    }
+  };
+
+  // ── 双击缩小 / 展开 ──────────────────────────────────────────
+  let petClickTimer = null;
+  let petClickCount = 0;
+
+  document.getElementById('crm-pet-body').addEventListener('click', function (e) {
+    if (PET.isDragging) return;
+    petClickCount++;
+    clearTimeout(petClickTimer);
+
+    petClickTimer = setTimeout(() => {
+      if (petClickCount >= 2) {
+        // 双击：切换 mini 模式
+        const widget = document.getElementById('crm-pet-widget');
+        const isMini = widget.classList.contains('mini');
+        if (isMini) {
+          widget.classList.remove('mini');
+          widget.removeAttribute('data-mini-tip');
+          PET.lastInteract = Date.now();
+          // 展开后自动弹出提醒
+          setTimeout(() => PET.check(), 200);
+        } else {
+          PET.hideBubble();
+          widget.classList.add('mini');
+          widget.setAttribute('data-mini-tip', '双击展开');
+        }
+      } else {
+        // 单击：涟漪 + 开关气泡
+        if (!document.getElementById('crm-pet-widget').classList.contains('mini')) {
+          const ripple = document.createElement('div');
+          ripple.className = 'pet-ripple';
+          this.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 500);
+
+          PET.lastInteract = Date.now();
+          clearTimeout(PET.sleepTimer);
+
+          const bubble = document.getElementById('crm-pet-bubble');
+          if (bubble && bubble.classList.contains('show')) {
+            PET.hideBubble();
+          } else {
+            PET.check();
+          }
+        }
+      }
+      petClickCount = 0;
+    }, 260); // 260ms 内第二次点击算双击
+  });
+
+  // 关闭气泡
+  document.getElementById('crm-pet-bubble-close').addEventListener('click', function (e) {
+    e.stopPropagation();
+    PET.hideBubble();
+  });
+
+  // ── 拖拽逻辑 ──────────────────────────────────────────────────
+  const petWidget = document.getElementById('crm-pet-widget');
+  petWidget.addEventListener('mousedown', function (e) {
+    if (e.target.closest('#crm-pet-bubble')) return;
+    PET.isDragging = false;
+    const rect = petWidget.getBoundingClientRect();
+    PET.dragOffX = e.clientX - rect.right;
+    PET.dragOffY = e.clientY - rect.bottom;
+    let moved = false;
+
+    function onMove(ev) {
+      moved = true;
+      PET.isDragging = true;
+      const newRight = window.innerWidth - ev.clientX + PET.dragOffX;
+      const newBottom = window.innerHeight - ev.clientY + PET.dragOffY;
+      petWidget.style.right = Math.max(8, Math.min(window.innerWidth - 90, newRight)) + 'px';
+      petWidget.style.bottom = Math.max(8, Math.min(window.innerHeight - 90, newBottom)) + 'px';
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      setTimeout(() => { PET.isDragging = false; }, 100);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // 触摸拖拽
+  petWidget.addEventListener('touchstart', function (e) {
+    if (e.target.closest('#crm-pet-bubble')) return;
+    const touch = e.touches[0];
+    const rect = petWidget.getBoundingClientRect();
+    PET.dragOffX = touch.clientX - rect.right;
+    PET.dragOffY = touch.clientY - rect.bottom;
+
+    function onTouchMove(ev) {
+      ev.preventDefault();
+      PET.isDragging = true;
+      const t = ev.touches[0];
+      const newRight = window.innerWidth - t.clientX + PET.dragOffX;
+      const newBottom = window.innerHeight - t.clientY + PET.dragOffY;
+      petWidget.style.right = Math.max(8, Math.min(window.innerWidth - 90, newRight)) + 'px';
+      petWidget.style.bottom = Math.max(8, Math.min(window.innerHeight - 90, newBottom)) + 'px';
+    }
+    function onTouchEnd() {
+      petWidget.removeEventListener('touchmove', onTouchMove);
+      petWidget.removeEventListener('touchend', onTouchEnd);
+      setTimeout(() => { PET.isDragging = false; }, 100);
+    }
+    petWidget.addEventListener('touchmove', onTouchMove, { passive: false });
+    petWidget.addEventListener('touchend', onTouchEnd);
+  });
+
+  // ── 定时调度 ──────────────────────────────────────────────────
+  // 注意：首次扫描由 enterApp() 在解锁完成后主动调用 window.CRMPet.check()
+  // 这里只负责：每 30 分钟周期复查 + 无操作 5 分钟睡眠
+  function scheduleCheck() {
+    console.log('[🐱猫咪] scheduleCheck 注册定时器：30分钟周期复查 + 5分钟睡眠检测');
+    // 每隔 30 分钟自动检查一次
+    PET.checkTimer = setInterval(() => {
+      if (!window.Store || !Store.data || !Store.data.customers) return;
+      PET.scan();
+      const total = PET.urgentList.length + PET.alertList.length;
+      console.log('[🐱猫咪] 30分钟定时扫描 | total=' + total);
+      if (total > 0) PET.check();
+    }, 30 * 60 * 1000);
+
+    // 无操作 5 分钟后睡眠
+    setInterval(() => {
+      if (Date.now() - PET.lastInteract > 5 * 60 * 1000 && PET.state !== 'sleep') {
+        PET.setState('sleep');
+      }
+    }, 60 * 1000);
+  }
+
+  scheduleCheck();
+
+  // 暴露给全局，方便调试
+  window.CRMPet = PET;
+})();
 </script>
 </body>
 </html>
