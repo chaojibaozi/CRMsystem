@@ -2464,7 +2464,7 @@ html.scrolling {
 
       <div class="auth-footer">
         忘记密码？<span class="auth-link" id="btn-forgot">强制清空并重置</span>
-        <br><span class="auth-link" id="btn-sq-hint" style="color:var(--color-danger);font-size:12px;margin-top:4px;display:inline-block;cursor:pointer;">登录后在 账户设置 → 重置密码 中设置密保问题</span>
+        <br><span class="auth-link" id="btn-sq-hint" style="color:var(--color-danger);font-size:12px;margin-top:4px;display:inline-block;cursor:pointer;">登录后在 账户设置 → 账户密码设置 中设置密保问题</span>
       </div>
     </div>
 
@@ -2884,14 +2884,58 @@ html.scrolling {
       <!-- 账户设置 -->
       <section class="page" id="page-settings">
         <div class="card" style="margin-bottom:12px;">
-          <h2 style="font-size:18px;margin-bottom:10px;">🔒 重置登录密码</h2>
+          <h2 style="font-size:18px;margin-bottom:10px;">🔒 账户密码设置</h2>
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
             可通过以下任意一种方式验证身份后重置密码：
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <button class="btn" id="btn-set-sq-settings">设置密保问题</button>
             <button class="btn btn-warning" id="btn-reset-pw-by-sq-settings">通过密保问题重置</button>
-            <button class="btn" id="btn-reset-pw-by-cur-pw-settings">验证当前密码重置</button>
+            <button class="btn" id="btn-change-password">修改解锁密码</button>
+          </div>
+          <hr style="margin:20px 0;border:none;border-top:1px solid var(--border-color);">
+          <h3 style="font-size:15px;margin-bottom:8px;">密保问题</h3>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+            设置2个密保问题和答案，忘记密码时可通过验证密保问题重置密码。问题和答案均加密存储。
+          </div>
+          <div style="margin-bottom:12px;">
+            <button class="btn btn-sm btn-primary" id="btn-sq-setup">设置密保问题</button>
+          </div>
+          <div id="security-questions-area">
+            <!-- 设置表单 -->
+            <div id="sq-not-set" style="display:none;">
+              <div class="auth-group" style="margin-bottom:10px;">
+                <label class="label">密保问题 1</label>
+                <input type="text" id="sq-q1" class="input" placeholder="例如：我小学的名称是？">
+              </div>
+              <div class="auth-group" style="margin-bottom:10px;">
+                <label class="label">答案 1</label>
+                <input type="text" id="sq-a1" class="input" placeholder="请输入答案">
+              </div>
+              <div class="auth-group" style="margin-bottom:10px;">
+                <label class="label">密保问题 2</label>
+                <input type="text" id="sq-q2" class="input" placeholder="例如：我的出生地是？">
+              </div>
+              <div class="auth-group" style="margin-bottom:12px;">
+                <label class="label">答案 2</label>
+                <input type="text" id="sq-a2" class="input" placeholder="请输入答案">
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-sm" id="btn-sq-cancel">取消</button>
+                <button class="btn btn-sm btn-primary" id="btn-sq-save">保存密保问题</button>
+              </div>
+            </div>
+            <!-- 已设置时显示状态 -->
+            <div id="sq-has-set" style="display:none;">
+              <div style="padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:12px;">
+                <div style="font-size:13px;color:var(--text-secondary);">
+                  <span style="font-weight:500;color:var(--text-primary);">密保问题已设置</span><br>
+                  忘记密码时可通过验证密保问题重置密码。
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-sm btn-outline" id="btn-sq-clear">清除密保问题</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2983,56 +3027,6 @@ html.scrolling {
           </div>
         </div>
 
-        <div class="card" style="margin-bottom:12px;">
-          <h2 style="font-size:18px;margin-bottom:10px;">密码管理</h2>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-            <button class="btn" id="btn-change-password">修改解锁密码</button>
-          </div>
-          <hr style="margin:20px 0;border:none;border-top:1px solid var(--border-color);">
-          <h3 style="font-size:15px;margin-bottom:8px;">密保问题</h3>
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
-            设置2个密保问题和答案，忘记密码时可通过验证密保问题重置密码。问题和答案均加密存储。
-          </div>
-          <div id="security-questions-area">
-            <!-- 未设置时显示设置表单 -->
-            <div id="sq-not-set" style="display:none;">
-              <div class="auth-group" style="margin-bottom:10px;">
-                <label class="label">密保问题 1</label>
-                <input type="text" id="sq-q1" class="input" placeholder="例如：我小学的名称是？">
-              </div>
-              <div class="auth-group" style="margin-bottom:10px;">
-                <label class="label">答案 1</label>
-                <input type="text" id="sq-a1" class="input" placeholder="请输入答案">
-              </div>
-              <div class="auth-group" style="margin-bottom:10px;">
-                <label class="label">密保问题 2</label>
-                <input type="text" id="sq-q2" class="input" placeholder="例如：我的出生地是？">
-              </div>
-              <div class="auth-group" style="margin-bottom:12px;">
-                <label class="label">答案 2</label>
-                <input type="text" id="sq-a2" class="input" placeholder="请输入答案">
-              </div>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-sm" id="btn-sq-cancel">取消</button>
-                <button class="btn btn-sm btn-primary" id="btn-sq-save">保存密保问题</button>
-              </div>
-            </div>
-            <!-- 已设置时显示状态 -->
-            <div id="sq-has-set" style="display:none;">
-              <div style="padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:12px;">
-                <div style="font-size:13px;color:var(--text-secondary);">
-                  <span style="font-weight:500;color:var(--text-primary);">密保问题已设置</span><br>
-                  忘记密码时可通过验证密保问题重置密码。
-                </div>
-              </div>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-sm btn-outline" id="btn-sq-clear">清除密保问题</button>
-                <button class="btn btn-sm" id="btn-sq-edit">修改密保问题</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <h2 style="font-size:18px;">操作审计日志</h2>
@@ -3056,7 +3050,13 @@ html.scrolling {
           </div>
 
           <div style="margin-bottom:12px;">
-            <div style="font-size:14px;font-weight:500;margin-bottom:8px;">选择客户渠道（多选）</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:14px;font-weight:500;">选择客户渠道（多选）</div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-sm" id="btn-channel-select-all">全选</button>
+                <button class="btn btn-sm btn-outline" id="btn-channel-deselect-all">全不选</button>
+              </div>
+            </div>
             <div id="data-download-channels" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
           </div>
 
@@ -7518,14 +7518,46 @@ function openImageViewer(dataUrl) {
    ================================================================ */
 function renderSettingsPage() {
   try {
-    // 更新设置密保问题按钮状态和事件
-    const btnSetSQ = document.getElementById('btn-set-sq-settings');
-    if (btnSetSQ) {
-      const hasSQ = Array.isArray(Store.data.securityQuestions) && Store.data.securityQuestions.length === 2;
-      btnSetSQ.disabled = hasSQ;
-      btnSetSQ.className = hasSQ ? 'btn btn-outline' : 'btn';
-      btnSetSQ.textContent = hasSQ ? '密保问题已设置' : '设置密保问题';
-      btnSetSQ.onclick = hasSQ ? null : () => window.openSetSecurityQuestionsDialog();
+    // 更新密保问题 UI（内联表单）
+    if (typeof window.initSecurityQuestionsUI === 'function') {
+      window.initSecurityQuestionsUI();
+    }
+
+    // 绑定设置密保问题入口按钮（每次进入设置页面重新绑定，确保事件可靠）
+    const btnSqSetup = document.getElementById('btn-sq-setup');
+    if (btnSqSetup) {
+      btnSqSetup.onclick = () => {
+        const sq = Store.data.securityQuestions;
+        if (Array.isArray(sq) && sq.length === 2) {
+          document.getElementById('sq-q1').value = sq[0].q || '';
+          document.getElementById('sq-a1').value = '';
+          document.getElementById('sq-q2').value = sq[1].q || '';
+          document.getElementById('sq-a2').value = '';
+        } else {
+          document.getElementById('sq-q1').value = '';
+          document.getElementById('sq-a1').value = '';
+          document.getElementById('sq-q2').value = '';
+          document.getElementById('sq-a2').value = '';
+        }
+        document.getElementById('sq-not-set').style.display = 'flex';
+        document.getElementById('sq-has-set').style.display = 'none';
+        const sBtn = document.getElementById('btn-sq-setup');
+        if (sBtn) sBtn.style.display = 'none';
+      };
+    }
+
+    // 绑定密保表单取消按钮
+    const btnSqCancel = document.getElementById('btn-sq-cancel');
+    if (btnSqCancel) {
+      btnSqCancel.onclick = () => {
+        document.getElementById('sq-q1').value = '';
+        document.getElementById('sq-a1').value = '';
+        document.getElementById('sq-q2').value = '';
+        document.getElementById('sq-a2').value = '';
+        if (typeof window.initSecurityQuestionsUI === 'function') {
+          window.initSecurityQuestionsUI();
+        }
+      };
     }
 
     // 绑定通过密保问题重置事件
@@ -7534,56 +7566,10 @@ function renderSettingsPage() {
       btnResetBySq.onclick = () => {
         const sq = Store.data.securityQuestions;
         if (!Array.isArray(sq) || sq.length !== 2) {
-          showToast('请先在"数据与安全"页面设置密保问题', 'warning');
+          showToast('请先在"账户密码设置"中设置密保问题', 'warning');
           return;
         }
         window.openResetBySecurityQuestionsDialog();
-      };
-    }
-
-    // 绑定验证当前密码重置事件
-    const btnResetByCurPw = document.getElementById('btn-reset-pw-by-cur-pw-settings');
-    if (btnResetByCurPw) {
-      btnResetByCurPw.onclick = () => {
-        openModal({
-          title: '验证当前密码',
-          size: 'sm',
-          bodyHTML: `
-            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
-              请输入当前解锁密码以验证身份：
-            </div>
-            <div class="auth-group">
-              <label class="label required">当前密码</label>
-              <input type="password" id="cur-pw-input" class="input" placeholder="请输入当前密码" autocomplete="off">
-              <div class="error-text" id="cur-pw-error" style="display:none;">密码错误</div>
-            </div>
-          `,
-          footer: (f) => {
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-primary';
-            btn.id = 'btn-verify-cur-pw';
-            btn.textContent = '验证';
-            f.appendChild(btn);
-
-            const doVerify = async () => {
-              const curPw = document.getElementById('cur-pw-input').value;
-              if (!curPw) return;
-              try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) throw new Error('无数据');
-                await decryptData(raw, curPw);
-                closeModal();
-                setTimeout(() => window.openSetNewPasswordDialog(), 300);
-              } catch (e) {
-                document.getElementById('cur-pw-error').style.display = 'block';
-              }
-            };
-
-            btn.onclick = doVerify;
-            const input = document.getElementById('cur-pw-input');
-            if (input) input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doVerify(); });
-          },
-        });
       };
     }
 
@@ -7950,6 +7936,22 @@ function renderDataDownloadPage() {
   });
 
   chContainer.addEventListener('change', () => updateDownloadInfo());
+
+  // 渠道全选 / 全不选
+  const btnChannelSelectAll = document.getElementById('btn-channel-select-all');
+  const btnChannelDeselectAll = document.getElementById('btn-channel-deselect-all');
+  if (btnChannelSelectAll) {
+    btnChannelSelectAll.onclick = () => {
+      channelCbs.forEach(cb => { cb.checked = true; });
+      updateDownloadInfo();
+    };
+  }
+  if (btnChannelDeselectAll) {
+    btnChannelDeselectAll.onclick = () => {
+      channelCbs.forEach(cb => { cb.checked = false; });
+      updateDownloadInfo();
+    };
+  }
 
   btnDownload.onclick = () => {
     const selectedFields = Array.from(fieldCbs).filter(cb => cb.checked).map(cb => parseInt(cb.dataset.index));
@@ -8422,7 +8424,7 @@ function initAuthPage() {
         if (localStorage.getItem('crm_has_sq') === '1') {
           if (window.openResetBySecurityQuestionsDialog) window.openResetBySecurityQuestionsDialog();
         } else {
-          showToast('请登录后在"账户设置→重置密码"中点击"设置密保问题"按钮', 'warning');
+          showToast('请登录后在"账户设置→账户密码设置"中设置密保问题', 'warning');
         }
       };
     }
@@ -8720,11 +8722,8 @@ document.addEventListener('DOMContentLoaded', function () {
       Store.unlocked = false; Store.password = null;
       sessionStorage.removeItem('crm_session_pw');
       sessionStorage.removeItem('crm_session_locked');
-      document.getElementById('app-view').style.display = 'none';
-      document.getElementById('auth-view').style.display = 'block';
-      document.getElementById('unlock-password').value = '';
-      document.getElementById('unlock-username').value = '';
       showToast('已登出系统', 'info');
+      initAuthPage();
     };
   }
 
@@ -10326,9 +10325,15 @@ function refreshUI() {
     }
     const notSetEl = document.getElementById('sq-not-set');
     const hasSetEl = document.getElementById('sq-has-set');
+    const setupBtn = document.getElementById('btn-sq-setup');
     if (!notSetEl || !hasSetEl) return;
+    // 根据是否已有密保控制表单/状态显示
     notSetEl.style.display = hasSQ ? 'none' : 'flex';
     hasSetEl.style.display = hasSQ ? 'block' : 'none';
+    // 设置密保按钮：已设置时隐藏（用户通过清除后再设置），未设置时显示
+    if (setupBtn) {
+      setupBtn.style.display = hasSQ ? 'none' : 'inline-flex';
+    }
   }
 
   // 保存密保问题
@@ -10356,9 +10361,10 @@ function refreshUI() {
     };
   }
 
-  // 取消设置密保
+  // 取消设置密保（IIFE 中作为后备绑定，主要绑定在 renderSettingsPage）
   const btnSqCancel = document.getElementById('btn-sq-cancel');
-  if (btnSqCancel) {
+  if (btnSqCancel && !btnSqCancel.dataset.bound) {
+    btnSqCancel.dataset.bound = '1';
     btnSqCancel.onclick = () => {
       document.getElementById('sq-q1').value = '';
       document.getElementById('sq-a1').value = '';
@@ -10384,19 +10390,28 @@ function refreshUI() {
     };
   }
 
-  // 修改密保问题
-  const btnSqEdit = document.getElementById('btn-sq-edit');
-  if (btnSqEdit) {
-    btnSqEdit.onclick = () => {
+  // 设置密保问题入口按钮
+  const btnSqSetup = document.getElementById('btn-sq-setup');
+  if (btnSqSetup) {
+    btnSqSetup.onclick = function() {
       const sq = Store.data.securityQuestions;
       if (Array.isArray(sq) && sq.length === 2) {
+        // 已设置：预填问题，清空答案
         document.getElementById('sq-q1').value = sq[0].q || '';
         document.getElementById('sq-a1').value = '';
         document.getElementById('sq-q2').value = sq[1].q || '';
         document.getElementById('sq-a2').value = '';
+      } else {
+        // 未设置：清空表单
+        document.getElementById('sq-q1').value = '';
+        document.getElementById('sq-a1').value = '';
+        document.getElementById('sq-q2').value = '';
+        document.getElementById('sq-a2').value = '';
       }
       document.getElementById('sq-not-set').style.display = 'flex';
       document.getElementById('sq-has-set').style.display = 'none';
+      const setupBtn = document.getElementById('btn-sq-setup');
+      if (setupBtn) setupBtn.style.display = 'none';
     };
   }
 
@@ -10513,72 +10528,8 @@ function refreshUI() {
     });
   }
 
-  // ── 设置页面：设置密保问题弹窗 ─────────────────────────────
-  function openSetSecurityQuestionsDialog() {
-    openModal({
-      title: '设置密保问题',
-      size: 'sm',
-      bodyHTML: `
-        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
-          设置2个密保问题和答案，忘记密码时可通过验证密保问题重置密码。问题和答案均加密存储。
-        </div>
-        <div class="auth-group" style="margin-bottom:10px;">
-          <label class="label required">密保问题 1</label>
-          <input type="text" id="modal-sq-q1" class="input" placeholder="例如：我小学的名称是？">
-        </div>
-        <div class="auth-group" style="margin-bottom:10px;">
-          <label class="label required">答案 1</label>
-          <input type="text" id="modal-sq-a1" class="input" placeholder="请输入答案">
-        </div>
-        <div class="auth-group" style="margin-bottom:10px;">
-          <label class="label required">密保问题 2</label>
-          <input type="text" id="modal-sq-q2" class="input" placeholder="例如：我的出生地是？">
-        </div>
-        <div class="auth-group" style="margin-bottom:12px;">
-          <label class="label required">答案 2</label>
-          <input type="text" id="modal-sq-a2" class="input" placeholder="请输入答案">
-        </div>
-      `,
-      footer: (f) => {
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'btn btn-sm btn-outline';
-        safeText(cancelBtn, '取消');
-        cancelBtn.onclick = closeModal;
-        f.appendChild(cancelBtn);
-
-        const saveBtn = document.createElement('button');
-        saveBtn.className = 'btn btn-sm btn-primary';
-        safeText(saveBtn, '保存密保问题');
-        f.appendChild(saveBtn);
-
-        saveBtn.onclick = () => {
-          const q1 = document.getElementById('modal-sq-q1').value.trim();
-          const a1 = document.getElementById('modal-sq-a1').value.trim();
-          const q2 = document.getElementById('modal-sq-q2').value.trim();
-          const a2 = document.getElementById('modal-sq-a2').value.trim();
-          if (!q1 || !a1 || !q2 || !a2) {
-            showToast('请完整填写2个密保问题和答案', 'error');
-            return;
-          }
-          Store.data.securityQuestions = [
-            { q: q1, a: a1.toLowerCase() },
-            { q: q2, a: a2.toLowerCase() }
-          ];
-          localStorage.setItem('crm_has_sq', '1');
-          Store.markDirty();
-          Store.save().then(() => {
-            showToast('密保问题已保存', 'success');
-            closeModal();
-            initSecurityQuestionsUI();
-            if (typeof renderSettingsPage === 'function') renderSettingsPage();
-          });
-        };
-      },
-    });
-  }
 
   // 导出函数供 renderSettingsPage 使用
-  window.openSetSecurityQuestionsDialog = openSetSecurityQuestionsDialog;
   window.openSetNewPasswordDialog = openSetNewPasswordDialog;
   window.openResetBySecurityQuestionsDialog = openResetBySecurityQuestionsDialog;
   // 导出 initSecurityQuestionsUI 到 window
