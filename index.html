@@ -3530,8 +3530,8 @@ const Store = {
         // 迁移旧标签ID到新标签ID
         if (Array.isArray(c.tags)) {
           c.tags = c.tags.map(tagId => {
-            if (tagId === 't_vip') return 't_a';
-            if (tagId === 't_hot') return 't_b';
+            if (tagId === 't_vip' || tagId === 't_a') return 't_old';
+            if (tagId === 't_hot' || tagId === 't_b' || tagId === 't_c') return 't_old';
             return tagId;
           });
         }
@@ -3914,12 +3914,9 @@ function promptPassword(title, message, onOk) {
 let draftTimer = null;
 
 function getDefaultTags() {
-  // 若用户未设置标签，提供 3 个默认颜色标签
   if (!Store.data.tags || Store.data.tags.length === 0) {
     Store.data.tags = [
-      { id: 't_a', name: 'A级客户', color: '#dc2626' },
-      { id: 't_b', name: 'B级客户', color: '#d97706' },
-      { id: 't_c', name: 'C级客户', color: '#2563eb' },
+      { id: 't_old', name: '老客户', color: '#2563eb' },
       { id: 't_new', name: '新客户', color: '#16a34a' }
     ];
   }
@@ -8125,7 +8122,7 @@ function ensureSeedData() {
         province: '北京市', city: '北京市', district: '朝阳区', address: '建国路 88 号 SOHO 现代城',
         product: '企业财税咨询', budget: '20000-50000', nextFollowDate: dateOnly(now + 2 * 86400000),
         createdAt: now - 3 * 86400000, updatedAt: now - 1 * 86400000,
-        tags: ['t_a'], remark: '初次沟通，客户兴趣较强', remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }],
+        tags: ['t_old'], remark: '初次沟通，客户兴趣较强', remarkHistory: [{ time: now - 2 * 86400000, text: '初次沟通，客户兴趣较强，约定下周详谈。' }],
         channels: ['geo']
       },
       {
@@ -8135,7 +8132,7 @@ function ensureSeedData() {
         province: '上海市', city: '上海市', district: '徐汇区', address: '漕溪北路 18 号',
         product: '品牌营销咨询', budget: '50000-100000', nextFollowDate: dateOnly(now + 5 * 86400000),
         createdAt: now - 30 * 86400000, updatedAt: now - 5 * 86400000,
-        tags: ['t_b'], remark: '签约成功', remarkHistory: [{ time: now - 20 * 86400000, text: '签约成功，首期款已收到。' }]
+        tags: ['t_old'], remark: '签约成功', remarkHistory: [{ time: now - 20 * 86400000, text: '签约成功，首期款已收到。' }]
       },
       {
         id: 'demo_3', name: '王芳', gender: '女', age: '28', phone: '13900000003',
@@ -8152,9 +8149,7 @@ function ensureSeedData() {
   // 确保默认标签可用
   if (!Store.data.tags || Store.data.tags.length === 0) {
     Store.data.tags = [
-      { id: 't_a', name: 'A级客户', color: '#dc2626' },
-      { id: 't_b', name: 'B级客户', color: '#d97706' },
-      { id: 't_c', name: 'C级客户', color: '#2563eb' },
+      { id: 't_old', name: '老客户', color: '#2563eb' },
       { id: 't_new', name: '新客户', color: '#16a34a' }
     ];
   }
