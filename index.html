@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self';">
 <title>客户关系管理系统</title>
 <link rel="icon" href="logo64.png" type="image/png">
 <style>
@@ -558,11 +558,7 @@ input[type="checkbox"]:checked {
 }
 .lock-dialog .auth-group { margin-bottom: var(--space-3); }
 .lock-dialog .error-text { font-size: 12px; margin-top: 4px; }
-.lock-dialog .gesture-container { margin: 0 auto; }
-.lock-dialog .gesture-canvas-wrap { width: 240px; height: 240px; margin: 0 auto; }
-.lock-dialog .gesture-canvas-wrap canvas { width: 240px; height: 240px; }
-.lock-dialog .gesture-hint { font-size: 13px; }
-.lock-dialog .gesture-actions { margin-top: 8px; }
+
 .auth-logo {
   text-align: center;
   margin-bottom: var(--space-4);
@@ -670,9 +666,6 @@ input[type="checkbox"]:checked {
 .auth-card .btn-lg { padding: 8px 20px; font-size: 14px; height: 36px; }
 .auth-card .btn-primary { font-size: 14px; }
 .auth-card .btn { font-size: 13px; padding: 7px 14px; }
-.auth-gesture-toggle { margin-bottom: 12px; }
-.auth-gesture-toggle .toggle-btn { padding: 5px 12px; font-size: 12px; }
-
 /* 解锁成功动画 */
 @keyframes unlockSuccess {
   0% { transform: scale(1); opacity: 1; }
@@ -2368,76 +2361,7 @@ table.data-table {
   overflow: hidden;
   margin-top: 4px;
 }
-/* 9点手势解锁 */
-.gesture-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 0;
-}
-.gesture-canvas-wrap {
-  position: relative;
-  width: 240px;
-  height: 240px;
-  border-radius: var(--radius-md);
-  background: var(--bg-tertiary);
-  border: 1.5px solid var(--border-color);
-  cursor: pointer;
-  touch-action: none;
-  user-select: none;
-}
-.gesture-canvas-wrap canvas {
-  width: 100%;
-  height: 100%;
-}
-.gesture-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-}
-.gesture-status {
-  font-size: 13px;
-  font-weight: 500;
-  min-height: 20px;
-  text-align: center;
-}
-.gesture-status.success { color: var(--color-success); }
-.gesture-status.error { color: var(--color-danger); }
-.gesture-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-/* 解锁界面手势入口 */
-.auth-gesture-toggle {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-.auth-gesture-toggle .toggle-btn {
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  cursor: pointer;
-  border: 1.5px solid var(--border-color);
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  transition: all 0.18s;
-}
-.auth-gesture-toggle .toggle-btn.active {
-  background: var(--color-primary-50);
-  border-color: var(--color-primary-300);
-  color: var(--color-primary-700);
-  font-weight: 500;
-}
-[data-theme="dark"] .auth-gesture-toggle .toggle-btn.active {
-  background: rgba(99,102,241,0.15);
-  border-color: var(--color-primary-500);
-  color: var(--color-primary-300);
-}
+
 
 /* 页面级细滚动条 - 鼠标滚轮滚动时显示，停止后隐藏 */
 html::-webkit-scrollbar {
@@ -2466,6 +2390,7 @@ html.scrolling {
   scrollbar-color: var(--color-neutral-300) transparent;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -2516,12 +2441,6 @@ html.scrolling {
         系统已锁定，请 <span id="lockout-countdown">60</span> 秒后重试
       </div>
 
-      <!-- 密码/手势切换 -->
-      <div class="auth-gesture-toggle" id="unlock-toggle">
-        <button class="toggle-btn active" id="btn-unlock-pw-mode">密码登录</button>
-        <button class="toggle-btn" id="btn-unlock-gesture-mode">手势登录</button>
-      </div>
-
       <!-- 密码登录表单 -->
       <div id="unlock-pw-form">
         <div class="auth-group">
@@ -2543,23 +2462,9 @@ html.scrolling {
         <button class="btn btn-primary btn-lg" style="display:block;width:100%;text-align:center;" id="btn-unlock">解锁系统</button>
       </div>
 
-      <!-- 手势登录表单 -->
-      <div id="unlock-gesture-form" style="display:none;">
-        <div class="gesture-container">
-          <div class="gesture-canvas-wrap" id="unlock-gesture-canvas-wrap">
-            <canvas id="unlock-gesture-canvas" width="240" height="240"></canvas>
-          </div>
-          <div class="gesture-hint" id="unlock-gesture-hint">请输入手势密码</div>
-          <div class="gesture-status" id="unlock-gesture-status"></div>
-          <div class="gesture-actions">
-            <button class="btn btn-sm" id="btn-unlock-gesture-reset">重新绘制</button>
-          </div>
-        </div>
-      </div>
-
       <div class="auth-footer">
         忘记密码？<span class="auth-link" id="btn-forgot">强制清空并重置</span>
-        <br><span class="auth-link" id="btn-sq-hint" style="color:var(--color-danger);font-size:12px;margin-top:4px;display:inline-block;cursor:pointer;">设置密保问题以重置密码</span>
+        <br><span class="auth-link" id="btn-sq-hint" style="color:var(--color-danger);font-size:12px;margin-top:4px;display:inline-block;cursor:pointer;">登录后在 账户设置 → 重置密码 中设置密保问题</span>
       </div>
     </div>
 
@@ -2623,6 +2528,11 @@ html.scrolling {
         <li class="nav-item" data-page="douyin"><span class="nav-icon">🎵</span>抖音客户<span class="nav-count" id="nav-count-douyin">0</span></li>
         <li class="nav-item" data-page="xianyu"><span class="nav-icon">🐟</span>闲鱼客户<span class="nav-count" id="nav-count-xianyu">0</span></li>
         <li class="nav-item" data-page="trash"><span class="nav-icon">🗑️</span>作废客户<span class="nav-count" id="nav-count-trash">0</span></li>
+      </ul>
+      <span class="nav-group-label">数据管理</span>
+      <ul class="nav-list">
+        <li class="nav-item" data-page="data-download"><span class="nav-icon">📥</span>数据下载</li>
+        <li class="nav-item" data-page="help"><span class="nav-icon">❓</span>帮助</li>
       </ul>
       <span class="nav-group-label">系统管理</span>
       <ul class="nav-list">
@@ -2817,11 +2727,6 @@ html.scrolling {
               <input type="text" class="input" id="filter-keyword" placeholder="姓名 / 脱敏手机号">
             </div>
             <div>
-              <label class="label">客户等级</label>
-              <select class="select" id="filter-level">
-              </select>
-            </div>
-            <div>
               <label class="label">成交状态</label>
               <select class="select" id="filter-status">
                 <option value="">全部</option>
@@ -2864,7 +2769,6 @@ html.scrolling {
                 <th style="width:50px;">序号</th>
                 <th data-sort="name">姓名 ▾</th>
                 <th data-sort="phone">手机号 ▾</th>
-                <th data-sort="level">等级 ▾</th>
                 <th>意向产品</th>
                 <th data-sort="source">来源 ▾</th>
                 <th data-sort="status">成交状态 ▾</th>
@@ -2985,13 +2889,9 @@ html.scrolling {
             可通过以下任意一种方式验证身份后重置密码：
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+            <button class="btn" id="btn-set-sq-settings">设置密保问题</button>
             <button class="btn btn-warning" id="btn-reset-pw-by-sq-settings">通过密保问题重置</button>
             <button class="btn" id="btn-reset-pw-by-cur-pw-settings">验证当前密码重置</button>
-            <button class="btn" id="btn-reset-pw-by-gesture-settings">验证手势重置</button>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-            <button class="btn" id="btn-gesture-setup-settings" style="min-width:160px;">设置手势密码</button>
-            <span id="gesture-setup-settings-hint" style="font-size:12px;color:var(--text-muted);">设置后可在解锁时使用手势辅助验证</span>
           </div>
         </div>
 
@@ -3088,41 +2988,6 @@ html.scrolling {
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
             <button class="btn" id="btn-change-password">修改解锁密码</button>
           </div>
-          <h3 style="font-size:15px;margin-bottom:8px;">解锁手势</h3>
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
-            设置9点解锁手势后，下次登录可先验证手势，再输入密码解锁。手势以加密方式存储。
-          </div>
-          <div id="gesture-setting-area">
-            <!-- 未设置手势时显示 -->
-            <div id="gesture-not-set" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 0;">
-              <div class="gesture-canvas-wrap" id="gesture-set-canvas-wrap" style="width:240px;height:240px;">
-                <canvas id="gesture-set-canvas" width="240" height="240"></canvas>
-              </div>
-              <div class="gesture-hint" id="gesture-set-hint">请绘制解锁手势（连接至少4个点）</div>
-              <div class="gesture-status" id="gesture-set-status"></div>
-              <div class="gesture-actions">
-                <button class="btn btn-sm" id="btn-gesture-reset">重新绘制</button>
-                <button class="btn btn-sm btn-primary" id="btn-gesture-save" disabled>保存手势</button>
-              </div>
-            </div>
-            <!-- 已设置手势时显示 -->
-            <div id="gesture-has-set" style="display:none;">
-              <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:12px;">
-                <div style="font-size:13px;color:var(--text-secondary);flex:1;">
-                  <span style="font-weight:500;color:var(--text-primary);">手势已设置</span><br>
-                  解锁时可在密码登录和手势登录之间切换。
-                </div>
-                <button class="btn btn-sm btn-outline" id="btn-gesture-clear">清除手势</button>
-                <button class="btn btn-sm" id="btn-gesture-reset-all">重新设置</button>
-              </div>
-            </div>
-          </div>
-          <hr style="margin:20px 0;border:none;border-top:1px solid var(--border-color);">
-          <h3 style="font-size:15px;margin-bottom:8px;">通过手势重置密码</h3>
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
-            若已设置解锁手势，可通过验证手势来重置登录密码。
-          </div>
-          <button class="btn btn-warning btn-sm" id="btn-reset-pw-by-gesture" disabled>通过手势重置密码</button>
           <hr style="margin:20px 0;border:none;border-top:1px solid var(--border-color);">
           <h3 style="font-size:15px;margin-bottom:8px;">密保问题</h3>
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
@@ -3182,6 +3047,62 @@ html.scrolling {
         </div>
       </section>
 
+      <!-- 数据下载 -->
+      <section class="page" id="page-data-download">
+        <div class="card">
+          <h2 style="font-size:18px;margin-bottom:10px;">📥 数据下载</h2>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            选择需要导出的客户渠道和字段，点击下载按钮即可导出 Excel 格式的客户数据。每个渠道的客户数据将单独生成一个工作表（Sheet）。
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:8px;">选择客户渠道（多选）</div>
+            <div id="data-download-channels" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+          </div>
+
+          <hr style="margin:16px 0;border:none;border-top:1px solid var(--border-color);">
+
+          <div style="margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:8px;">选择导出字段</div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;padding:8px 12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:8px;">
+              <input type="checkbox" id="check-all-headers" checked> 全选
+            </label>
+            <div id="data-download-fields" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:20px;"></div>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-primary" id="btn-download-selected">⬇ 下载 Excel</button>
+            <span id="download-info" style="font-size:13px;color:var(--text-muted);">请选择渠道和字段</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 帮助 -->
+      <section class="page" id="page-help">
+        <div class="card" style="margin-bottom:12px;">
+          <h2 style="font-size:18px;margin-bottom:10px;">❓ 关于本系统</h2>
+          <div style="font-size:14px;line-height:1.8;color:var(--text-secondary);">
+            <p>CRM 客户管理系统 — 本地加密 · 本地存储</p>
+            <p>所有数据均存储在您本地设备的浏览器中，并支持同步到本地文件夹，无需联网即可使用。</p>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <h2 style="font-size:18px;margin-bottom:10px;">📖 使用说明</h2>
+          <div style="font-size:14px;line-height:1.8;color:var(--text-secondary);">
+            <p><strong>客户管理</strong>：在客户列表中添加、编辑、删除客户信息，支持多渠道分类管理。</p>
+            <p><strong>数据安全</strong>：前往"数据与安全"页面可进行备份、导入、导出等操作。</p>
+            <p><strong>数据下载</strong>：在"数据下载"页面选择需要导出的客户渠道和字段，一键下载 Excel 格式数据，每个渠道单独一个工作表。</p>
+          </div>
+        </div>
+        <div class="card">
+          <h2 style="font-size:18px;margin-bottom:10px;">🛠 常见问题</h2>
+          <div style="font-size:14px;line-height:1.8;color:var(--text-secondary);">
+            <p><strong>Q：数据会丢失吗？</strong><br>A：数据存储在浏览器本地和您指定的文件夹中，建议定期导出备份。</p>
+            <p><strong>Q：如何更换设备使用？</strong><br>A：在旧设备上导出加密备份，在新设备上导入即可。</p>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 </div>
@@ -3197,12 +3118,6 @@ html.scrolling {
         </div>
       </div>
 
-      <!-- 密码/手势切换 -->
-      <div class="auth-gesture-toggle" id="lock-toggle" style="margin-bottom:12px;">
-        <button class="toggle-btn active" id="btn-lock-pw-mode">密码解锁</button>
-        <button class="toggle-btn" id="btn-lock-gesture-mode">手势解锁</button>
-      </div>
-
       <!-- 密码解锁 -->
       <div id="lock-pw-form">
         <div class="auth-group">
@@ -3212,20 +3127,6 @@ html.scrolling {
         </div>
         <div style="margin-bottom:12px;font-size:12px;color:var(--text-muted);" id="lock-attempt-info"></div>
         <button class="btn btn-primary btn-lg" style="display:block;width:100%;text-align:center;" id="btn-lock-unlock">解锁系统</button>
-      </div>
-
-      <!-- 手势解锁 -->
-      <div id="lock-gesture-form" style="display:none;">
-        <div class="gesture-container">
-          <div class="gesture-canvas-wrap" id="lock-gesture-canvas-wrap">
-            <canvas id="lock-gesture-canvas" width="240" height="240"></canvas>
-          </div>
-          <div class="gesture-hint" id="lock-gesture-hint">请输入手势密码</div>
-          <div class="gesture-status" id="lock-gesture-status"></div>
-          <div class="gesture-actions">
-            <button class="btn btn-sm" id="btn-lock-gesture-reset">重新绘制</button>
-          </div>
-        </div>
       </div>
 
       <div style="margin-top:16px;text-align:center;">
@@ -3586,7 +3487,7 @@ const Store = {
   // 运行态内存：解锁成功后保存
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
-  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '' }, // 明文内存
+  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '' }, // 明文内存
   settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
@@ -3602,12 +3503,12 @@ const Store = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '' };
+        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '' };
         return;
       }
       const plain = await decryptData(raw, this.password);
       const parsed = JSON.parse(plain);
-      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] }, parsed);
+      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [] }, parsed);
       // 确保关键字段存在
       if (!Array.isArray(this.data.customers)) this.data.customers = [];
       if (!Array.isArray(this.data.tags)) this.data.tags = [];
@@ -4060,7 +3961,7 @@ function openCustomerForm(customer) {
       ]
     },
     {
-      key: 'business', title: '业务信息', open: false,
+      key: 'business', title: '业务信息', open: true,
       fields: [
         { key: 'product', label: '意向产品', type: 'text', max: 100 },
         { key: 'budget', label: '预算范围', type: 'text', max: 50 },
@@ -4073,7 +3974,7 @@ function openCustomerForm(customer) {
       ]
     },
     {
-      key: 'address', title: '联系地址', open: false,
+      key: 'address', title: '联系地址', open: true,
       fields: [
         { key: 'province', label: '省/直辖市', type: 'text', max: 30 },
         { key: 'city', label: '城市', type: 'text', max: 30 },
@@ -4082,7 +3983,7 @@ function openCustomerForm(customer) {
       ]
     },
     {
-      key: 'remark', title: '沟通备注 / 跟进记录', open: !!_currentChannel,
+      key: 'remark', title: '沟通备注 / 跟进记录', open: true,
       fields: [
         { key: 'remark', label: '新增跟进备注', type: 'textarea', max: 500 }
       ]
@@ -4189,19 +4090,8 @@ function openCustomerForm(customer) {
           <input type="${f.type}" class="input" data-key="${f.key}" value="${escapeHTML(val)}" maxlength="${f.max || 100}"${disabledAttr} style="${disabledStyle}"></div>`;
       }
     }
-    // 客户等级单选 + 标签多选（业务信息区块）
+    // 客户标签（业务信息区块）
     if (sec.key === 'business') {
-      const levels = getLevels();
-      const currentLevel = _currentChannel ? getChannelField(c, _currentChannel, 'level') : c.level;
-      html += `<div class="form-group" style="grid-column:1/-1;">
-        <label class="label">客户等级（单选）</label>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">`;
-      for (const l of levels) {
-        const sel = l.name === currentLevel;
-        html += `<span class="level-radio" data-level="${escapeHTML(l.name)}" data-level-color="${l.color}" style="display:inline-block;padding:4px 14px;border-radius:14px;font-size:12px;cursor:pointer;background:${sel ? l.color : '#e5e7eb'};color:${sel ? 'white' : '#4b5563'};border:1px solid ${sel ? l.color : 'transparent'};transition:all 0.15s;">${escapeHTML(l.name)}</span>`;
-      }
-      html += `<input type="hidden" data-key="level" id="level-hidden" value="${escapeHTML(currentLevel || '')}"></div></div>`;
-      // 客户标签
       const currentTags = _currentChannel ? (getChannelField(c, _currentChannel, 'tags') || []) : (c.tags || []);
       html += `<div class="form-group" style="grid-column:1/-1;">
         <label class="label">客户标签（点击选择，可多选）</label>
@@ -4259,21 +4149,6 @@ function openCustomerForm(customer) {
           }
         };
       });
-      // 等级单选选择切换
-      document.querySelectorAll('.level-radio').forEach(el => {
-        el.onclick = () => {
-          document.querySelectorAll('.level-radio').forEach(x => {
-            x.style.background = '#e5e7eb';
-            x.style.color = '#4b5563';
-            x.style.borderColor = 'transparent';
-          });
-          el.style.background = el.dataset.levelColor || '#2563eb';
-          el.style.color = 'white';
-          el.style.borderColor = el.dataset.levelColor || '#2563eb';
-          document.getElementById('level-hidden').value = el.dataset.level;
-        };
-      });
-
       // 一级行业切换联动二级行业
       const l1Select = document.getElementById('industry-level1-select');
       const l2Select = document.getElementById('industry-level2-select');
@@ -4408,14 +4283,14 @@ function openCustomerForm(customer) {
       btnR.onclick = () => {
         document.querySelectorAll('#modal-box .input, #modal-box .textarea').forEach(el => {
           let v = c[el.dataset.key] || '';
-          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate' || el.dataset.key === 'level')) {
+          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate')) {
             v = getChannelField(c, _currentChannel, el.dataset.key) || '';
           }
           el.value = v;
         });
         document.querySelectorAll('#modal-box .select').forEach(el => {
           let v = c[el.dataset.key] || '';
-          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate' || el.dataset.key === 'level')) {
+          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate')) {
             v = getChannelField(c, _currentChannel, el.dataset.key) || '';
           }
           el.value = v;
@@ -4454,15 +4329,6 @@ function openCustomerForm(customer) {
           label.style.borderColor = checked ? 'var(--accent)' : 'var(--border-color)';
           label.style.background = checked ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)';
         });
-        // 还原等级单选
-        const currentLevelReset = _currentChannel ? getChannelField(c, _currentChannel, 'level') : c.level;
-        document.querySelectorAll('#modal-box .level-radio').forEach(el => {
-          const sel = el.dataset.level === currentLevelReset;
-          el.style.background = sel ? (el.dataset.levelColor || '#2563eb') : '#e5e7eb';
-          el.style.color = sel ? 'white' : '#4b5563';
-          el.style.borderColor = sel ? (el.dataset.levelColor || '#2563eb') : 'transparent';
-        });
-        document.getElementById('level-hidden').value = currentLevelReset || '';
         showToast('已重置', 'success');
       };
 
@@ -4492,7 +4358,6 @@ function openCustomerForm(customer) {
           const old = Store.data.customers.find(x => x.id === c.id);
           if (!old) { showToast('客户数据不存在', 'error'); return; }
           if (_currentChannel) {
-            if (safe.level !== undefined) setChannelField(old, _currentChannel, 'level', safe.level);
             if (safe.status !== undefined) setChannelField(old, _currentChannel, 'status', safe.status);
             if (safe.nextFollowDate !== undefined) setChannelField(old, _currentChannel, 'nextFollowDate', safe.nextFollowDate);
             if (safe.tags !== undefined) setChannelField(old, _currentChannel, 'tags', safe.tags);
@@ -4542,7 +4407,6 @@ function openCustomerForm(customer) {
         // 保存后重置筛选条件并跳转到客户列表页面，确保显示新客户
         listState.page = 1; // 重置到第一页
         listState.keyword = '';
-        listState.level = '';
         listState.status = '';
         listState.source = '';
         listState.dateStart = '';
@@ -4557,7 +4421,7 @@ function openCustomerForm(customer) {
    模块 7：客户列表（筛选、排序、分页、批量删除）
    ================================================================ */
 let listState = {
-  keyword: '', level: '', status: '', source: '',
+  keyword: '', status: '', source: '',
   dateStart: '', dateEnd: '', sortKey: 'createdAt', sortAsc: false,
   page: 1, pageSize: 10, selected: new Set()
 };
@@ -4603,6 +4467,7 @@ const COLUMN_DEFS = [
   { key: 'industry', label: '行业' },
   { key: 'industryLevel1', label: '一级行业' },
   { key: 'industryLevel2', label: '二级行业' },
+  { key: 'tags', label: '客户标签' },
   { key: 'website', label: '网址' },
   { key: 'createdAt', label: '录入时间', sortable: true }
 ];
@@ -4624,6 +4489,12 @@ function getColumnConfig() {
       }
     });
   }
+  // 注入标签列（客户可能有多个待合作业务，等级只在渠道内使用）
+  [{ key: 'tags', visible: true }].forEach(ec => {
+    if (!config.find(c => c.key === ec.key)) {
+      config.push(ec);
+    }
+  });
   let nameIdx = config.findIndex(c => c.key === 'name');
   if (nameIdx > 0) {
     const item = config.splice(nameIdx, 1)[0];
@@ -5025,7 +4896,6 @@ function applyListFilters() {
       return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
     });
   }
-  if (listState.level) arr = arr.filter(c => c.level === listState.level);
   if (listState.status) arr = arr.filter(c => c.status === listState.status);
   if (listState.source) arr = arr.filter(c => c.source === listState.source);
   if (listState.dateStart) {
@@ -7650,82 +7520,101 @@ function openImageViewer(dataUrl) {
    模块 12：设置中心 / 标签管理 / 数据安全中心
    ================================================================ */
 function renderSettingsPage() {
-  // 更新重置密码按钮状态
-  const btnSq = document.getElementById('btn-reset-pw-by-sq-settings');
-  if (btnSq) btnSq.disabled = !(Array.isArray(Store.data.securityQuestions) && Store.data.securityQuestions.length === 2);
-  const btnGesture = document.getElementById('btn-reset-pw-by-gesture-settings');
-  if (btnGesture) btnGesture.disabled = !(Store.data.gesturePattern && Store.data.gesturePattern.length > 0);
-
-  // 更新手势密码设置按钮
-  const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
-  const btnGestureSetup = document.getElementById('btn-gesture-setup-settings');
-  const gestureHint = document.getElementById('gesture-setup-settings-hint');
-  if (btnGestureSetup) {
-    btnGestureSetup.textContent = hasGesture ? '重新设置手势密码' : '设置手势密码';
-    btnGestureSetup.className = hasGesture ? 'btn btn-outline' : 'btn';
-  }
-  if (gestureHint) {
-    gestureHint.textContent = hasGesture ? '已设置解锁手势，可重新绘制替换' : '设置后可在解锁时使用手势辅助验证';
-  }
-
-  // 渲染跟进提醒频率设置
-  const followupDays = Store.settings.followupDays || 3;
-  const desc = document.getElementById('followup-frequency-desc');
-  if (desc) desc.textContent = `新增客户超过${followupDays}天未跟进时提醒`;
-  
-  // 更新按钮选中状态
-  document.querySelectorAll('.frequency-option').forEach(btn => {
-    btn.classList.remove('btn-primary');
-    btn.classList.add('btn-outline');
-    if (parseInt(btn.dataset.value) === followupDays) {
-      btn.classList.remove('btn-outline');
-      btn.classList.add('btn-primary');
+  try {
+    // 更新设置密保问题按钮状态和事件
+    const btnSetSQ = document.getElementById('btn-set-sq-settings');
+    if (btnSetSQ) {
+      const hasSQ = Array.isArray(Store.data.securityQuestions) && Store.data.securityQuestions.length === 2;
+      btnSetSQ.disabled = hasSQ;
+      btnSetSQ.className = hasSQ ? 'btn btn-outline' : 'btn';
+      btnSetSQ.textContent = hasSQ ? '密保问题已设置' : '设置密保问题';
+      btnSetSQ.onclick = hasSQ ? null : () => window.openSetSecurityQuestionsDialog();
     }
-  });
-  
-  // 绑定频率选择事件
-  document.querySelectorAll('.frequency-option').forEach(btn => {
-    btn.onclick = async () => {
-      const days = parseInt(btn.dataset.value);
-      Store.settings.followupDays = days;
-      Store.saveSettings();
-      // 更新UI
-      document.querySelectorAll('.frequency-option').forEach(b => {
-        b.classList.remove('btn-primary');
-        b.classList.add('btn-outline');
-      });
-      btn.classList.remove('btn-outline');
-      btn.classList.add('btn-primary');
-      if (desc) desc.textContent = `新增客户超过${days}天未跟进时提醒`;
-      showToast(`跟进提醒频率已设置为 ${days} 天`, 'success');
-    };
-  });
-  
-  // 渲染标签列表
-  renderTagsList();
-  
-  // 渲染等级列表
-  renderLevelsList();
 
-  // 渲染来源列表
-  renderSourcesList();
+    // 绑定通过密保问题重置事件
+    const btnResetBySq = document.getElementById('btn-reset-pw-by-sq-settings');
+    if (btnResetBySq) {
+      btnResetBySq.onclick = () => {
+        const sq = Store.data.securityQuestions;
+        if (!Array.isArray(sq) || sq.length !== 2) {
+          showToast('请先在"数据与安全"页面设置密保问题', 'warning');
+          return;
+        }
+        window.openResetBySecurityQuestionsDialog();
+      };
+    }
 
-  // 新增标签按钮事件
-  const btnNewTag = document.getElementById('btn-new-tag');
-  if (btnNewTag) {
-    btnNewTag.onclick = () => openTagEditor(null);
-  }
+    // 绑定验证当前密码重置事件
+    const btnResetByCurPw = document.getElementById('btn-reset-pw-by-cur-pw-settings');
+    if (btnResetByCurPw) {
+      btnResetByCurPw.onclick = () => {
+        openModal({
+          title: '验证当前密码',
+          size: 'sm',
+          bodyHTML: `
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+              请输入当前解锁密码以验证身份：
+            </div>
+            <div class="auth-group">
+              <label class="label required">当前密码</label>
+              <input type="password" id="cur-pw-input" class="input" placeholder="请输入当前密码" autocomplete="off">
+              <div class="error-text" id="cur-pw-error" style="display:none;">密码错误</div>
+            </div>
+          `,
+          footer: (f) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-primary';
+            btn.id = 'btn-verify-cur-pw';
+            btn.textContent = '验证';
+            f.appendChild(btn);
 
-  // 新增等级按钮事件
-  const btnNewLevel = document.getElementById('btn-new-level');
-  if (btnNewLevel) {
-    btnNewLevel.onclick = () => openLevelEditor(null);
-  }
+            const doVerify = async () => {
+              const curPw = document.getElementById('cur-pw-input').value;
+              if (!curPw) return;
+              try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) throw new Error('无数据');
+                await decryptData(raw, curPw);
+                closeModal();
+                setTimeout(() => window.openSetNewPasswordDialog(), 300);
+              } catch (e) {
+                document.getElementById('cur-pw-error').style.display = 'block';
+              }
+            };
 
-  // 新增来源按钮事件
-  const btnNewSource = document.getElementById('btn-new-source');
-  if (btnNewSource) {
-    btnNewSource.onclick = () => openSourceEditor(null);
+            btn.onclick = doVerify;
+            const input = document.getElementById('cur-pw-input');
+            if (input) input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doVerify(); });
+          },
+        });
+      };
+    }
+
+    // 渲染跟进提醒频率设置
+    const followupDays = Store.settings.followupDays || 3;
+    const desc = document.getElementById('followup-frequency-desc');
+    if (desc) desc.textContent = `新增客户超过${followupDays}天未跟进时提醒`;
+    
+    // 更新按钮选中状态
+    document.querySelectorAll('.frequency-option').forEach(btn => {
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-outline');
+      if (parseInt(btn.dataset.value) === followupDays) {
+        btn.classList.remove('btn-outline');
+        btn.classList.add('btn-primary');
+      }
+    });
+    
+    // 渲染标签列表
+    renderTagsList();
+    
+    // 渲染等级列表
+    renderLevelsList();
+
+    // 渲染来源列表
+    renderSourcesList();
+  } catch (e) {
+    console.error('[renderSettingsPage] 渲染异常:', e);
   }
 }
 
@@ -7978,6 +7867,165 @@ function openSourceEditor(source) {
   });
 }
 
+/* ================================================================
+   数据下载页面
+   ================================================================ */
+const DOWNLOAD_CHANNELS = [
+  { key: 'all', label: '客户列表' },
+  { key: 'geo', label: 'GEO客户' },
+  { key: '360', label: '360客户' },
+  { key: 'bing', label: 'Bing客户' },
+  { key: 'baidu', label: '百度客户' },
+  { key: 'douyin', label: '抖音客户' },
+  { key: 'xianyu', label: '闲鱼客户' }
+];
+
+const DOWNLOAD_FIELDS = [
+  { label: '姓名', key: 'name', get: c => c.name },
+  { label: '性别', key: 'gender', get: c => c.gender },
+  { label: '年龄', key: 'age', get: c => c.age },
+  { label: '手机号', key: 'phone', get: c => c.phone },
+  { label: '微信', key: 'wechat', get: c => c.wechat },
+  { label: '邮箱', key: 'email', get: c => c.email },
+  { label: '省', key: 'province', get: c => c.province },
+  { label: '市', key: 'city', get: c => c.city },
+  { label: '区', key: 'district', get: c => c.district },
+  { label: '详细地址', key: 'address', get: c => c.address || '' },
+  { label: '来源', key: 'source', get: c => c.source },
+  { label: '等级', key: 'level', get: c => c.level },
+  { label: '成交状态', key: 'status', get: c => c.status },
+  { label: '一级行业', key: 'industryLevel1', get: c => c.industryLevel1 || '' },
+  { label: '二级行业', key: 'industryLevel2', get: c => c.industryLevel2 || '' },
+  { label: '客户网址', key: 'website', get: c => c.website || '' },
+  { label: '客户在投平台', key: 'platforms', get: c => (c.platforms || []).map(p => platformDisplayNames[p] || p).join('|') },
+  { label: '意向产品', key: 'product', get: c => c.product },
+  { label: '预算', key: 'budget', get: c => c.budget },
+  { label: '下次跟进日期', key: 'nextFollowDate', get: c => c.nextFollowDate },
+  { label: '录入时间', key: 'createdAt', get: c => formatDate(c.createdAt) },
+  { label: '标签', key: 'tags', get: c => (c.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|') },
+  { label: '备注', key: 'remark', get: c => c.remark || '' }
+];
+
+function renderDataDownloadPage() {
+  const container = document.getElementById('data-download-fields');
+  const chContainer = document.getElementById('data-download-channels');
+  if (!container || !chContainer) return;
+  const checkAll = document.getElementById('check-all-headers');
+  const info = document.getElementById('download-info');
+  const btnDownload = document.getElementById('btn-download-selected');
+
+  if (container.dataset.initialized) {
+    updateDownloadInfo();
+    return;
+  }
+  container.dataset.initialized = '1';
+
+  chContainer.innerHTML = DOWNLOAD_CHANNELS.map(ch =>
+    `<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--color-primary-300);background:var(--color-primary-50);font-size:13px;font-weight:500;color:var(--color-primary-700);transition:all 0.15s;">
+      <input type="checkbox" class="download-channel-cb" data-key="${ch.key}" checked>
+      ${escapeHTML(ch.label)}
+    </label>`
+  ).join('');
+
+  container.innerHTML = DOWNLOAD_FIELDS.map((f, i) =>
+    `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);transition:background 0.15s;">
+      <input type="checkbox" class="download-field-cb" data-index="${i}" checked>
+      <span style="font-size:13px;">${escapeHTML(f.label)}</span>
+    </label>`
+  ).join('');
+
+  const fieldCbs = container.querySelectorAll('.download-field-cb');
+  const channelCbs = chContainer.querySelectorAll('.download-channel-cb');
+
+  checkAll.onclick = () => {
+    fieldCbs.forEach(cb => cb.checked = checkAll.checked);
+    updateDownloadInfo();
+  };
+
+  container.addEventListener('change', (e) => {
+    if (e.target.classList.contains('download-field-cb')) {
+      const allChecked = Array.from(fieldCbs).every(cb => cb.checked);
+      const noneChecked = Array.from(fieldCbs).every(cb => !cb.checked);
+      checkAll.checked = allChecked;
+      checkAll.indeterminate = !allChecked && !noneChecked;
+      updateDownloadInfo();
+    }
+  });
+
+  chContainer.addEventListener('change', () => updateDownloadInfo());
+
+  btnDownload.onclick = () => {
+    const selectedFields = Array.from(fieldCbs).filter(cb => cb.checked).map(cb => parseInt(cb.dataset.index));
+    const selectedChannels = Array.from(channelCbs).filter(cb => cb.checked).map(cb => cb.dataset.key);
+
+    if (selectedFields.length === 0) { showToast('请至少选择一个字段', 'error'); return; }
+    if (selectedChannels.length === 0) { showToast('请至少选择一个客户渠道', 'error'); return; }
+
+    const allCustomers = (Store.data.customers || []).filter(c => c.deleted !== true);
+    if (allCustomers.length === 0) { showToast('没有客户数据可下载', 'warning'); return; }
+
+    const headerRow = selectedFields.map(i => DOWNLOAD_FIELDS[i].label);
+    const wb = XLSX.utils.book_new();
+
+    selectedChannels.forEach(chKey => {
+      const chLabel = DOWNLOAD_CHANNELS.find(ch => ch.key === chKey).label;
+      const channelCustomers = chKey === 'all'
+        ? allCustomers
+        : allCustomers.filter(c => hasChannel(c, chKey));
+
+      if (channelCustomers.length === 0) return;
+
+      const dataRows = [headerRow];
+      channelCustomers.forEach(c => {
+        dataRows.push(selectedFields.map(i => DOWNLOAD_FIELDS[i].get(c)));
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(dataRows);
+      const colWidths = headerRow.map((h, i) => {
+        const maxLen = dataRows.reduce((max, row) => {
+          const val = String(row[i] || '');
+          return Math.max(max, val.length);
+        }, h.length);
+        return { wch: Math.min(Math.max(maxLen * 1.2, 8), 40) };
+      });
+      ws['!cols'] = colWidths;
+      XLSX.utils.book_append_sheet(wb, ws, chLabel);
+    });
+
+    if (wb.SheetNames.length === 0) { showToast('所选渠道没有客户数据', 'warning'); return; }
+
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '客户数据导出.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    const totalExported = selectedChannels.reduce((sum, chKey) => {
+      const list = chKey === 'all' ? allCustomers : allCustomers.filter(c => hasChannel(c, chKey));
+      return sum + list.length;
+    }, 0);
+    Store.addLog('数据下载', '成功', `导出 Excel（${selectedChannels.length} 个渠道，${totalExported} 条记录，${selectedFields.length} 个字段）`);
+    Store.save();
+    showToast('Excel 下载成功', 'success');
+  };
+
+  function updateDownloadInfo() {
+    const fc = Array.from(fieldCbs).filter(cb => cb.checked).length;
+    const cc = Array.from(channelCbs).filter(cb => cb.checked).length;
+    const allCustomers = (Store.data.customers || []).filter(c => c.deleted !== true).length;
+    info.textContent = `已选择 ${cc} 个渠道 · ${fc} 个字段 · 共 ${allCustomers} 条客户记录`;
+  }
+  updateDownloadInfo();
+}
+
+function renderHelpPage() {
+}
+
 function renderLogsPage() {
   const el = document.getElementById('log-list');
   if (!el) return;
@@ -8021,6 +8069,8 @@ function navigate(pageName) {
     douyin: ['抖音客户', '抖音渠道客户管理'],
     xianyu: ['闲鱼客户', '闲鱼渠道客户管理'],
     trash: ['作废客户', '已作废的客户列表'],
+    'data-download': ['数据下载', '选择字段并下载客户数据'],
+    help: ['帮助', '使用指南与常见问题'],
     security: ['数据与安全', '备份、导入、修改密码、操作日志'],
     settings: ['设置', '系统设置与标签管理']
   };
@@ -8029,7 +8079,7 @@ function navigate(pageName) {
   safeText(document.getElementById('page-subtitle'), t[1]);
   if (pageName === 'dashboard') renderDashboard();
   else if (pageName === 'bi') renderBIPage();
-  else if (pageName === 'list') { renderFilterSources(); renderFilterLevels(); renderCustomerTable(); }
+  else if (pageName === 'list') { renderFilterSources(); renderCustomerTable(); }
   else if (pageName === 'geo') renderChannelPage('geo');
   else if (pageName === '360') renderChannelPage('360');
   else if (pageName === 'bing') renderChannelPage('bing');
@@ -8038,7 +8088,9 @@ function navigate(pageName) {
   else if (pageName === 'xianyu') renderChannelPage('xianyu');
   else if (pageName === 'trash') renderTrashPage();
   else if (pageName === 'settings') renderSettingsPage();
-  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initGestureSettingOnce) window.initGestureSettingOnce(); if(typeof renderSettingsPage === 'function') renderSettingsPage(); }
+  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); if(typeof renderSettingsPage === 'function') renderSettingsPage(); }
+  else if (pageName === 'data-download') renderDataDownloadPage();
+  else if (pageName === 'help') renderHelpPage();
   // 进入列表页面自动隐藏移动端侧边栏
   if (window.innerWidth < 768) {
     const sb = document.getElementById('sidebar'); if (sb) sb.classList.remove('show');
@@ -8360,7 +8412,7 @@ function initAuthPage() {
             sessionStorage.removeItem('crm_session_pw');
             sessionStorage.removeItem('crm_session_pw_mask');
             localStorage.removeItem('crm_remembered_username');
-            Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] };
+            Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [] };
             Store.unlocked = false;
             Store._dirty = false;
             showToast('数据已清空，请重新初始化', 'success');
@@ -8375,7 +8427,7 @@ function initAuthPage() {
         if (localStorage.getItem('crm_has_sq') === '1') {
           if (window.openResetBySecurityQuestionsDialog) window.openResetBySecurityQuestionsDialog();
         } else {
-          showToast('请先登录后在"账户设置"中设置密保问题', 'warning');
+          showToast('请登录后在"账户设置→重置密码"中点击"设置密保问题"按钮', 'warning');
         }
       };
     }
@@ -8457,7 +8509,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       if (Store.data.username && Store.data.username !== username) {
-        Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', gesturePattern: '', securityQuestions: [] };
+        Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [] };
         Store.password = null;
         unlockFailCount++;
         document.getElementById('unlock-error').style.display = 'block';
@@ -8519,7 +8571,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // 首次保存空数据以派生密钥
     Store.password = pw;
-    Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: username, avatar: '', gesturePattern: '', securityQuestions: [] };
+    Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: username, avatar: '', securityQuestions: [] };
     Store.addLog('初始化系统', '成功', '注册账户：' + username);
     await Store.save();
     enterApp(pw);
@@ -8563,6 +8615,32 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('menu-toggle').onclick = () => {
     document.getElementById('sidebar').classList.toggle('show');
   };
+
+  // ── 账户设置页面按钮事件（一次性绑定，与渲染函数分离确保可靠性）───
+  // 跟进提醒频率选择
+  document.querySelectorAll('.frequency-option').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const days = parseInt(this.dataset.value);
+      Store.settings.followupDays = days;
+      Store.saveSettings();
+      // 更新UI
+      document.querySelectorAll('.frequency-option').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-outline');
+      });
+      this.classList.remove('btn-outline');
+      this.classList.add('btn-primary');
+      const desc = document.getElementById('followup-frequency-desc');
+      if (desc) desc.textContent = `新增客户超过${days}天未跟进时提醒`;
+      showToast(`跟进提醒频率已设置为 ${days} 天`, 'success');
+    });
+  });
+  // 新增标签
+  document.getElementById('btn-new-tag')?.addEventListener('click', () => openTagEditor(null));
+  // 新增等级
+  document.getElementById('btn-new-level')?.addEventListener('click', () => openLevelEditor(null));
+  // 新增来源
+  document.getElementById('btn-new-source')?.addEventListener('click', () => openSourceEditor(null));
   // 主题切换
   document.getElementById('theme-toggle').onclick = () => {
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
@@ -8578,7 +8656,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ── 锁屏浮层逻辑 ──────────────────────────────────────────────
   let lockFailCount = 0;
-  let lockGestureApi = null;
 
   function showLockOverlay() {
     lockFailCount = 0;
@@ -8587,11 +8664,8 @@ document.addEventListener('DOMContentLoaded', function () {
     safeText(document.getElementById('lock-attempt-info'), '');
     // 显示当前用户名
     safeText(document.getElementById('lock-username-display'), '用户：' + (Store.data.username || '未知'));
-    // 默认密码模式
-    document.getElementById('btn-lock-pw-mode').classList.add('active');
-    document.getElementById('btn-lock-gesture-mode').classList.remove('active');
+    // 密码模式
     document.getElementById('lock-pw-form').style.display = 'block';
-    document.getElementById('lock-gesture-form').style.display = 'none';
     // 确保 auth-view 隐藏，app-view 保持显示（虚化背景）
     document.getElementById('auth-view').style.display = 'none';
     document.getElementById('app-view').style.display = 'block';
@@ -8631,82 +8705,6 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('lock-password').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') document.getElementById('btn-lock-unlock').click();
   });
-
-  // 锁屏手势模式切换
-  document.getElementById('btn-lock-pw-mode').onclick = () => {
-    document.getElementById('btn-lock-pw-mode').classList.add('active');
-    document.getElementById('btn-lock-gesture-mode').classList.remove('active');
-    document.getElementById('lock-pw-form').style.display = 'block';
-    document.getElementById('lock-gesture-form').style.display = 'none';
-    document.getElementById('lock-password').focus();
-  };
-
-  document.getElementById('btn-lock-gesture-mode').onclick = () => {
-    const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
-    if (!hasGesture) {
-      showToast('请先在"数据与安全"中设置解锁手势', 'warning');
-      return;
-    }
-    document.getElementById('btn-lock-gesture-mode').classList.add('active');
-    document.getElementById('btn-lock-pw-mode').classList.remove('active');
-    document.getElementById('lock-pw-form').style.display = 'none';
-    document.getElementById('lock-gesture-form').style.display = 'block';
-    initLockGestureMode();
-  };
-
-  function initLockGestureMode() {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const saved = Store.data.gesturePattern;
-        const initGC = window.__initGestureCanvas;
-        if (typeof initGC !== 'function') {
-          showToast('手势模块暂不可用，请使用密码解锁', 'error');
-          document.getElementById('btn-lock-pw-mode').click();
-          return;
-        }
-        lockGestureApi = initGC('lock-gesture-canvas', 'unlock', (pattern, points) => {
-          if (!pattern) return;
-          const statusEl = document.getElementById('lock-gesture-status');
-          if (pattern === saved) {
-            statusEl.className = 'gesture-status success';
-            statusEl.textContent = '手势验证成功，正在解锁...';
-            setTimeout(() => {
-              const obfPw = sessionStorage.getItem('crm_session_pw');
-              if (obfPw) {
-                Store.password = _deobfuscatePw(obfPw);
-                Store.unlocked = true;
-                sessionStorage.removeItem('crm_session_locked');
-                hideLockOverlay();
-                refreshUI();
-                showToast('欢迎回来', 'success');
-              } else {
-                // sessionStorage 丢失，回退到完整登录
-                hideLockOverlay();
-                Store.unlocked = false; Store.password = null;
-                sessionStorage.removeItem('crm_session_locked');
-                initAuthPage();
-                showToast('会话已过期，请重新登录', 'warning');
-              }
-            }, 600);
-          } else {
-            statusEl.className = 'gesture-status error';
-            statusEl.textContent = '手势错误，请重试';
-            if (lockGestureApi) lockGestureApi.reset();
-          }
-        });
-        if (lockGestureApi) {
-          // 其他状态由回调内处理
-        }
-      });
-    });
-  }
-
-  // 锁屏手势重新绘制
-  document.getElementById('btn-lock-gesture-reset').onclick = () => {
-    if (lockGestureApi) lockGestureApi.reset();
-    document.getElementById('lock-gesture-status').textContent = '';
-    document.getElementById('lock-gesture-status').className = 'gesture-status';
-  };
 
   // 锁屏退出登录
   document.getElementById('btn-lock-logout').onclick = () => {
@@ -8997,7 +8995,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // 列表页筛选、分页、排序、全选、批量删除、新增
   document.getElementById('btn-apply-filter').onclick = () => {
     listState.keyword = document.getElementById('filter-keyword').value.trim();
-    listState.level = document.getElementById('filter-level').value;
     listState.status = document.getElementById('filter-status').value;
     listState.source = document.getElementById('filter-source').value;
     listState.dateStart = document.getElementById('filter-date-start').value;
@@ -9007,12 +9004,11 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   document.getElementById('btn-reset-filter').onclick = () => {
     document.getElementById('filter-keyword').value = '';
-    document.getElementById('filter-level').value = '';
     document.getElementById('filter-status').value = '';
     document.getElementById('filter-source').value = '';
     document.getElementById('filter-date-start').value = '';
     document.getElementById('filter-date-end').value = '';
-    listState = Object.assign(listState, { keyword: '', level: '', status: '', source: '', dateStart: '', dateEnd: '', page: 1 });
+    listState = Object.assign(listState, { keyword: '', status: '', source: '', dateStart: '', dateEnd: '', page: 1 });
     renderCustomerTable();
   };
   document.getElementById('btn-new-customer').onclick = () => openCustomerForm(null);
@@ -9152,7 +9148,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-reset-data').onclick = () => {
     confirmDialog('清空全部数据', '将清空所有客户、标签和操作日志，不可逆。是否继续？', true, () => {
       promptPassword('二次验证', '请输入解锁密码以清空全部数据', async () => {
-        Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: Store.data.username || '', avatar: Store.data.avatar || '', gesturePattern: '' };
+        Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: Store.data.username || '', avatar: Store.data.avatar || '' };
         // 同时清除文件夹同步文件
         if (Store.folderHandle) {
           try {
@@ -9310,7 +9306,7 @@ function refreshUI() {
   if (!active) { navigate('dashboard'); return; }
   if (active.id === 'page-dashboard') renderDashboard();
   else if (active.id === 'page-bi') renderBIPage();
-  else if (active.id === 'page-list') { renderFilterSources(); renderFilterLevels(); renderCustomerTable(); }
+  else if (active.id === 'page-list') { renderFilterSources(); renderCustomerTable(); }
   else if (active.id === 'page-geo') renderChannelPage('geo');
   else if (active.id === 'page-360') renderChannelPage('360');
   else if (active.id === 'page-bing') renderChannelPage('bing');
@@ -9320,6 +9316,8 @@ function refreshUI() {
   else if (active.id === 'page-trash') renderTrashPage();
   else if (active.id === 'page-settings') renderSettingsPage();
   else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); }
+  else if (active.id === 'page-data-download') renderDataDownloadPage();
+  else if (active.id === 'page-help') renderHelpPage();
   updateNavCounts();
 }
 
@@ -10316,472 +10314,11 @@ function refreshUI() {
 })();
 
 /* ================================================================
-   手势解锁模块（9点手势）
+   密保问题模块
    ================================================================ */
-(function initGestureModule() {
+(function initSecurityModule() {
   'use strict';
-
-  // 9点坐标：[col, row]，索引 0-8 对应 3x3 网格
-  // Canvas 240x240，点直径 20，边距 40，点间距 80
-  const DOT_RADIUS = 10;
-  const DOT_SPACING = 80;
-  const MARGIN = 40;
-  const POINTS = [
-    { x: MARGIN, y: MARGIN },           // 0: 左上
-    { x: MARGIN + DOT_SPACING, y: MARGIN }, // 1: 上中
-    { x: MARGIN + DOT_SPACING * 2, y: MARGIN }, // 2: 右上
-    { x: MARGIN, y: MARGIN + DOT_SPACING }, // 3: 左中
-    { x: MARGIN + DOT_SPACING, y: MARGIN + DOT_SPACING }, // 4: 中心
-    { x: MARGIN + DOT_SPACING * 2, y: MARGIN + DOT_SPACING }, // 5: 右中
-    { x: MARGIN, y: MARGIN + DOT_SPACING * 2 }, // 6: 左下
-    { x: MARGIN + DOT_SPACING, y: MARGIN + DOT_SPACING * 2 }, // 7: 下中
-    { x: MARGIN + DOT_SPACING * 2, y: MARGIN + DOT_SPACING * 2 }, // 8: 右下
-  ];
-
-  // 当前绘制的手势状态
-  let gestureState = {
-    canvas: null,
-    ctx: null,
-    points: [],       // 已经过的点索引
-    currentPath: [],  // 当前路径点（用于绘制连线）
-    isDrawing: false,
-    wrapEl: null,
-    mode: 'set',      // 'set' = 设置手势, 'unlock' = 解锁手势
-  };
-
-  // 获取两点之间的距离
-  function dist(a, b) {
-    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
-  }
-
-  // 查找最近的未经过点
-  function findNearestPoint(x, y, usedPoints) {
-    let minDist = DOT_SPACING * 0.6; // 阈值：点间距的60%
-    let found = -1;
-    for (let i = 0; i < POINTS.length; i++) {
-      if (usedPoints.indexOf(i) >= 0) continue;
-      const d = dist({ x, y }, POINTS[i]);
-      if (d < minDist) {
-        minDist = d;
-        found = i;
-      }
-    }
-    return found;
-  }
-
-  // 缓存 Canvas 用色（通过 getComputedStyle 解析 CSS 变量，避免在 Canvas2D 中使用 var()）
-  function resolveCanvasColor(varName, fallback) {
-    try {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
-    } catch (e) {
-      return fallback;
-    }
-  }
-
-  // 绘制9点网格和路径
-  function drawGesture() {
-    const { ctx, points, currentPath, canvas } = gestureState;
-    if (!ctx || !canvas) return;
-    const w = canvas.width, h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-
-    const colorPrimary = resolveCanvasColor('--color-primary-500', '#6366f1');
-    const colorPrimaryDark = resolveCanvasColor('--color-primary-600', '#4f46e5');
-    const colorUnused = resolveCanvasColor('--color-neutral-500', '#6B7280');
-
-    // 绘制连线
-    ctx.strokeStyle = colorPrimary;
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    if (points.length >= 2) {
-      ctx.beginPath();
-      ctx.moveTo(POINTS[points[0]].x, POINTS[points[0]].y);
-      for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(POINTS[points[i]].x, POINTS[points[i]].y);
-      }
-      // 如果有当前鼠标/触摸位置，绘制到当前位置的线
-      if (currentPath.length > 0) {
-        const last = POINTS[points[points.length - 1]];
-        ctx.lineTo(currentPath[0].x, currentPath[0].y);
-      }
-      ctx.stroke();
-    } else if (currentPath.length > 0 && points.length === 1) {
-      ctx.beginPath();
-      ctx.moveTo(POINTS[points[0]].x, POINTS[points[0]].y);
-      ctx.lineTo(currentPath[0].x, currentPath[0].y);
-      ctx.stroke();
-    }
-
-    // 绘制9个点
-    for (let i = 0; i < POINTS.length; i++) {
-      const p = POINTS[i];
-      const isUsed = points.indexOf(i) >= 0;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, DOT_RADIUS, 0, Math.PI * 2);
-      ctx.fillStyle = isUsed ? colorPrimary : colorUnused;
-      ctx.fill();
-      ctx.strokeStyle = isUsed ? colorPrimaryDark : colorUnused;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
-  }
-
-  // 序列化手势路径（去重后的点序列）
-  function serializeGesture(points) {
-    if (!points || points.length < 4) return '';
-    // 返回点序列字符串，如 "0-1-2-5-8"
-    return points.join('-');
-  }
-
-  // 初始化手势Canvas
-  function initGestureCanvas(canvasId, mode, onComplete) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return null;
-    const ctx = canvas.getContext('2d');
-    const wrapEl = canvas.parentElement;
-
-    gestureState = {
-      canvas, ctx, points: [], currentPath: [],
-      isDrawing: false, wrapEl, mode,
-      onComplete: (typeof onComplete === 'function') ? onComplete : null,
-    };
-
-    // 绘制初始状态
-    drawGesture();
-
-    // 鼠标事件
-    const getPos = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      return {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY,
-      };
-    };
-
-    const onStart = (pos) => {
-      const idx = findNearestPoint(pos.x, pos.y, []);
-      if (idx >= 0) {
-        gestureState.isDrawing = true;
-        gestureState.points = [idx];
-        gestureState.currentPath = [{ x: pos.x, y: pos.y }];
-        drawGesture();
-      }
-    };
-
-    const onMove = (pos) => {
-      if (!gestureState.isDrawing) return;
-      gestureState.currentPath = [{ x: pos.x, y: pos.y }];
-      const idx = findNearestPoint(pos.x, pos.y, gestureState.points);
-      if (idx >= 0) {
-        gestureState.points.push(idx);
-      }
-      drawGesture();
-    };
-
-    const onEnd = () => {
-      if (!gestureState.isDrawing) return;
-      gestureState.isDrawing = false;
-      gestureState.currentPath = [];
-      drawGesture();
-
-      // 回调：手势绘制完成
-      if (typeof gestureState.onComplete === 'function') {
-        gestureState.onComplete(serializeGesture(gestureState.points), gestureState.points);
-      }
-    };
-
-    canvas.onmousedown = (e) => { e.preventDefault(); onStart(getPos(e)); };
-    canvas.onmousemove = (e) => { if (gestureState.isDrawing) onMove(getPos(e)); };
-    canvas.onmouseup = () => onEnd();
-    canvas.onmouseleave = () => { if (gestureState.isDrawing) onEnd(); };
-
-    // 触摸事件
-    canvas.ontouchstart = (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      onStart(getPos(touch));
-    };
-    canvas.ontouchmove = (e) => {
-      e.preventDefault();
-      if (gestureState.isDrawing) {
-        const touch = e.touches[0];
-        onMove(getPos(touch));
-      }
-    };
-    canvas.ontouchend = (e) => { e.preventDefault(); onEnd(); };
-
-    return {
-      reset: () => {
-        gestureState.points = [];
-        gestureState.currentPath = [];
-        gestureState.isDrawing = false;
-        drawGesture();
-      },
-      getPattern: () => serializeGesture(gestureState.points),
-      getPoints: () => gestureState.points.slice(),
-    };
-  }
-
-  // 立即导出 initGestureCanvas 到全局，供锁屏浮层使用
-  window.__initGestureCanvas = initGestureCanvas;
-
-  // ── 设置手势 ────────────────────────────────────────────────
-  let gestureSetApi = null;
-
-  function initGestureSetting() {
-    const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
-    document.getElementById('gesture-not-set').style.display = hasGesture ? 'none' : 'flex';
-    document.getElementById('gesture-has-set').style.display = hasGesture ? 'block' : 'none';
-    document.getElementById('btn-reset-pw-by-gesture').disabled = !hasGesture;
-
-    if (!hasGesture) {
-      // 初始化设置Canvas
-      setTimeout(() => {
-        gestureSetApi = initGestureCanvas('gesture-set-canvas', 'set');
-        if (gestureSetApi) {
-          gestureState.onComplete = (pattern, points) => {
-            if (points.length < 4) {
-              document.getElementById('gesture-set-status').className = 'gesture-status error';
-              document.getElementById('gesture-set-status').textContent = '至少连接4个点，当前：' + points.length;
-              document.getElementById('btn-gesture-save').disabled = true;
-              return;
-            }
-            document.getElementById('gesture-set-status').className = 'gesture-status success';
-            document.getElementById('gesture-set-status').textContent = '手势已记录：' + pattern;
-            document.getElementById('btn-gesture-save').disabled = false;
-          };
-        }
-      }, 100);
-    }
-  }
-
-  // 保存手势
-  document.getElementById('btn-gesture-save').onclick = () => {
-    const pattern = gestureSetApi ? gestureSetApi.getPattern() : '';
-    if (!pattern || pattern.split('-').length < 4) {
-      showToast('请先绘制有效手势（至少4个点）', 'error');
-      return;
-    }
-    Store.data.gesturePattern = pattern;
-    Store.markDirty();
-    Store.save().then(() => {
-      showToast('解锁手势已保存', 'success');
-      initGestureSetting();
-      if (typeof renderSettingsPage === 'function') renderSettingsPage();
-    });
-  };
-
-  // 重新绘制
-  document.getElementById('btn-gesture-reset').onclick = () => {
-    if (gestureSetApi) gestureSetApi.reset();
-    document.getElementById('gesture-set-status').textContent = '';
-    document.getElementById('gesture-set-status').className = 'gesture-status';
-    document.getElementById('btn-gesture-save').disabled = true;
-  };
-
-  // 清除手势
-  document.getElementById('btn-gesture-clear').onclick = () => {
-    confirmDialog('清除解锁手势', '清除后只能通过密码登录，是否继续？', false, () => {
-      Store.data.gesturePattern = '';
-      Store.markDirty();
-      Store.save().then(() => {
-        showToast('解锁手势已清除', 'success');
-        initGestureSetting();
-        if (typeof renderSettingsPage === 'function') renderSettingsPage();
-      });
-    });
-  };
-
-  // 重新设置手势
-  document.getElementById('btn-gesture-reset-all').onclick = () => {
-    document.getElementById('gesture-not-set').style.display = 'flex';
-    document.getElementById('gesture-has-set').style.display = 'none';
-    setTimeout(() => initGestureSetting(), 50);
-  };
-
-  // ── 手势登录 ────────────────────────────────────────────────
-  let gestureUnlockApi = null;
-
-  function initUnlockGestureMode() {
-    setTimeout(() => {
-      gestureUnlockApi = initGestureCanvas('unlock-gesture-canvas', 'unlock');
-      if (gestureUnlockApi) {
-        gestureState.onComplete = (pattern, points) => {
-          if (!pattern) return;
-          const saved = Store.data.gesturePattern;
-          const statusEl = document.getElementById('unlock-gesture-status');
-          if (pattern === saved) {
-            statusEl.className = 'gesture-status success';
-            statusEl.textContent = '手势验证成功，请输入密码';
-            // 自动填充用户名并切换到密码模式
-            const unEl = document.getElementById('unlock-username');
-            if (unEl && Store.data.username) unEl.value = Store.data.username;
-            setTimeout(() => {
-              document.getElementById('btn-unlock-pw-mode').click();
-              document.getElementById('unlock-password').focus();
-            }, 800);
-          } else {
-            statusEl.className = 'gesture-status error';
-            statusEl.textContent = '手势错误，请重试';
-            if (gestureUnlockApi) gestureUnlockApi.reset();
-          }
-        };
-      }
-    }, 100);
-  }
-
-  // 切换解锁模式（密码/手势）
-  document.getElementById('btn-unlock-pw-mode').onclick = () => {
-    document.getElementById('btn-unlock-pw-mode').classList.add('active');
-    document.getElementById('btn-unlock-gesture-mode').classList.remove('active');
-    document.getElementById('unlock-pw-form').style.display = 'block';
-    document.getElementById('unlock-gesture-form').style.display = 'none';
-  };
-
-  document.getElementById('btn-unlock-gesture-mode').onclick = () => {
-    const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
-    if (!hasGesture) {
-      showToast('请先在"数据与安全"中设置解锁手势', 'warning');
-      return;
-    }
-    document.getElementById('btn-unlock-gesture-mode').classList.add('active');
-    document.getElementById('btn-unlock-pw-mode').classList.remove('active');
-    document.getElementById('unlock-pw-form').style.display = 'none';
-    document.getElementById('unlock-gesture-form').style.display = 'block';
-    initUnlockGestureMode();
-  };
-
-  // 重新绘制（解锁时）
-  const btnUnlockGestureReset = document.getElementById('btn-unlock-gesture-reset');
-  if (btnUnlockGestureReset) {
-    btnUnlockGestureReset.onclick = () => {
-      if (gestureUnlockApi) gestureUnlockApi.reset();
-      document.getElementById('unlock-gesture-status').textContent = '';
-      document.getElementById('unlock-gesture-status').className = 'gesture-status';
-    };
-  }
-
-  // ── 通过手势重置密码 ─────────────────────────────────────────
-  document.getElementById('btn-reset-pw-by-gesture').onclick = () => {
-    // 打开手势验证弹窗
-    openModal({
-      title: '通过手势重置密码',
-      size: 'sm',
-      bodyHTML: `
-        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
-          请绘制您的解锁手势以验证身份，验证通过后可设置新密码。
-        </div>
-        <div class="gesture-container">
-          <div class="gesture-canvas-wrap" id="reset-gesture-canvas-wrap">
-            <canvas id="reset-gesture-canvas" width="240" height="240"></canvas>
-          </div>
-          <div class="gesture-hint" id="reset-gesture-hint">请绘制解锁手势</div>
-          <div class="gesture-status" id="reset-gesture-status"></div>
-        </div>
-      `,
-      footerHTML: '',
-    });
-
-    setTimeout(() => {
-      const resetApi = initGestureCanvas('reset-gesture-canvas', 'unlock');
-      if (resetApi) {
-        gestureState.onComplete = (pattern) => {
-          const saved = Store.data.gesturePattern;
-          const statusEl = document.getElementById('reset-gesture-status');
-          if (pattern === saved) {
-            statusEl.className = 'gesture-status success';
-            statusEl.textContent = '手势验证成功，请设置新密码';
-            // 关闭弹窗，打开设置新密码弹窗
-            closeModal();
-            setTimeout(() => openResetPwByGestureDialog(), 300);
-          } else {
-            statusEl.className = 'gesture-status error';
-            statusEl.textContent = '手势错误，请重试';
-          }
-        };
-      }
-    }, 200);
-  };
-
-  function openResetPwByGestureDialog() {
-    openModal({
-      title: '设置新密码',
-      size: 'sm',
-      bodyHTML: `
-        <div class="auth-group">
-          <label class="label required">新密码（至少6位）</label>
-          <input type="password" id="reset-pw-new" class="input" placeholder="至少6位" autocomplete="off">
-        </div>
-        <div class="auth-group">
-          <label class="label required">再次输入新密码</label>
-          <input type="password" id="reset-pw-confirm" class="input" placeholder="再次输入相同密码" autocomplete="off">
-          <div class="error-text" id="reset-pw-error" style="display:none;">两次密码不一致</div>
-          <div class="success-text" id="reset-pw-match" style="display:none;font-size:12px;color:var(--color-success);margin-top:4px;">✓ 两次密码一致</div>
-        </div>
-      `,
-      footer: (f) => {
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-primary';
-        btn.id = 'btn-do-reset-pw';
-        btn.textContent = '确认修改';
-        f.appendChild(btn);
-
-        // 实时比对
-        const pw1 = document.getElementById('reset-pw-new');
-        const pw2 = document.getElementById('reset-pw-confirm');
-        if (pw1 && pw2) {
-          const check = () => {
-            if (!pw2.value) {
-              document.getElementById('reset-pw-error').style.display = 'none';
-              document.getElementById('reset-pw-match').style.display = 'none';
-              return;
-            }
-            if (pw1.value === pw2.value && pw1.value.length >= 6) {
-              document.getElementById('reset-pw-error').style.display = 'none';
-              document.getElementById('reset-pw-match').style.display = 'block';
-            } else {
-              document.getElementById('reset-pw-match').style.display = 'none';
-            }
-          };
-          pw1.oninput = check;
-          pw2.oninput = check;
-        }
-
-        btn.onclick = async () => {
-          const newPw = document.getElementById('reset-pw-new').value;
-          const confirmPw = document.getElementById('reset-pw-confirm').value;
-          if (!newPw || newPw.length < 6) { showToast('密码至少6位', 'error'); return; }
-          if (newPw !== confirmPw) {
-            document.getElementById('reset-pw-error').style.display = 'block';
-            return;
-          }
-          try {
-            Store.password = newPw;
-            await Store.save();
-            Store.addLog('密码修改', '成功', '通过手势验证重置密码');
-            showToast('密码已重置，下次请使用新密码登录', 'success');
-            closeModal();
-          } catch (e) {
-            showToast('密码重置失败：' + e.message, 'error');
-          }
-        };
-      },
-    });
-  }
-
-  // ── 手势设置初始化（在进入安全页面时调用）────────────────────────────
-  window.initGestureSettingOnce = function() {
-    if (document.getElementById('gesture-not-set') ||
-        document.getElementById('gesture-has-set')) {
-      initGestureSetting();
-    }
-    // 同时初始化密保问题显示
-    initSecurityQuestionsUI();
-  };
+  try {
 
   // ── 密保问题模块 ──────────────────────────────────────────────
   function initSecurityQuestionsUI() {
@@ -10797,9 +10334,6 @@ function refreshUI() {
     if (!notSetEl || !hasSetEl) return;
     notSetEl.style.display = hasSQ ? 'none' : 'flex';
     hasSetEl.style.display = hasSQ ? 'block' : 'none';
-    // 更新重置密码按钮状态
-    const btn1 = document.getElementById('btn-reset-pw-by-sq-settings');
-    if (btn1) btn1.disabled = !hasSQ;
   }
 
   // 保存密保问题
@@ -10971,7 +10505,7 @@ function refreshUI() {
           try {
             Store.password = newPw;
             await Store.save();
-            Store.addLog('密码修改', '成功', '通过密保问题/手势重置密码');
+            Store.addLog('密码修改', '成功', '通过密保问题重置密码');
             showToast('密码已重置，下次请使用新密码登录', 'success');
             closeModal();
             // 回到解锁页面
@@ -10984,194 +10518,77 @@ function refreshUI() {
     });
   }
 
-  // ── 设置页面：通过密保问题重置密码 ─────────────────────────
-  const btnResetBySqSettings = document.getElementById('btn-reset-pw-by-sq-settings');
-  if (btnResetBySqSettings) {
-    btnResetBySqSettings.onclick = () => {
-      const sq = Store.data.securityQuestions;
-      if (!Array.isArray(sq) || sq.length !== 2) {
-        showToast('请先在"数据与安全"中设置密保问题', 'warning');
-        return;
-      }
-      openResetBySecurityQuestionsDialog();
-    };
+  // ── 设置页面：设置密保问题弹窗 ─────────────────────────────
+  function openSetSecurityQuestionsDialog() {
+    openModal({
+      title: '设置密保问题',
+      size: 'sm',
+      bodyHTML: `
+        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+          设置2个密保问题和答案，忘记密码时可通过验证密保问题重置密码。问题和答案均加密存储。
+        </div>
+        <div class="auth-group" style="margin-bottom:10px;">
+          <label class="label required">密保问题 1</label>
+          <input type="text" id="modal-sq-q1" class="input" placeholder="例如：我小学的名称是？">
+        </div>
+        <div class="auth-group" style="margin-bottom:10px;">
+          <label class="label required">答案 1</label>
+          <input type="text" id="modal-sq-a1" class="input" placeholder="请输入答案">
+        </div>
+        <div class="auth-group" style="margin-bottom:10px;">
+          <label class="label required">密保问题 2</label>
+          <input type="text" id="modal-sq-q2" class="input" placeholder="例如：我的出生地是？">
+        </div>
+        <div class="auth-group" style="margin-bottom:12px;">
+          <label class="label required">答案 2</label>
+          <input type="text" id="modal-sq-a2" class="input" placeholder="请输入答案">
+        </div>
+      `,
+      footer: (f) => {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-sm btn-outline';
+        safeText(cancelBtn, '取消');
+        cancelBtn.onclick = closeModal;
+        f.appendChild(cancelBtn);
+
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn btn-sm btn-primary';
+        safeText(saveBtn, '保存密保问题');
+        f.appendChild(saveBtn);
+
+        saveBtn.onclick = () => {
+          const q1 = document.getElementById('modal-sq-q1').value.trim();
+          const a1 = document.getElementById('modal-sq-a1').value.trim();
+          const q2 = document.getElementById('modal-sq-q2').value.trim();
+          const a2 = document.getElementById('modal-sq-a2').value.trim();
+          if (!q1 || !a1 || !q2 || !a2) {
+            showToast('请完整填写2个密保问题和答案', 'error');
+            return;
+          }
+          Store.data.securityQuestions = [
+            { q: q1, a: a1.toLowerCase() },
+            { q: q2, a: a2.toLowerCase() }
+          ];
+          localStorage.setItem('crm_has_sq', '1');
+          Store.markDirty();
+          Store.save().then(() => {
+            showToast('密保问题已保存', 'success');
+            closeModal();
+            initSecurityQuestionsUI();
+            if (typeof renderSettingsPage === 'function') renderSettingsPage();
+          });
+        };
+      },
+    });
   }
 
-  // ── 设置页面：验证当前密码重置 ─────────────────────────────
-  const btnResetByCurPw = document.getElementById('btn-reset-pw-by-cur-pw-settings');
-  if (btnResetByCurPw) {
-    btnResetByCurPw.onclick = () => {
-      openModal({
-        title: '验证当前密码',
-        size: 'sm',
-        bodyHTML: `
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
-            请输入当前解锁密码以验证身份：
-          </div>
-          <div class="auth-group">
-            <label class="label required">当前密码</label>
-            <input type="password" id="cur-pw-input" class="input" placeholder="请输入当前密码" autocomplete="off">
-            <div class="error-text" id="cur-pw-error" style="display:none;">密码错误</div>
-          </div>
-        `,
-        footer: (f) => {
-          const btn = document.createElement('button');
-          btn.className = 'btn btn-primary';
-          btn.id = 'btn-verify-cur-pw';
-          btn.textContent = '验证';
-          f.appendChild(btn);
-
-          const doVerify = async () => {
-            const curPw = document.getElementById('cur-pw-input').value;
-            if (!curPw) return;
-            try {
-              const raw = localStorage.getItem(STORAGE_KEY);
-              if (!raw) throw new Error('无数据');
-              await decryptData(raw, curPw);
-              closeModal();
-              setTimeout(() => openSetNewPasswordDialog(), 300);
-            } catch (e) {
-              document.getElementById('cur-pw-error').style.display = 'block';
-            }
-          };
-
-          btn.onclick = doVerify;
-          const input = document.getElementById('cur-pw-input');
-          if (input) input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doVerify(); });
-        },
-      });
-    };
-  }
-
-  // ── 设置页面：验证手势重置密码 ─────────────────────────────
-  const btnResetByGestureSettings = document.getElementById('btn-reset-pw-by-gesture-settings');
-  if (btnResetByGestureSettings) {
-    btnResetByGestureSettings.onclick = () => {
-      const hasGesture = Store.data.gesturePattern && Store.data.gesturePattern.length > 0;
-      if (!hasGesture) {
-        showToast('请先在"数据与安全"中设置解锁手势', 'warning');
-        return;
-      }
-      openModal({
-        title: '验证解锁手势',
-        size: 'sm',
-        bodyHTML: `
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
-            请绘制您的解锁手势以验证身份：
-          </div>
-          <div class="gesture-container">
-            <div class="gesture-canvas-wrap" id="settings-gesture-canvas-wrap">
-              <canvas id="settings-gesture-canvas" width="240" height="240"></canvas>
-            </div>
-            <div class="gesture-hint" id="settings-gesture-hint">请绘制解锁手势</div>
-            <div class="gesture-status" id="settings-gesture-status"></div>
-          </div>
-        `,
-        footerHTML: '',
-      });
-
-      setTimeout(() => {
-        const settingsGestureApi = initGestureCanvas('settings-gesture-canvas', 'unlock');
-        if (settingsGestureApi) {
-          gestureState.onComplete = (pattern) => {
-            const saved = Store.data.gesturePattern;
-            const statusEl = document.getElementById('settings-gesture-status');
-            if (pattern === saved) {
-              statusEl.className = 'gesture-status success';
-              statusEl.textContent = '手势验证成功';
-              closeModal();
-              setTimeout(() => openSetNewPasswordDialog(), 300);
-            } else {
-              statusEl.className = 'gesture-status error';
-              statusEl.textContent = '手势错误，请重试';
-            }
-          };
-        }
-      }, 200);
-    };
-  }
-
-  // ── 账户设置：手势密码设置 ─────────────────────────────────
-  const btnGestureSetupSettings = document.getElementById('btn-gesture-setup-settings');
-  if (btnGestureSetupSettings) {
-    btnGestureSetupSettings.onclick = () => {
-      openModal({
-        title: '设置解锁手势',
-        size: 'sm',
-        bodyHTML: `
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
-            绘制至少连接4个点的手势图案作为解锁手势：
-          </div>
-          <div class="gesture-container">
-            <div class="gesture-canvas-wrap" id="settings-gesture-setup-canvas-wrap" style="width:240px;height:240px;margin:0 auto;">
-              <canvas id="settings-gesture-setup-canvas" width="240" height="240"></canvas>
-            </div>
-            <div class="gesture-hint" id="settings-gesture-setup-hint">请绘制解锁手势（连接至少4个点）</div>
-            <div class="gesture-status" id="settings-gesture-setup-status"></div>
-          </div>
-        `,
-        footer: (f) => {
-          const btnReset = document.createElement('button');
-          btnReset.className = 'btn btn-sm';
-          btnReset.textContent = '重新绘制';
-          const btnSave = document.createElement('button');
-          btnSave.className = 'btn btn-sm btn-primary';
-          btnSave.textContent = '保存手势';
-          btnSave.disabled = true;
-          btnSave.id = 'btn-settings-gesture-save';
-          f.appendChild(btnReset);
-          f.appendChild(btnSave);
-
-          btnReset.onclick = () => {
-            if (gestureSetApi) gestureSetApi.reset();
-            document.getElementById('settings-gesture-setup-status').textContent = '';
-            document.getElementById('settings-gesture-setup-status').className = 'gesture-status';
-            btnSave.disabled = true;
-          };
-
-          btnSave.onclick = () => {
-            const pattern = gestureSetApi ? gestureSetApi.getPattern() : '';
-            if (!pattern || pattern.split('-').length < 4) {
-              showToast('请先绘制有效手势（至少4个点）', 'error');
-              return;
-            }
-            Store.data.gesturePattern = pattern;
-            Store.markDirty();
-            Store.save().then(() => {
-              showToast('解锁手势已保存', 'success');
-              closeModal();
-              // 同步更新所有关联模块
-              renderSettingsPage();
-              initGestureSetting();
-            });
-          };
-        },
-      });
-
-      // 初始化手势画布
-      setTimeout(() => {
-        gestureSetApi = initGestureCanvas('settings-gesture-setup-canvas', 'set');
-        if (gestureSetApi) {
-          gestureState.onComplete = (pattern, points) => {
-            const statusEl = document.getElementById('settings-gesture-setup-status');
-            const saveBtn = document.getElementById('btn-settings-gesture-save');
-            if (points.length < 4) {
-              statusEl.className = 'gesture-status error';
-              statusEl.textContent = '至少连接4个点，当前：' + points.length;
-              if (saveBtn) saveBtn.disabled = true;
-              return;
-            }
-            statusEl.className = 'gesture-status success';
-            statusEl.textContent = '手势已记录：' + pattern;
-            if (saveBtn) saveBtn.disabled = false;
-          };
-        }
-      }, 200);
-    };
-  }
-
-  // 导出 initGestureCanvas 到 window，供锁屏浮层使用
-  window.__initGestureCanvas = initGestureCanvas;
+  // 导出函数供 renderSettingsPage 使用
+  window.openSetSecurityQuestionsDialog = openSetSecurityQuestionsDialog;
+  window.openSetNewPasswordDialog = openSetNewPasswordDialog;
+  window.openResetBySecurityQuestionsDialog = openResetBySecurityQuestionsDialog;
+  // 导出 initSecurityQuestionsUI 到 window
+  window.initSecurityQuestionsUI = initSecurityQuestionsUI;
+  } catch (e) { console.error('[initSecurityModule] 初始化异常:', e); }
 })();
 </script>
 </body>
