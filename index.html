@@ -2507,6 +2507,7 @@ html.scrolling {
       </ul>
       <span class="nav-group-label">客户管理</span>
       <ul class="nav-list">
+        <li class="nav-item" data-page="pool"><span class="nav-icon">📋</span>客户池<span class="nav-count" id="nav-count-pool">0</span></li>
         <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表<span class="nav-count" id="nav-count-all">0</span></li>
         <li class="nav-item" data-page="geo"><span class="nav-icon">🌍</span>GEO客户<span class="nav-count" id="nav-count-geo">0</span></li>
         <li class="nav-item" data-page="360"><span class="nav-icon">🔄</span>360客户<span class="nav-count" id="nav-count-360">0</span></li>
@@ -2518,7 +2519,7 @@ html.scrolling {
       </ul>
       <span class="nav-group-label">数据管理</span>
       <ul class="nav-list">
-        <li class="nav-item" data-page="data-download"><span class="nav-icon">📥</span>数据下载</li>
+        <li class="nav-item" data-page="data-download"><span class="nav-icon">📥</span>数据下载与导入</li>
         <li class="nav-item" data-page="help"><span class="nav-icon">❓</span>帮助</li>
       </ul>
       <span class="nav-group-label">系统管理</span>
@@ -2676,6 +2677,72 @@ html.scrolling {
               <button class="btn btn-sm btn-outline" id="btn-report-export">📤 一键导出Excel</button>
             </div>
             <div class="bi-report-preview" id="bi-report-preview">点击上方按钮生成报表</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 客户池 -->
+      <section class="page" id="page-pool">
+        <div class="filter-bar">
+          <div class="filter-grid">
+            <div>
+              <label class="label">关键词搜索</label>
+              <input type="text" class="input" id="pool-filter-keyword" placeholder="姓名 / 脱敏手机号">
+            </div>
+            <div>
+              <label class="label">客户来源</label>
+              <select class="select" id="pool-filter-source">
+                <option value="">全部</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">录入开始日期</label>
+              <input type="date" class="input" id="pool-filter-date-start">
+            </div>
+            <div>
+              <label class="label">录入结束日期</label>
+              <input type="date" class="input" id="pool-filter-date-end">
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-primary btn-sm" id="pool-btn-apply-filter">筛选</button>
+            <button class="btn btn-sm btn-outline" id="pool-btn-reset-filter">重置</button>
+            <button class="btn btn-sm" id="pool-btn-new-customer">➕ 新增客户池客户</button>
+            <button class="btn btn-sm btn-danger" id="pool-btn-batch-delete">🗑 批量删除</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table" id="pool-customer-table">
+            <thead>
+              <tr id="pool-customer-thead-row">
+                <th style="width:40px;"><input type="checkbox" id="pool-check-all"></th>
+                <th style="width:50px;">序号</th>
+                <th data-sort="name">姓名 ▾</th>
+                <th data-sort="phone">手机号 ▾</th>
+                <th>意向产品</th>
+                <th data-sort="source">来源 ▾</th>
+                <th>行业</th>
+                <th data-sort="createdAt">录入时间 ▾</th>
+                <th style="width:240px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="pool-customer-tbody"></tbody>
+          </table>
+          <div class="pagination">
+            <div class="pagination-info" id="pool-pagination-info"></div>
+            <div class="pagination-controls">
+              <span>每页</span>
+              <select class="select" id="pool-page-size" style="width:auto;">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+              <span>条</span>
+              <button class="btn btn-sm btn-outline" id="pool-btn-prev-page">上一页</button>
+              <span id="pool-page-num">1 / 1</span>
+              <button class="btn btn-sm btn-outline" id="pool-btn-next-page">下一页</button>
+            </div>
           </div>
         </div>
       </section>
@@ -2992,15 +3059,14 @@ html.scrolling {
         </div>
       </section>
 
-      <!-- 数据下载 -->
+      <!-- 数据下载与导入 -->
       <section class="page" id="page-data-download">
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <h2 style="font-size:18px;">📥 数据下载</h2>
-            <button class="btn btn-sm btn-outline" id="btn-download-template">📄 导入数据模板下载</button>
+            <h2 style="font-size:18px;">📥 数据下载与导入</h2>
           </div>
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
-            选择需要导出的客户渠道和字段，点击下载按钮即可导出 Excel 格式的客户数据。每个渠道的客户数据将单独生成一个工作表（Sheet）。
+            选择需要导出的客户渠道和字段，点击下载按钮即可导出 Excel 格式的客户数据。每个渠道的客户数据将单独生成一个工作表（Sheet）。也可下载下方模板按格式准备数据后导入。
           </div>
 
           <div style="margin-bottom:12px;">
@@ -3030,29 +3096,58 @@ html.scrolling {
           </div>
         </div>
 
-        <!-- 数据导入 -->
+        <!-- 客户列表导入 -->
         <div class="card" style="margin-top:16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <h2 style="font-size:18px;">📤 数据导入</h2>
+            <h2 style="font-size:18px;">📋 客户列表导入</h2>
+            <button class="btn btn-sm btn-outline" id="btn-download-list-template">📄 导入客户列表模板下载</button>
           </div>
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
-            上传 Excel 文件导入客户数据，系统将自动匹配表头。不匹配的列将被忽略。
+            上传 Excel 文件导入客户数据到客户列表，系统将自动匹配表头。不匹配的列将被忽略。重复手机号或姓名为空的记录将自动跳过。
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
             <label class="btn btn-primary btn-sm" style="cursor:pointer;">
               📂 选择 Excel 文件
-              <input type="file" id="btn-import-excel" accept=".xlsx,.xls" style="display:none;">
+              <input type="file" id="btn-import-list-excel" accept=".xlsx,.xls" style="display:none;">
             </label>
-            <button class="btn btn-sm btn-outline" id="btn-import-excel-clear" style="display:none;">清除</button>
-            <span id="import-file-name" style="font-size:13px;color:var(--text-muted);"></span>
+            <button class="btn btn-sm btn-outline" id="btn-import-list-clear" style="display:none;">清除</button>
+            <span id="import-list-file-name" style="font-size:13px;color:var(--text-muted);"></span>
           </div>
-          <div id="import-preview-area" style="margin-top:12px;display:none;">
+          <div id="import-list-preview-area" style="margin-top:12px;display:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span id="import-summary" style="font-size:13px;color:var(--text-secondary);"></span>
-              <button class="btn btn-primary btn-sm" id="btn-confirm-import">✅ 确认导入</button>
+              <span id="import-list-summary" style="font-size:13px;color:var(--text-secondary);"></span>
+              <button class="btn btn-primary btn-sm" id="btn-confirm-import-list">✅ 确认导入客户列表</button>
             </div>
             <div style="overflow-x:auto;border:1px solid var(--border-color);border-radius:var(--radius-sm);max-height:300px;overflow-y:auto;">
-              <table class="data-table" id="import-preview-table" style="width:100%;font-size:12px;"></table>
+              <table class="data-table" id="import-list-preview-table" style="width:100%;font-size:12px;"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 客户池导入 -->
+        <div class="card" style="margin-top:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h2 style="font-size:18px;">📋 客户池导入</h2>
+            <button class="btn btn-sm btn-outline" id="btn-download-pool-template">📄 导入客户池模板下载</button>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            上传 Excel 文件导入客户数据到客户池。客户池中的数据不进行手机号去重校验，但姓名为空的记录将自动跳过。
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+            <label class="btn btn-primary btn-sm" style="cursor:pointer;">
+              📂 选择 Excel 文件
+              <input type="file" id="btn-import-pool-excel" accept=".xlsx,.xls" style="display:none;">
+            </label>
+            <button class="btn btn-sm btn-outline" id="btn-import-pool-clear" style="display:none;">清除</button>
+            <span id="import-pool-file-name" style="font-size:13px;color:var(--text-muted);"></span>
+          </div>
+          <div id="import-pool-preview-area" style="margin-top:12px;display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span id="import-pool-summary" style="font-size:13px;color:var(--text-secondary);"></span>
+              <button class="btn btn-primary btn-sm" id="btn-confirm-import-pool">✅ 确认导入客户池</button>
+            </div>
+            <div style="overflow-x:auto;border:1px solid var(--border-color);border-radius:var(--radius-sm);max-height:300px;overflow-y:auto;">
+              <table class="data-table" id="import-pool-preview-table" style="width:100%;font-size:12px;"></table>
             </div>
           </div>
         </div>
@@ -3072,7 +3167,7 @@ html.scrolling {
           <div style="font-size:14px;line-height:1.8;color:var(--text-secondary);">
             <p><strong>客户管理</strong>：在客户列表中添加、编辑、删除客户信息，支持多渠道分类管理。</p>
             <p><strong>数据安全</strong>：前往"数据与安全"页面可进行备份、导入、导出等操作。</p>
-            <p><strong>数据下载</strong>：在"数据下载"页面选择需要导出的客户渠道和字段，一键下载 Excel 格式数据，每个渠道单独一个工作表。</p>
+            <p><strong>数据下载与导入</strong>：在"数据下载与导入"页面可选择客户渠道和字段一键下载 Excel，也可使用模板导入客户数据。</p>
           </div>
         </div>
         <div class="card">
@@ -3482,7 +3577,7 @@ const Store = {
   // 运行态内存：解锁成功后保存
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
-  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '' }, // 明文内存
+  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', poolCustomers: [] }, // 明文内存
   settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
@@ -3498,14 +3593,15 @@ const Store = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '' };
+        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', poolCustomers: [] };
         return;
       }
       const plain = await decryptData(raw, this.password);
       const parsed = JSON.parse(plain);
-      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [] }, parsed);
+      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] }, parsed);
       // 确保关键字段存在
       if (!Array.isArray(this.data.customers)) this.data.customers = [];
+      if (!Array.isArray(this.data.poolCustomers)) this.data.poolCustomers = [];
       if (!Array.isArray(this.data.tags)) this.data.tags = [];
       if (!Array.isArray(this.data.logs)) this.data.logs = [];
       if (!Array.isArray(this.data.versions)) this.data.versions = [];
@@ -4476,6 +4572,7 @@ const COLUMN_DEFS = [
   { key: 'industryLevel2', label: '二级行业' },
   { key: 'tags', label: '客户标签' },
   { key: 'website', label: '网址' },
+  { key: 'remark', label: '备注' },
   { key: 'createdAt', label: '录入时间', sortable: true }
 ];
 
@@ -4614,6 +4711,8 @@ function renderColumnCells(c, config, start, i, masked, channel) {
       html += `<td>${escapeHTML(c.industryLevel2 || '-')}</td>`;
     } else if (key === 'website') {
       html += `<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(c.website || '')}">${escapeHTML(c.website || '-')}</td>`;
+    } else if (key === 'remark') {
+      html += `<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(c.remark || '')}">${escapeHTML(c.remark || '-')}</td>`;
     } else if (key === 'tags') {
       const tagIds = channel ? getChannelField(c, channel, 'tags') : c.tags;
       const tags = (Store.data.tags || []);
@@ -5208,6 +5307,448 @@ function renderCustomerTable() {
     };
   }
   initColumnResizers();
+}
+
+/* ================================================================
+   模块：客户池（独立数据，与客户列表无关联）
+   ================================================================ */
+let poolState = {
+  keyword: '', source: '',
+  dateStart: '', dateEnd: '', sortKey: 'createdAt', sortAsc: false,
+  page: 1, pageSize: 10, selected: new Set()
+};
+
+function applyPoolFilters() {
+  const all = Store.data.poolCustomers || [];
+  let arr = all.slice();
+  const kw = poolState.keyword.trim().toLowerCase();
+  if (kw) {
+    arr = arr.filter(c => {
+      const name = (c.name || '').toLowerCase();
+      const phone = (c.phone || '');
+      return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
+    });
+  }
+  if (poolState.source) arr = arr.filter(c => c.source === poolState.source);
+  if (poolState.dateStart) {
+    const t = parseDateStr(poolState.dateStart);
+    if (t !== null) arr = arr.filter(c => c.createdAt >= t);
+  }
+  if (poolState.dateEnd) {
+    const t = parseDateStr(poolState.dateEnd);
+    if (t !== null) arr = arr.filter(c => c.createdAt < t + 86400000);
+  }
+  const k = poolState.sortKey;
+  arr.sort((a, b) => {
+    let va = a[k] || '', vb = b[k] || '';
+    if (k === 'createdAt') { va = a.createdAt; vb = b.createdAt; }
+    if (va < vb) return poolState.sortAsc ? -1 : 1;
+    if (va > vb) return poolState.sortAsc ? 1 : -1;
+    return 0;
+  });
+  return arr;
+}
+
+function renderPoolFilterSources() {
+  const sel = document.getElementById('pool-filter-source');
+  if (!sel) return;
+  const sources = new Set();
+  (Store.data.poolCustomers || []).forEach(c => { if (c.source) sources.add(c.source); });
+  (Store.data.customerSources || []).forEach(s => { if (s.name) sources.add(s.name); });
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">全部</option>' +
+    Array.from(sources).map(s => `<option value="${escapeHTML(s)}" ${s === cur ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('');
+}
+
+function initPoolColumnResizers() {
+  const table = document.getElementById('pool-customer-table');
+  if (!table) return;
+  const headers = table.querySelectorAll('thead th');
+  headers.forEach((th, index) => {
+    if (index === headers.length - 1) return;
+    th._resizerHandler && th.removeEventListener('mousedown', th._resizerHandler);
+    const handler = (e) => {
+      const rect = th.getBoundingClientRect();
+      if (rect.right - e.clientX > 8) return;
+      e.preventDefault();
+      e.stopPropagation();
+      _dragState = { th, startX: e.clientX, startWidth: rect.width, moved: false };
+      table.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    };
+    th._resizerHandler = handler;
+    th.addEventListener('mousedown', handler);
+  });
+}
+
+function renderPoolTable() {
+  const tbody = document.getElementById('pool-customer-tbody');
+  if (!tbody) return;
+  const theadRow = document.getElementById('pool-customer-thead-row');
+  const data = applyPoolFilters();
+  const total = data.length;
+  const pageCount = Math.max(1, Math.ceil(total / poolState.pageSize));
+  if (poolState.page > pageCount) poolState.page = pageCount;
+  const start = (poolState.page - 1) * poolState.pageSize;
+  const pageData = data.slice(start, start + poolState.pageSize);
+  const showAll = window.__showPlain !== false;
+  const colConfig = getColumnConfig();
+  const visibleCount = colConfig.filter(c => c.visible).length;
+  const totalCols = 2 + visibleCount + 1;
+
+  if (theadRow) {
+    theadRow.innerHTML = `
+      <th style="width:40px;"><input type="checkbox" id="pool-check-all"></th>
+      <th style="width:50px;">序号</th>
+      ${renderColumnHeaders(colConfig)}
+      <th style="width:240px;">操作</th>`;
+  }
+
+  tbody.innerHTML = '';
+  if (pageData.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="${totalCols}" style="padding:40px;text-align:center;color:var(--text-muted);">暂无符合条件的客户池客户</td>`;
+    tbody.appendChild(tr);
+  } else {
+    pageData.forEach((c, i) => {
+      const tr = document.createElement('tr');
+      const masked = showAll ? c : maskCustomer(c);
+      const checked = poolState.selected.has(c.id) ? 'checked' : '';
+      tr.innerHTML = `
+        <td><input type="checkbox" data-id="${c.id}" ${checked}></td>
+        <td>${start + i + 1}</td>
+        ${renderColumnCells(c, colConfig, start, i, masked)}
+        <td>
+          <button class="btn btn-sm" data-act="view" data-id="${c.id}">详情</button>
+          <button class="btn btn-sm btn-outline" data-act="edit" data-id="${c.id}">编辑</button>
+          <button class="btn btn-sm btn-outline" data-act="follow" data-id="${c.id}">跟进</button>
+          <button class="btn btn-sm btn-danger" data-act="del" data-id="${c.id}">删除</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  tbody.querySelectorAll('input[type="checkbox"][data-id]').forEach(el => {
+    el.onchange = () => {
+      const id = el.dataset.id;
+      if (el.checked) poolState.selected.add(id); else poolState.selected.delete(id);
+    };
+  });
+  tbody.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      const c = Store.data.poolCustomers.find(x => x.id === id);
+      if (!c) return;
+      if (btn.dataset.act === 'view') openPoolCustomerDetail(c);
+      else if (btn.dataset.act === 'edit') { openPoolCustomerForm(c); }
+      else if (btn.dataset.act === 'follow') {
+        openModal({
+          title: '新增跟进记录 - ' + c.name, size: 'sm',
+          bodyHTML: `<label class="label">跟进内容</label><textarea class="textarea" id="_pool_follow_note" rows="4" maxlength="500"></textarea>`,
+          footer: (f) => {
+            const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+            const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '保存');
+            f.appendChild(cc); f.appendChild(ok);
+            cc.onclick = closeModal;
+            ok.onclick = async () => {
+              const t = document.getElementById('_pool_follow_note').value.trim();
+              if (!t) { showToast('请输入跟进内容', 'error'); return; }
+              c.remarkHistory = c.remarkHistory || [];
+              c.remarkHistory.unshift({ time: Date.now(), text: t });
+              c.updatedAt = Date.now();
+              await Store.save();
+              Store.markDirty();
+              showToast('已保存跟进记录', 'success');
+              closeModal(); renderPoolTable();
+            };
+          }
+        });
+      }
+      else if (btn.dataset.act === 'del') {
+        openModal({
+          title: '删除客户池客户',
+          size: 'sm',
+          bodyHTML: `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">
+            选择删除方式：
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-block btn-danger" id="pool-del-purge">🔥 彻底删除（不可恢复）</button>
+          </div>`,
+          footer: (f) => {
+            const cancel = document.createElement('button');
+            cancel.className = 'btn btn-sm btn-outline';
+            safeText(cancel, '取消');
+            f.appendChild(cancel);
+            cancel.onclick = closeModal;
+
+            document.getElementById('pool-del-purge').onclick = () => {
+              confirmDialog('彻底删除', '确认彻底删除客户 "' + c.name + '"？此操作不可恢复！', true, async () => {
+                Store.data.poolCustomers = Store.data.poolCustomers.filter(x => x.id !== c.id);
+                await Store.save();
+                Store.markDirty();
+                showToast('已彻底删除', 'success');
+                closeModal();
+                renderPoolTable();
+              });
+            };
+          }
+        });
+      }
+    };
+  });
+
+  // 分页
+  const info = document.getElementById('pool-pagination-info');
+  if (info) safeText(info, `共 ${total} 条  第 ${poolState.page}/${pageCount} 页`);
+  const pn = document.getElementById('pool-page-num');
+  if (pn) safeText(pn, `${poolState.page} / ${pageCount}`);
+
+  const checkAll = document.getElementById('pool-check-all');
+  if (checkAll) {
+    checkAll.onchange = (e) => {
+      const checked = e.target.checked;
+      document.querySelectorAll('#pool-customer-tbody input[type="checkbox"][data-id]').forEach(x => {
+        x.checked = checked;
+        if (checked) poolState.selected.add(x.dataset.id);
+        else poolState.selected.delete(x.dataset.id);
+      });
+    };
+  }
+  initPoolColumnResizers();
+}
+
+function openPoolCustomerForm(customer) {
+  const isEdit = !!customer;
+  const c = customer || { id: uuid(), createdAt: Date.now() };
+  const title = isEdit ? '编辑客户池客户' : '新增客户池客户';
+  const tags = getDefaultTags();
+
+  const sections = [
+    {
+      key: 'basic', title: '基础信息（必填）', open: true,
+      fields: [
+        { key: 'name', label: '姓名', type: 'text', required: true, max: 50 },
+        { key: 'gender', label: '性别', type: 'select', options: ['', '男', '女', '其他'] },
+        { key: 'age', label: '年龄', type: 'number', max: 3 },
+        { key: 'phone', label: '手机号', type: 'text', max: 11 },
+        { key: 'wechat', label: '微信', type: 'text', max: 50 },
+        { key: 'email', label: '邮箱', type: 'email', max: 80 },
+        { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
+      ]
+    },
+    {
+      key: 'business', title: '业务信息', open: true,
+      fields: [
+        { key: 'product', label: '意向产品', type: 'text', max: 100 },
+        { key: 'budget', label: '预算范围', type: 'text', max: 50 },
+        { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'] },
+        { key: 'nextFollowDate', label: '下次跟进日期', type: 'date' },
+        { key: 'website', label: '客户网址', type: 'text', max: 200 },
+        { key: 'industryLevel1', label: '一级行业', type: 'select-industry' },
+        { key: 'industryLevel2', label: '二级行业', type: 'select-industry2' },
+      ]
+    },
+    {
+      key: 'address', title: '联系地址', open: true,
+      fields: [
+        { key: 'province', label: '省/直辖市', type: 'text', max: 30 },
+        { key: 'city', label: '城市', type: 'text', max: 30 },
+        { key: 'district', label: '区/县', type: 'text', max: 30 },
+        { key: 'address', label: '详细住址', type: 'textarea', max: 200 },
+      ]
+    },
+    {
+      key: 'remark', title: '沟通备注 / 跟进记录', open: true,
+      fields: [
+        { key: 'remark', label: '新增跟进备注', type: 'textarea', max: 500 }
+      ]
+    }
+  ];
+
+  let html = `<div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
+                 录入时间：${formatDate(c.createdAt)}
+               </div>`;
+  for (const sec of sections) {
+    html += `<div class="form-section ${sec.open ? 'open' : ''}" data-sec="${sec.key}">
+                <div class="form-section-header">
+                  <span>${escapeHTML(sec.title)}</span>
+                  <span class="form-section-toggle">▾</span>
+                </div>
+                <div class="form-section-body"><div class="form-grid">`;
+    for (const f of sec.fields) {
+      let val = c[f.key] || '';
+      if (f.type === 'date') {
+        if (typeof val === 'number') val = dateOnly(val);
+        else if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) val = '';
+      }
+      if (f.type === 'select') {
+        let opts = '';
+        for (const o of f.options) {
+          opts += `<option value="${escapeHTML(o)}" ${val === o ? 'selected' : ''}>${escapeHTML(o || '(空)')}</option>`;
+        }
+        html += `<div class="form-group"><label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label><select class="select" data-key="${f.key}" style="${f.key === 'source' ? 'width:100%;' : ''}">${opts}</select></div>`;
+      } else if (f.type === 'select-industry') {
+        const industries = getIndustryOptions();
+        let opts = '<option value="">请选择</option>';
+        industries.forEach(ind => { opts += `<option value="${escapeHTML(ind)}" ${val === ind ? 'selected' : ''}>${escapeHTML(ind)}</option>`; });
+        html += `<div class="form-group"><label class="label">${escapeHTML(f.label)}</label><select class="select" data-key="industryLevel1" onchange="document.querySelector('[data-key=industryLevel2]').innerHTML='<option value=\\'\\'>请选择</option>'">${opts}</select></div>`;
+      } else if (f.type === 'select-industry2') {
+        html += `<div class="form-group"><label class="label">${escapeHTML(f.label)}</label><select class="select" data-key="industryLevel2"><option value="">请选择</option></select></div>`;
+      } else if (f.type === 'textarea') {
+        html += `<div class="form-group" style="grid-column:1/-1;"><label class="label">${escapeHTML(f.label)}</label><textarea class="textarea" data-key="${f.key}" maxlength="${f.max || 500}">${escapeHTML(val)}</textarea></div>`;
+      } else {
+        html += `<div class="form-group"><label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label><input type="${f.type}" class="input" data-key="${f.key}" value="${escapeHTML(val)}" maxlength="${f.max || ''}" ${f.required ? 'required' : ''}></div>`;
+      }
+    }
+    html += `</div></div></div>`;
+  }
+
+  openModal({
+    title, size: 'lg',
+    bodyHTML: html,
+    onOpen: () => {
+      const s1 = document.querySelector('[data-key=industryLevel1]');
+      if (s1) s1.value = c.industryLevel1 || '';
+    },
+    footer: (f) => {
+      const cancel = document.createElement('button'); cancel.className = 'btn btn-sm btn-outline'; safeText(cancel, '取消');
+      const save = document.createElement('button'); save.className = 'btn btn-sm btn-primary'; safeText(save, '保存');
+      f.appendChild(cancel); f.appendChild(save);
+      cancel.onclick = closeModal;
+      save.onclick = async () => {
+        const d = {};
+        document.querySelectorAll('#modal-box .input, #modal-box .textarea, #modal-box .select[data-key]').forEach(el => {
+          d[el.dataset.key] = el.value;
+        });
+        if (!d.name || !d.name.trim()) { showToast('姓名不能为空', 'error'); return; }
+        if (d.phone && !validatePhone(d.phone)) { showToast('手机号格式不正确（11位数字）', 'error'); return; }
+        if (d.email && !validateEmail(d.email)) { showToast('邮箱格式不正确', 'error'); return; }
+        if (d.age && !validateAge(d.age)) { showToast('年龄需为 0-120 的数字', 'error'); return; }
+
+        const noEscapeKeys = ['remark'];
+        const safe = {};
+        for (const k of Object.keys(d)) {
+          if (noEscapeKeys.includes(k)) safe[k] = typeof d[k] === 'string' ? d[k].trim() : d[k];
+          else safe[k] = typeof d[k] === 'string' ? escapeHTML(d[k]).trim() : d[k];
+        }
+
+        if (isEdit) {
+          const old = Store.data.poolCustomers.find(x => x.id === c.id);
+          if (!old) { showToast('客户数据不存在', 'error'); return; }
+          Object.keys(safe).forEach(k => { old[k] = safe[k]; });
+          if (safe.remark && safe.remark !== (c.lastRemark || '')) {
+            old.remarkHistory = old.remarkHistory || [];
+            old.remarkHistory.unshift({ time: Date.now(), text: safe.remark });
+            old.lastRemark = safe.remark;
+          }
+          old.updatedAt = Date.now();
+          await Store.save();
+          Store.markDirty();
+          showToast('客户池客户信息已更新', 'success');
+          closeModal();
+          renderPoolTable();
+          return;
+        } else {
+          const newC = { ...safe, id: c.id, cid: generateCustomerId(), createdAt: Date.now(), remarkHistory: [] };
+          if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark });
+          Store.data.poolCustomers.unshift(newC);
+          await Store.save();
+          Store.markDirty();
+          showToast('客户池客户已新增', 'success');
+        }
+        closeModal();
+        poolState.page = 1;
+        poolState.keyword = '';
+        poolState.source = '';
+        poolState.dateStart = '';
+        poolState.dateEnd = '';
+        navigate('pool');
+      };
+    }
+  });
+}
+
+function openPoolCustomerDetail(c) {
+  window.__lastDetailId = c.id;
+  renderDetail();
+
+  function renderDetail() {
+    const tags = Store.data.tags || [];
+    const addressFull = [c.province, c.city, c.district, c.address].filter(Boolean).join(' ');
+    const tagHtml = (c.tags || []).map(tid => {
+      const t = tags.find(x => x.id === tid);
+      return t ? `<span class="tag-chip" style="background:${t.color};color:white;padding:4px 12px;border-radius:14px;font-size:12px;">${escapeHTML(t.name)}</span>` : '';
+    }).join('');
+
+    let html = `
+      <div class="detail-header">
+        <div class="detail-title">${escapeHTML(c.name)}</div>
+        <div class="detail-actions">
+          <button class="btn btn-sm btn-outline" id="poolEditDetail">编辑</button>
+          <button class="btn btn-sm btn-outline" id="poolExportOne">导出</button>
+          <button class="btn btn-sm btn-danger" id="poolDelDetail">删除</button>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">手机号</div><div class="detail-value">${escapeHTML(c.phone || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">微信</div><div class="detail-value">${escapeHTML(c.wechat || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(c.email || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">性别 / 年龄</div><div class="detail-value">${escapeHTML((c.gender || '-') + ' / ' + (c.age || '-'))}</div></div>
+        <div class="detail-item"><div class="detail-label">客户来源</div><div class="detail-value">${escapeHTML(c.source || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">成交状态</div><div class="detail-value">${escapeHTML(c.status || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">意向产品</div><div class="detail-value">${escapeHTML(c.product || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">预算范围</div><div class="detail-value">${escapeHTML(c.budget || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">下次跟进日期</div><div class="detail-value">${formatNextFollowDate(c.nextFollowDate)}</div></div>
+        <div class="detail-item"><div class="detail-label">录入时间</div><div class="detail-value">${formatDate(c.createdAt)}</div></div>
+        <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">联系地址</div><div class="detail-value">${escapeHTML(addressFull || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">一级行业</div><div class="detail-value">${escapeHTML(c.industryLevel1 || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">二级行业</div><div class="detail-value">${escapeHTML(c.industryLevel2 || '-')}</div></div>
+        <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户网址</div><div class="detail-value">${c.website ? `<a href="${escapeHTML(c.website)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">${escapeHTML(c.website)}</a>` : '-'}</div></div>
+        <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">备注</div><div class="detail-value">${escapeHTML(c.remark || '-')}</div></div>
+      </div>
+      <div style="margin-top:24px;">
+        <h3 style="font-size:16px;margin-bottom:12px;">跟进记录时间线（${(c.remarkHistory || []).length}）</h3>
+        <div class="timeline">`;
+    if (!c.remarkHistory || c.remarkHistory.length === 0) {
+      html += `<div style="color:var(--text-muted);font-size:13px;">暂无跟进记录</div>`;
+    } else {
+      for (const r of c.remarkHistory) {
+        html += `<div class="timeline-item">
+          <div class="timeline-time">${formatDate(r.time)}</div>
+          <div class="timeline-content">${escapeHTML(r.text)}</div>
+        </div>`;
+      }
+    }
+    html += `</div></div>`;
+
+    openModal({
+      title: '客户池客户详情', size: 'md', bodyHTML: html,
+      footer: (f) => {
+        const cl = document.createElement('button'); cl.className = 'btn btn-sm btn-outline'; safeText(cl, '关闭');
+        f.appendChild(cl); cl.onclick = closeModal;
+        document.getElementById('poolEditDetail').onclick = () => {
+          closeModal();
+          setTimeout(() => openPoolCustomerForm(c), 10);
+        };
+        document.getElementById('poolExportOne').onclick = () => {
+          const rows = buildExcelData([c], true);
+          downloadExcel(`${c.name.replace(/[\\/:*?"<>|]/g, '_')}_客户池客户资料.xlsx`, '客户资料', rows);
+          showToast('已导出单客户资料', 'success');
+        };
+        document.getElementById('poolDelDetail').onclick = () => {
+          confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？操作不可恢复。', true, async () => {
+            Store.data.poolCustomers = Store.data.poolCustomers.filter(x => x.id !== c.id);
+            await Store.save();
+            Store.markDirty();
+            showToast('已删除', 'success');
+            closeModal();
+            renderPoolTable();
+          });
+        };
+      }
+    });
+  }
 }
 
 function renderChannelPage(channel) {
@@ -7913,7 +8454,7 @@ function openSourceEditor(source) {
 }
 
 /* ================================================================
-   数据下载页面
+   数据下载与导入页面
    ================================================================ */
 const DOWNLOAD_CHANNELS = [
   { key: 'all', label: '客户列表' },
@@ -8070,33 +8611,58 @@ function renderDataDownloadPage() {
       const list = chKey === 'all' ? allCustomers : allCustomers.filter(c => hasChannel(c, chKey));
       return sum + list.length;
     }, 0);
-    Store.addLog('数据下载', '成功', `导出 Excel（${selectedChannels.length} 个渠道，${totalExported} 条记录，${selectedFields.length} 个字段）`);
+    Store.addLog('数据下载与导入', '成功', `导出 Excel（${selectedChannels.length} 个渠道，${totalExported} 条记录，${selectedFields.length} 个字段）`);
     Store.save();
     showToast('Excel 下载成功', 'success');
   };
 
-  // 导入数据模板下载
-  const btnTemplate = document.getElementById('btn-download-template');
-  if (btnTemplate) {
-    btnTemplate.onclick = () => {
-      const headerRow = ['姓名', '性别', '年龄', '手机号', '微信', '邮箱', '省', '市', '区', '详细地址', '来源', '等级', '成交状态', '一级行业', '二级行业', '客户网址', '客户在投平台', '意向产品', '预算', '备注'];
+  // 导入客户列表模板下载
+  const btnListTemplate = document.getElementById('btn-download-list-template');
+  if (btnListTemplate) {
+    btnListTemplate.onclick = () => {
+      const headerRow = ['序号', '姓名', '手机号', '预算范围', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
       const dataRows = [headerRow];
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(dataRows);
       const colWidths = headerRow.map(h => ({ wch: Math.max(h.length * 1.5, 12) }));
       ws['!cols'] = colWidths;
-      XLSX.utils.book_append_sheet(wb, ws, '导入模板');
+      XLSX.utils.book_append_sheet(wb, ws, '客户列表导入模板');
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([wbout], { type: 'application/octet-stream' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '客户导入模板.xlsx';
+      a.download = '客户列表导入模板.xlsx';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('导入模板下载成功', 'success');
+      showToast('客户列表导入模板下载成功', 'success');
+    };
+  }
+
+  // 导入客户池模板下载
+  const btnPoolTemplate = document.getElementById('btn-download-pool-template');
+  if (btnPoolTemplate) {
+    btnPoolTemplate.onclick = () => {
+      const headerRow = ['序号', '姓名', '手机号', '预算范围', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
+      const dataRows = [headerRow];
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(dataRows);
+      const colWidths = headerRow.map(h => ({ wch: Math.max(h.length * 1.5, 12) }));
+      ws['!cols'] = colWidths;
+      XLSX.utils.book_append_sheet(wb, ws, '客户池导入模板');
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '客户池导入模板.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('客户池导入模板下载成功', 'success');
     };
   }
 
@@ -8107,18 +8673,19 @@ function renderDataDownloadPage() {
     info.textContent = `已选择 ${cc} 个渠道 · ${fc} 个字段 · 共 ${allCustomers} 条客户记录`;
   }
   updateDownloadInfo();
-  initDataImport();
+  initCustomerListImport();
+  initCustomerPoolImport();
 }
 
-/** Excel 导入：表头精确匹配 → 导入客户列表 */
-function initDataImport() {
-  const fileInput = document.getElementById('btn-import-excel');
-  const fileNameEl = document.getElementById('import-file-name');
-  const clearBtn = document.getElementById('btn-import-excel-clear');
-  const previewArea = document.getElementById('import-preview-area');
-  const previewTable = document.getElementById('import-preview-table');
-  const summaryEl = document.getElementById('import-summary');
-  const confirmBtn = document.getElementById('btn-confirm-import');
+/** Excel 导入客户列表：表头精确匹配 → 导入到 Store.data.customers */
+function initCustomerListImport() {
+  const fileInput = document.getElementById('btn-import-list-excel');
+  const fileNameEl = document.getElementById('import-list-file-name');
+  const clearBtn = document.getElementById('btn-import-list-clear');
+  const previewArea = document.getElementById('import-list-preview-area');
+  const previewTable = document.getElementById('import-list-preview-table');
+  const summaryEl = document.getElementById('import-list-summary');
+  const confirmBtn = document.getElementById('btn-confirm-import-list');
 
   if (!fileInput || fileInput.dataset.initialized) return;
   fileInput.dataset.initialized = '1';
@@ -8146,9 +8713,12 @@ function initDataImport() {
     { label: '一级行业', key: 'industryLevel1', parse: v => v },
     { label: '二级行业', key: 'industryLevel2', parse: v => v },
     { label: '客户网址', key: 'website', parse: v => v },
+    { label: '网址', key: 'website', parse: v => v },
     { label: '客户在投平台', key: 'platforms', parse: v => { if (!v) return []; return v.split('|').map(s => reversePlatformMap[s.trim()] || s.trim()).filter(Boolean); } },
     { label: '意向产品', key: 'product', parse: v => v },
     { label: '预算', key: 'budget', parse: v => v },
+    { label: '预算范围', key: 'budget', parse: v => v },
+    { label: '行业', key: 'industryLevel1', parse: v => v },
     { label: '下次跟进日期', key: 'nextFollowDate', parse: v => v || '' },
     { label: '录入时间', key: 'createdAt', parse: v => { if (!v) return Date.now(); const t = parseDateStr(v); return t !== null ? t : Date.now(); } },
     { label: '标签', key: 'tags', parse: v => { if (!v) return []; return v.split('|').map(name => { const t = (Store.data.tags || []).find(x => x.name === name.trim()); return t ? t.id : null; }).filter(Boolean); } },
@@ -8253,8 +8823,156 @@ function initDataImport() {
     }
 
     if (imported === 0) { showToast('没有新客户可导入（可能手机号已存在或姓名为空）', 'warning'); return; }
-    await Store.saveWithLog('数据导入', '成功', `导入 ${imported} 条客户数据，跳过 ${skipped} 条（手机号重复或无姓名）`);
+    await Store.saveWithLog('客户列表导入', '成功', `导入 ${imported} 条客户数据，跳过 ${skipped} 条（手机号重复或无姓名）`);
     showToast(`导入成功：${imported} 条客户（跳过 ${skipped} 条）`, 'success');
+    clearBtn.onclick();
+    refreshUI();
+  };
+}
+
+/** Excel 导入客户池：表头精确匹配 → 导入到 Store.data.poolCustomers */
+function initCustomerPoolImport() {
+  const fileInput = document.getElementById('btn-import-pool-excel');
+  const fileNameEl = document.getElementById('import-pool-file-name');
+  const clearBtn = document.getElementById('btn-import-pool-clear');
+  const previewArea = document.getElementById('import-pool-preview-area');
+  const previewTable = document.getElementById('import-pool-preview-table');
+  const summaryEl = document.getElementById('import-pool-summary');
+  const confirmBtn = document.getElementById('btn-confirm-import-pool');
+
+  if (!fileInput || fileInput.dataset.initialized) return;
+  fileInput.dataset.initialized = '1';
+
+  const reversePlatformMap = {};
+  for (const [key, name] of Object.entries(platformDisplayNames)) {
+    reversePlatformMap[name] = key;
+  }
+  const reverseChannelMap = { 'GEO': 'geo', '360': '360', 'Bing': 'bing', '百度': 'baidu', '抖音': 'douyin', '闲鱼': 'xianyu', '客户列表': 'all' };
+
+  const IMPORT_FIELD_MAP = [
+    { label: '姓名', key: 'name', parse: v => v },
+    { label: '性别', key: 'gender', parse: v => v },
+    { label: '年龄', key: 'age', parse: v => v },
+    { label: '手机号', key: 'phone', parse: v => v },
+    { label: '微信', key: 'wechat', parse: v => v },
+    { label: '邮箱', key: 'email', parse: v => v },
+    { label: '省', key: 'province', parse: v => v },
+    { label: '市', key: 'city', parse: v => v },
+    { label: '区', key: 'district', parse: v => v },
+    { label: '详细地址', key: 'address', parse: v => v },
+    { label: '来源', key: 'source', parse: v => v },
+    { label: '等级', key: 'level', parse: v => v },
+    { label: '成交状态', key: 'status', parse: v => v },
+    { label: '一级行业', key: 'industryLevel1', parse: v => v },
+    { label: '二级行业', key: 'industryLevel2', parse: v => v },
+    { label: '客户网址', key: 'website', parse: v => v },
+    { label: '网址', key: 'website', parse: v => v },
+    { label: '客户在投平台', key: 'platforms', parse: v => { if (!v) return []; return v.split('|').map(s => reversePlatformMap[s.trim()] || s.trim()).filter(Boolean); } },
+    { label: '意向产品', key: 'product', parse: v => v },
+    { label: '预算', key: 'budget', parse: v => v },
+    { label: '预算范围', key: 'budget', parse: v => v },
+    { label: '行业', key: 'industryLevel1', parse: v => v },
+    { label: '下次跟进日期', key: 'nextFollowDate', parse: v => v || '' },
+    { label: '录入时间', key: 'createdAt', parse: v => { if (!v) return Date.now(); const t = parseDateStr(v); return t !== null ? t : Date.now(); } },
+    { label: '标签', key: 'tags', parse: v => { if (!v) return []; return v.split('|').map(name => { const t = (Store.data.tags || []).find(x => x.name === name.trim()); return t ? t.id : null; }).filter(Boolean); } },
+    { label: '客户标签', key: 'tags', parse: v => { if (!v) return []; return v.split('|').map(name => { const t = (Store.data.tags || []).find(x => x.name === name.trim()); return t ? t.id : null; }).filter(Boolean); } },
+    { label: '备注', key: 'remark', parse: v => v || '' },
+    { label: '渠道', key: 'channels', parse: v => { if (!v) return []; return v.split('|').map(s => reverseChannelMap[s.trim()] || s.trim()).filter(Boolean); } }
+  ];
+
+  let parsedData = null;
+  let importedFields = [];
+
+  fileInput.onchange = () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    fileNameEl.textContent = file.name;
+    clearBtn.style.display = '';
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+        if (json.length < 2) { showToast('Excel 文件缺少数据行', 'error'); return; }
+
+        const headerRow = json[0].map(h => String(h).trim());
+        const matchedFields = [];
+        const matchedCols = [];
+        headerRow.forEach((h, idx) => {
+          const field = IMPORT_FIELD_MAP.find(f => f.label === h);
+          if (field) {
+            matchedFields.push({ idx, ...field });
+            matchedCols.push(field.label);
+          }
+        });
+        if (matchedFields.length === 0) { showToast('未匹配到任何已知列，请使用模板下载生成的格式', 'error'); return; }
+
+        parsedData = { matchedFields, rows: json.slice(1) };
+        importedFields = matchedFields;
+
+        const dataRows = json.slice(1).filter(r => r.some(v => String(v).trim() !== ''));
+        let previewHtml = '<thead><tr>';
+        matchedCols.forEach(label => { previewHtml += `<th>${escapeHTML(label)}</th>`; });
+        previewHtml += '</tr></thead><tbody>';
+        const showCount = Math.min(dataRows.length, 10);
+        for (let i = 0; i < showCount; i++) {
+          previewHtml += '<tr>';
+          matchedFields.forEach(f => { previewHtml += `<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(String(dataRows[i][f.idx] || ''))}</td>`; });
+          previewHtml += '</tr>';
+        }
+        if (dataRows.length > showCount) {
+          previewHtml += `<tr><td colspan="${matchedFields.length}" style="text-align:center;color:var(--text-muted);">... 共 ${dataRows.length} 行数据，仅显示前 ${showCount} 行</td></tr>`;
+        }
+        previewHtml += '</tbody>';
+        previewTable.innerHTML = previewHtml;
+        summaryEl.textContent = `识别到 ${matchedFields.length} 个匹配字段，${dataRows.length} 条客户数据`;
+        previewArea.style.display = '';
+      } catch (err) {
+        showToast('文件解析失败：' + err.message, 'error');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  clearBtn.onclick = () => {
+    fileInput.value = '';
+    fileNameEl.textContent = '';
+    clearBtn.style.display = 'none';
+    previewArea.style.display = 'none';
+    parsedData = null;
+  };
+
+  confirmBtn.onclick = async () => {
+    if (!parsedData) { showToast('请先选择导入文件', 'error'); return; }
+    const { matchedFields, rows } = parsedData;
+    const dataRows = rows.filter(r => r.some(v => String(v).trim() !== ''));
+    if (dataRows.length === 0) { showToast('没有有效数据可导入', 'warning'); return; }
+
+    let imported = 0, skipped = 0;
+
+    for (const row of dataRows) {
+      const customer = { id: uuid(), cid: generateCustomerId(), createdAt: Date.now(), remarkHistory: [], channels: [], platforms: [] };
+      matchedFields.forEach(f => {
+        const raw = String(row[f.idx] || '').trim();
+        if (raw !== '') {
+          customer[f.key] = f.parse(raw);
+        }
+      });
+      if (customer.tags === undefined) customer.tags = [];
+
+      if (!customer.name || !customer.name.trim()) { skipped++; continue; }
+
+      customer.updatedAt = Date.now();
+      Store.data.poolCustomers.unshift(customer);
+      imported++;
+    }
+
+    if (imported === 0) { showToast('没有新客户可导入（可能姓名为空）', 'warning'); return; }
+    await Store.saveWithLog('客户池导入', '成功', `导入 ${imported} 条客户数据到客户池，跳过 ${skipped} 条（无姓名）`);
+    showToast(`客户池导入成功：${imported} 条（跳过 ${skipped} 条）`, 'success');
     clearBtn.onclick();
     refreshUI();
   };
@@ -8298,6 +9016,7 @@ function navigate(pageName) {
   const titleMap = {
     dashboard: ['仪表盘', '系统总览'],
     bi: ['BI看板', '商业智能数据分析'],
+    pool: ['客户池', '客户池管理'],
     list: ['客户列表', '管理所有客户'],
     geo: ['GEO客户', 'GEO渠道客户管理'],
     '360': ['360客户', '360渠道客户管理'],
@@ -8306,7 +9025,7 @@ function navigate(pageName) {
     douyin: ['抖音客户', '抖音渠道客户管理'],
     xianyu: ['闲鱼客户', '闲鱼渠道客户管理'],
     trash: ['作废客户', '已作废的客户列表'],
-    'data-download': ['数据下载', '选择字段并下载客户数据'],
+    'data-download': ['数据下载与导入', '选择字段并下载或导入客户数据'],
     help: ['帮助', '使用指南与常见问题'],
     security: ['数据与安全', '备份、导入、修改密码、操作日志'],
     settings: ['设置', '系统设置与标签管理']
@@ -8316,6 +9035,7 @@ function navigate(pageName) {
   safeText(document.getElementById('page-subtitle'), t[1]);
   if (pageName === 'dashboard') renderDashboard();
   else if (pageName === 'bi') renderBIPage();
+  else if (pageName === 'pool') { renderPoolFilterSources(); renderPoolTable(); }
   else if (pageName === 'list') { renderFilterSources(); renderCustomerTable(); }
   else if (pageName === 'geo') renderChannelPage('geo');
   else if (pageName === '360') renderChannelPage('360');
@@ -9127,6 +9847,53 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
+  // 客户池事件绑定
+  document.getElementById('pool-btn-apply-filter').onclick = () => {
+    poolState.keyword = document.getElementById('pool-filter-keyword').value.trim();
+    poolState.source = document.getElementById('pool-filter-source').value;
+    poolState.dateStart = document.getElementById('pool-filter-date-start').value;
+    poolState.dateEnd = document.getElementById('pool-filter-date-end').value;
+    renderPoolTable();
+    showToast('已应用筛选条件', 'success');
+  };
+  document.getElementById('pool-btn-reset-filter').onclick = () => {
+    document.getElementById('pool-filter-keyword').value = '';
+    document.getElementById('pool-filter-source').value = '';
+    document.getElementById('pool-filter-date-start').value = '';
+    document.getElementById('pool-filter-date-end').value = '';
+    poolState = Object.assign(poolState, { keyword: '', source: '', dateStart: '', dateEnd: '', page: 1 });
+    renderPoolTable();
+  };
+  document.getElementById('pool-btn-new-customer').onclick = () => openPoolCustomerForm(null);
+  document.getElementById('pool-page-size').onchange = (e) => { poolState.pageSize = parseInt(e.target.value, 10) || 10; poolState.page = 1; renderPoolTable(); };
+  document.getElementById('pool-btn-prev-page').onclick = () => { if (poolState.page > 1) { poolState.page--; renderPoolTable(); } };
+  document.getElementById('pool-btn-next-page').onclick = () => {
+    const total = (applyPoolFilters && Store.data.poolCustomers ? applyPoolFilters().length : 0);
+    const pageCount = Math.max(1, Math.ceil(total / poolState.pageSize));
+    if (poolState.page < pageCount) { poolState.page++; renderPoolTable(); }
+  };
+  document.getElementById('pool-customer-table').addEventListener('click', (e) => {
+    const th = e.target.closest('th[data-sort]');
+    if (!th) return;
+    if (document.body.dataset.colDrag !== undefined) return;
+    const key = th.dataset.sort;
+    if (poolState.sortKey === key) poolState.sortAsc = !poolState.sortAsc;
+    else { poolState.sortKey = key; poolState.sortAsc = false; }
+    renderPoolTable();
+  });
+  document.getElementById('pool-btn-batch-delete').onclick = () => {
+    if (!poolState.selected || poolState.selected.size === 0) { showToast('请先勾选客户', 'warning'); return; }
+    confirmDialog('批量删除客户', `确认删除 ${poolState.selected.size} 个客户池客户？操作不可逆。`, true, async () => {
+      const ids = new Set(poolState.selected);
+      Store.data.poolCustomers = (Store.data.poolCustomers || []).filter(c => !ids.has(c.id));
+      poolState.selected.clear();
+      await Store.save();
+      Store.markDirty();
+      showToast('已批量删除', 'success');
+      renderPoolTable();
+    });
+  };
+
   // 数据安全中心按钮
   document.getElementById('btn-select-folder').onclick = async () => {
     if (!Store.isFolderApiSupported()) { showToast('当前浏览器不支持 File System Access API，请使用手动备份', 'warning'); return; }
@@ -9360,6 +10127,11 @@ function updateNavCounts() {
   if (allEl) {
     allEl.textContent = customers.filter(c => c.deleted !== true).length;
   }
+  // 客户池数量
+  const poolEl = document.getElementById('nav-count-pool');
+  if (poolEl) {
+    poolEl.textContent = (Store.data.poolCustomers || []).length;
+  }
   const channelItems = [
     { id: 'nav-count-geo', key: 'geo' },
     { id: 'nav-count-360', key: '360' },
@@ -9387,6 +10159,7 @@ function refreshUI() {
   if (!active) { navigate('dashboard'); return; }
   if (active.id === 'page-dashboard') renderDashboard();
   else if (active.id === 'page-bi') renderBIPage();
+  else if (active.id === 'page-pool') { renderPoolFilterSources(); renderPoolTable(); }
   else if (active.id === 'page-list') { renderFilterSources(); renderCustomerTable(); }
   else if (active.id === 'page-geo') renderChannelPage('geo');
   else if (active.id === 'page-360') renderChannelPage('360');
@@ -9765,6 +10538,225 @@ function refreshUI() {
       animation: petRipple 0.5s ease-out forwards;
       top: 50%; left: 50%;
     }
+
+    /* ========== 宠物养成系统 ========== */
+
+    /* 食物菜单 */
+    .pet-food-menu {
+      position: absolute;
+      bottom: 84px;
+      right: auto;
+      left: -58px;
+      display: none;
+      gap: 6px;
+      z-index: 100;
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 8px 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid #e2e8f0;
+    }
+    .pet-food-menu::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      bottom: 20px;
+      width: 10px; height: 10px;
+      background: rgba(255,255,255,0.95);
+      border-right: 1px solid #e2e8f0;
+      border-top: 1px solid #e2e8f0;
+      transform: rotate(45deg);
+    }
+    [data-theme="dark"] .pet-food-menu {
+      background: rgba(30,41,59,0.95);
+      border-color: #334155;
+    }
+    [data-theme="dark"] .pet-food-menu::after {
+      background: rgba(30,41,59,0.95);
+      border-right-color: #334155;
+      border-top-color: #334155;
+    }
+    .pet-food-menu.show { display: flex; }
+    .pet-food-item {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f1f5f9;
+    }
+    .pet-food-item:hover {
+      transform: scale(1.2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      background: #e2e8f0;
+    }
+    [data-theme="dark"] .pet-food-item {
+      background: #334155;
+    }
+    [data-theme="dark"] .pet-food-item:hover {
+      background: #475569;
+    }
+
+    /* 吃食物动画 */
+    #crm-pet-svg.eating #pet-body-group {
+      animation: petEating 0.5s ease-in-out 3;
+    }
+    @keyframes petEating {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-2px) rotate(-3deg); }
+      75% { transform: translateY(-1px) rotate(3deg); }
+    }
+
+    /* 爱心飘出 */
+    .pet-heart {
+      position: absolute;
+      font-size: 16px;
+      pointer-events: none;
+      animation: heartFloat 1.2s ease-out forwards;
+      z-index: 50;
+    }
+    @keyframes heartFloat {
+      0% { opacity: 1; transform: translateY(0) scale(0.5); }
+      50% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-40px) scale(0.8); }
+    }
+
+    /* 食物图标飘出 */
+    .pet-food-particle {
+      position: absolute;
+      font-size: 14px;
+      pointer-events: none;
+      animation: foodParticle 1s ease-out forwards;
+      z-index: 50;
+    }
+    @keyframes foodParticle {
+      0% { opacity: 1; transform: translateY(0) scale(0.8); }
+      100% { opacity: 0; transform: translateY(-30px) scale(1.2); }
+    }
+
+    /* 亲密度/饱腹度信息面板 */
+    .pet-stats-panel {
+      position: absolute;
+      bottom: 84px;
+      right: auto;
+      left: -146px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 10px;
+      padding: 10px 12px;
+      min-width: 140px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      display: none;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      font-size: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .pet-stats-panel::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      bottom: 18px;
+      width: 10px; height: 10px;
+      background: rgba(255,255,255,0.95);
+      border-right: 1px solid #e2e8f0;
+      border-top: 1px solid #e2e8f0;
+      transform: rotate(45deg);
+    }
+    [data-theme="dark"] .pet-stats-panel {
+      background: rgba(30,41,59,0.95);
+      color: #f1f5f9;
+      border-color: #334155;
+    }
+    [data-theme="dark"] .pet-stats-panel::after {
+      background: rgba(30,41,59,0.95);
+      border-right-color: #334155;
+      border-top-color: #334155;
+    }
+    .pet-stats-panel.show { display: block; }
+    .pet-stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 3px 0;
+      gap: 8px;
+    }
+    .pet-stat-label { color: #64748b; font-size: 11px; }
+    [data-theme="dark"] .pet-stat-label { color: #94a3b8; }
+    .pet-stat-bar {
+      flex: 1;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    [data-theme="dark"] .pet-stat-bar { background: #475569; }
+    .pet-stat-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+    .pet-stat-fill.fullness { background: linear-gradient(90deg,#f59e0b,#ef4444); }
+    .pet-stat-fill.affection { background: linear-gradient(90deg,#ec4899,#f472b6); }
+    .pet-stat-value { font-weight: 600; color: #1e293b; min-width: 22px; text-align: right; font-size: 11px; }
+    [data-theme="dark"] .pet-stat-value { color: #f1f5f9; }
+
+    /* 饥饿提示 */
+    .pet-hunger-hint {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+      animation: hungerBounce 1s ease-in-out infinite;
+      pointer-events: none;
+      display: none;
+      z-index: 60;
+      line-height: 1;
+    }
+    .pet-hunger-hint.show { display: block; }
+    @keyframes hungerBounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-6px); }
+    }
+
+    /* 抚摸涟漪 */
+    .pet-pat-ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(244,114,182,0.2);
+      pointer-events: none;
+      animation: patRipple 0.6s ease-out forwards;
+    }
+    @keyframes patRipple {
+      0% { width: 10px; height: 10px; opacity: 0.6; }
+      100% { width: 40px; height: 40px; opacity: 0; }
+    }
+
+    /* 喂食成功提示文字 */
+    .pet-feed-toast {
+      position: absolute;
+      bottom: 50%;
+      left: 50%;
+      transform: translate(-50%, 50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: #f59e0b;
+      pointer-events: none;
+      animation: feedToast 1.5s ease-out forwards;
+      z-index: 55;
+      white-space: nowrap;
+    }
+    @keyframes feedToast {
+      0% { opacity: 0; transform: translate(-50%, 50%) scale(0.5); }
+      20% { opacity: 1; transform: translate(-50%, 40%) scale(1); }
+      80% { opacity: 1; transform: translate(-50%, 20%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
+    }
   `;
   document.head.appendChild(style);
 
@@ -9781,6 +10773,25 @@ function refreshUI() {
       <span id="crm-pet-badge">0</span>
       <span id="crm-pet-status-dot"></span>
       ${buildCatSVG()}
+      <div class="pet-hunger-hint" id="pet-hunger-hint">🍽️</div>
+    </div>
+    <div class="pet-food-menu" id="pet-food-menu">
+      <button class="pet-food-item" data-food="fish" title="小鱼干">🐟</button>
+      <button class="pet-food-item" data-food="milk" title="牛奶">🥛</button>
+      <button class="pet-food-item" data-food="can" title="猫罐头">🥫</button>
+    </div>
+    <div class="pet-stats-panel" id="pet-stats-panel">
+      <div class="pet-stat-row">
+        <span class="pet-stat-label">🍽 饱腹</span>
+        <div class="pet-stat-bar"><div class="pet-stat-fill fullness" id="pet-stat-fullness"></div></div>
+        <span class="pet-stat-value" id="pet-stat-fullness-val">80</span>
+      </div>
+      <div class="pet-stat-row">
+        <span class="pet-stat-label">❤️ 亲昵</span>
+        <div class="pet-stat-bar"><div class="pet-stat-fill affection" id="pet-stat-affection"></div></div>
+        <span class="pet-stat-value" id="pet-stat-affection-val">50</span>
+      </div>
+      <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px;" id="pet-stat-meals"></div>
     </div>
   `;
   document.body.appendChild(widget);
@@ -9920,6 +10931,19 @@ function refreshUI() {
     dragOffX: 0,
     dragOffY: 0,
 
+    // ── 宠物养成属性 ──
+    longPressed: false,
+    isEating: false,
+
+    // 投喂/亲昵数据（持久化到 localStorage）
+    petStats: {
+      fullness: 80,
+      affection: 50,
+      meals: 0,
+      lastFeedTime: Date.now(),
+      lastPetTime: 0
+    },
+
     setState(s) {
       const svg = document.getElementById('crm-pet-svg');
 
@@ -9944,15 +10968,19 @@ function refreshUI() {
       }
 
       // ── 从 alert/happy 进入 sleep 的下降过渡 ──
-      if (s === 'sleep' && this.state !== 'sleep' && svg) {
-        svg.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
-        svg.style.transform = 'translateY(4px)';
-        svg.style.opacity = '0.85';
-        setTimeout(() => {
-          svg.style.transition = '';
-          svg.style.transform = '';
-          svg.style.opacity = '';
-        }, 550);
+      if (s === 'sleep' && this.state !== 'sleep') {
+        this.hideFoodMenu();
+        this.hideStatsPanel();
+        if (svg) {
+          svg.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+          svg.style.transform = 'translateY(4px)';
+          svg.style.opacity = '0.85';
+          setTimeout(() => {
+            svg.style.transition = '';
+            svg.style.transform = '';
+            svg.style.opacity = '';
+          }, 550);
+        }
       }
 
       this.state = s;
@@ -10036,6 +11064,8 @@ function refreshUI() {
     showBubble(title, html, state) {
       console.log('[🐱猫咪] showBubble 调用 | title=' + title + ' | state=' + (state || 'alert') + ' | bubble DOM=' + !!document.getElementById('crm-pet-bubble'));
       clearTimeout(this.bubbleTimer);
+      this.hideFoodMenu();
+      this.hideStatsPanel();
       this.setState(state || 'alert');
       const bubble = document.getElementById('crm-pet-bubble');
       const titleEl = document.getElementById('crm-pet-bubble-title');
@@ -10129,6 +11159,210 @@ function refreshUI() {
         : `🔔 ${total} 位客户待跟进`;
 
       this.showBubble(title, rowsHTML + footerHTML, urgentCount > 0 ? 'alert' : 'alert');
+    },
+
+    // ── 宠物养成方法 ──
+
+    loadPetStats() {
+      try {
+        const saved = localStorage.getItem('crm_pet_stats');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          this.petStats.fullness = typeof parsed.fullness === 'number' ? parsed.fullness : 80;
+          this.petStats.affection = typeof parsed.affection === 'number' ? parsed.affection : 50;
+          this.petStats.meals = typeof parsed.meals === 'number' ? parsed.meals : 0;
+          this.petStats.lastFeedTime = typeof parsed.lastFeedTime === 'number' ? parsed.lastFeedTime : Date.now();
+          this.petStats.lastPetTime = typeof parsed.lastPetTime === 'number' ? parsed.lastPetTime : 0;
+        }
+      } catch(e) {}
+    },
+
+    savePetStats() {
+      try {
+        localStorage.setItem('crm_pet_stats', JSON.stringify(this.petStats));
+      } catch(e) {}
+    },
+
+    updateStatsUI() {
+      const fullnessBar = document.getElementById('pet-stat-fullness');
+      const fullnessVal = document.getElementById('pet-stat-fullness-val');
+      const affectionBar = document.getElementById('pet-stat-affection');
+      const affectionVal = document.getElementById('pet-stat-affection-val');
+      const mealsEl = document.getElementById('pet-stat-meals');
+      if (fullnessBar) fullnessBar.style.width = Math.min(this.petStats.fullness, 100) + '%';
+      if (fullnessVal) fullnessVal.textContent = Math.round(Math.min(this.petStats.fullness, 100));
+      if (affectionBar) affectionBar.style.width = Math.min(this.petStats.affection, 100) + '%';
+      if (affectionVal) affectionVal.textContent = Math.round(Math.min(this.petStats.affection, 100));
+      if (mealsEl) mealsEl.textContent = `共投喂 ${this.petStats.meals} 次`;
+    },
+
+    showStatsPanel() {
+      const panel = document.getElementById('pet-stats-panel');
+      if (panel) {
+        this.hideFoodMenu();
+        this.hideBubble();
+        this.updateStatsUI();
+        panel.classList.add('show');
+      }
+    },
+
+    hideStatsPanel() {
+      const panel = document.getElementById('pet-stats-panel');
+      if (panel) panel.classList.remove('show');
+    },
+
+    showFoodMenu() {
+      if (this.isEating || this.state === 'sleep') return;
+      const menu = document.getElementById('pet-food-menu');
+      if (menu) {
+        this.hideStatsPanel();
+        this.hideBubble();
+        menu.classList.add('show');
+      }
+    },
+
+    hideFoodMenu() {
+      const menu = document.getElementById('pet-food-menu');
+      if (menu) menu.classList.remove('show');
+    },
+
+    feed(foodType) {
+      if (this.isEating) return;
+
+      const foodNames = { fish: '小鱼干', milk: '牛奶', can: '猫罐头' };
+      const foodValues = { fish: 20, milk: 15, can: 30 };
+      const gain = foodValues[foodType] || 15;
+      const foodName = foodNames[foodType] || '食物';
+
+      this.isEating = true;
+      this.hideFoodMenu();
+
+      // 吃食物动画
+      const svg = document.getElementById('crm-pet-svg');
+      if (svg) {
+        svg.classList.remove('idle', 'alert', 'happy', 'sleep');
+        svg.classList.add('eating');
+      }
+
+      // 更新数值
+      this.petStats.fullness = Math.min(this.petStats.fullness + gain, 100);
+      this.petStats.affection = Math.min(this.petStats.affection + 3, 100);
+      this.petStats.meals++;
+      this.petStats.lastFeedTime = Date.now();
+      this.savePetStats();
+
+      // 弹出食物图标
+      const body = document.getElementById('crm-pet-body');
+      if (body) {
+        const particle = document.createElement('div');
+        particle.className = 'pet-food-particle';
+        const icons = { fish: '🐟', milk: '🥛', can: '🥫' };
+        particle.textContent = icons[foodType] || '🍽️';
+        particle.style.left = (30 + Math.random() * 20) + 'px';
+        particle.style.top = '20px';
+        body.appendChild(particle);
+        setTimeout(() => particle.remove(), 1000);
+      }
+
+      const self = this;
+
+      // 吃完成后转为 happy
+      setTimeout(() => {
+        if (svg) {
+          svg.classList.remove('eating');
+          svg.classList.add('happy');
+        }
+        self.isEating = false;
+
+        // 显示饱腹提升提示
+        if (body) {
+          const toast = document.createElement('div');
+          toast.className = 'pet-feed-toast';
+          toast.textContent = `+${gain} 饱腹度 ♥`;
+          body.appendChild(toast);
+          setTimeout(() => toast.remove(), 1500);
+        }
+
+        // 3 秒后回到 idle
+        setTimeout(() => {
+          if (self.state !== 'sleep' && self.state !== 'alert') {
+            self.setState('idle');
+          }
+        }, 3000);
+      }, 1500);
+
+      this.lastInteract = Date.now();
+    },
+
+    pat() {
+      if (this.state === 'sleep') return;
+
+      // 增长亲密度
+      this.petStats.affection = Math.min(this.petStats.affection + 5, 100);
+      this.petStats.lastPetTime = Date.now();
+      this.savePetStats();
+
+      // 弹出爱心
+      const body = document.getElementById('crm-pet-body');
+      if (body) {
+        const heart = document.createElement('div');
+        heart.className = 'pet-heart';
+        const hearts = ['❤️', '💕', '💗', '😊'];
+        heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        heart.style.left = (25 + Math.random() * 30) + 'px';
+        heart.style.top = '10px';
+        body.appendChild(heart);
+        setTimeout(() => heart.remove(), 1200);
+      }
+
+      // 抚摸涟漪
+      const svg = document.getElementById('crm-pet-svg');
+      if (svg) {
+        const ripple = document.createElement('div');
+        ripple.className = 'pet-pat-ripple';
+        ripple.style.left = '50%';
+        ripple.style.top = '45%';
+        svg.parentElement.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+      }
+
+      // 短暂 happy
+      if (this.state !== 'alert' && this.state !== 'sleep') {
+        this.setState('happy');
+        setTimeout(() => {
+          if (this.state !== 'sleep' && this.state !== 'alert') {
+            this.setState('idle');
+          }
+        }, 1500);
+      }
+
+      this.lastInteract = Date.now();
+    },
+
+    checkHunger() {
+      const elapsed = Date.now() - this.petStats.lastFeedTime;
+      const hours = elapsed / 3600000;
+      // 每 3 小时减 15 饱腹度
+      const decay = Math.floor(hours / 3) * 15;
+      const newFullness = Math.max(0, 80 - decay);
+
+      if (newFullness !== this.petStats.fullness) {
+        this.petStats.fullness = newFullness;
+        this.savePetStats();
+      }
+
+      const hint = document.getElementById('pet-hunger-hint');
+      if (hint) {
+        if (this.petStats.fullness < 30 && this.state !== 'sleep') {
+          hint.classList.add('show');
+        } else {
+          hint.classList.remove('show');
+        }
+        // 刷新 UI
+        if (document.getElementById('pet-stats-panel').classList.contains('show')) {
+          this.updateStatsUI();
+        }
+      }
     }
   };
 
@@ -10156,12 +11390,107 @@ function refreshUI() {
     });
   })();
 
-  // ── 双击缩小 / 展开 ──────────────────────────────────────────
+  // ── 宠物养成：长按弹出食物菜单 ─────────────────────────────
+  (function initLongPress() {
+    const body = document.getElementById('crm-pet-body');
+    let longPressTimer = null;
+
+    body.addEventListener('mousedown', function(e) {
+      if (PET.isDragging || PET.state === 'sleep') return;
+      PET.longPressed = false;
+      longPressTimer = setTimeout(() => {
+        if (PET.isDragging) return;
+        PET.longPressed = true;
+        PET.showFoodMenu();
+      }, 500);
+    });
+
+    body.addEventListener('mouseup', function() {
+      clearTimeout(longPressTimer);
+    });
+
+    body.addEventListener('mouseleave', function() {
+      clearTimeout(longPressTimer);
+    });
+
+    // 触摸长按
+    body.addEventListener('touchstart', function(e) {
+      if (PET.state === 'sleep') return;
+      PET.longPressed = false;
+      longPressTimer = setTimeout(() => {
+        PET.longPressed = true;
+        PET.showFoodMenu();
+      }, 500);
+    }, { passive: true });
+
+    body.addEventListener('touchend', function() {
+      clearTimeout(longPressTimer);
+    });
+
+    body.addEventListener('touchcancel', function() {
+      clearTimeout(longPressTimer);
+    });
+  })();
+
+  // ── 食物菜单点击事件 ──
+  document.getElementById('pet-food-menu').addEventListener('click', function(e) {
+    const btn = e.target.closest('.pet-food-item');
+    if (!btn) return;
+    const food = btn.dataset.food;
+    if (food) PET.feed(food);
+  });
+
+  // ── 统计面板 hover 显示 ──
+  (function initStatsPanel() {
+    const body = document.getElementById('crm-pet-body');
+    let statsTimer = null;
+
+    body.addEventListener('mouseenter', function() {
+      clearTimeout(statsTimer);
+      statsTimer = setTimeout(() => {
+        PET.hideFoodMenu();
+        PET.showStatsPanel();
+      }, 600);
+    });
+
+    body.addEventListener('mouseleave', function(e) {
+      clearTimeout(statsTimer);
+      // 检查是否移到了面板或菜单上
+      const related = e.relatedTarget;
+      if (related && (related.closest('#pet-stats-panel') || related.closest('#pet-food-menu'))) return;
+      statsTimer = setTimeout(() => PET.hideStatsPanel(), 300);
+    });
+
+    // 面板上 hover 不隐藏
+    const panel = document.getElementById('pet-stats-panel');
+    if (panel) {
+      panel.addEventListener('mouseenter', () => clearTimeout(statsTimer));
+      panel.addEventListener('mouseleave', () => PET.hideStatsPanel());
+    }
+  })();
+
+  // ── 点击 / 双击（支持抚摸头部区域）─────────────────────────
   let petClickTimer = null;
   let petClickCount = 0;
 
   document.getElementById('crm-pet-body').addEventListener('click', function (e) {
     if (PET.isDragging) return;
+
+    // 长按触发了食物菜单，跳过本次点击
+    if (PET.longPressed) {
+      PET.longPressed = false;
+      return;
+    }
+
+    // 判断是否点击在猫的头部区域（SVG 上半部分，触发抚摸）
+    const rect = this.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+    const headThreshold = rect.height * 0.4;
+    if (clickY <= headThreshold && !PET.isEating) {
+      PET.pat();
+      return;
+    }
+
     petClickCount++;
     clearTimeout(petClickTimer);
 
@@ -10286,11 +11615,23 @@ function refreshUI() {
     petWidget.addEventListener('touchend', onTouchEnd);
   });
 
+  // ── 宠物养成初始化 ──────────────────────────────────────────
+  PET.loadPetStats();
+
+  // 点击页面其他区域关闭食物菜单和统计面板
+  document.addEventListener('click', function(e) {
+    const widget = document.getElementById('crm-pet-widget');
+    if (widget && !widget.contains(e.target)) {
+      PET.hideFoodMenu();
+      PET.hideStatsPanel();
+    }
+  });
+
   // ── 定时调度 ──────────────────────────────────────────────────
   // 注意：首次扫描由 enterApp() 在解锁完成后主动调用 window.CRMPet.check()
-  // 这里只负责：每 30 分钟周期复查 + 无操作 5 分钟睡眠
+  // 这里只负责：每 30 分钟周期复查 + 无操作 5 分钟睡眠 + 饱腹度衰减
   function scheduleCheck() {
-    console.log('[🐱猫咪] scheduleCheck 注册定时器：30分钟周期复查 + 5分钟睡眠检测');
+    console.log('[🐱猫咪] scheduleCheck 注册定时器：30分钟周期复查 + 5分钟睡眠检测 + 饱腹度衰减');
     // 每隔 30 分钟自动检查一次
     PET.checkTimer = setInterval(() => {
       if (!window.Store || !Store.data || !Store.data.customers) return;
@@ -10306,9 +11647,17 @@ function refreshUI() {
         PET.setState('sleep');
       }
     }, 60 * 1000);
+
+    // 每 10 分钟检查饱腹度衰减
+    setInterval(() => {
+      PET.checkHunger();
+    }, 10 * 60 * 1000);
   }
 
   scheduleCheck();
+
+  // 首次加载时立即检查一次饱腹度
+  setTimeout(() => PET.checkHunger(), 1000);
 
   // 暴露给全局，方便调试
   window.CRMPet = PET;
