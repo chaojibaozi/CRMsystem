@@ -2922,25 +2922,38 @@ html.scrolling {
           <div id="security-questions-area">
             <!-- 设置表单 -->
             <div id="sq-not-set" style="display:none;">
-              <div class="auth-group" style="margin-bottom:10px;">
-                <label class="label">密保问题 1</label>
-                <input type="text" id="sq-q1" class="input" placeholder="例如：我小学的名称是？">
-              </div>
-              <div class="auth-group" style="margin-bottom:10px;">
-                <label class="label">答案 1</label>
-                <input type="text" id="sq-a1" class="input" placeholder="请输入答案">
-              </div>
-              <div class="auth-group" style="margin-bottom:10px;">
-                <label class="label">密保问题 2</label>
-                <input type="text" id="sq-q2" class="input" placeholder="例如：我的出生地是？">
-              </div>
-              <div class="auth-group" style="margin-bottom:12px;">
-                <label class="label">答案 2</label>
-                <input type="text" id="sq-a2" class="input" placeholder="请输入答案">
-              </div>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-sm" id="btn-sq-cancel">取消</button>
-                <button class="btn btn-sm btn-primary" id="btn-sq-save">保存密保问题</button>
+              <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                <!-- 左侧：表单 -->
+                <div style="flex:1;min-width:280px;">
+                  <div class="auth-group" style="margin-bottom:10px;">
+                    <label class="label">密保问题 1</label>
+                    <input type="text" id="sq-q1" class="input" placeholder="例如：我小学的名称是？">
+                  </div>
+                  <div class="auth-group" style="margin-bottom:10px;">
+                    <label class="label">答案 1</label>
+                    <input type="text" id="sq-a1" class="input" placeholder="请输入答案">
+                  </div>
+                  <div class="auth-group" style="margin-bottom:10px;">
+                    <label class="label">密保问题 2</label>
+                    <input type="text" id="sq-q2" class="input" placeholder="例如：我的出生地是？">
+                  </div>
+                  <div class="auth-group" style="margin-bottom:12px;">
+                    <label class="label">答案 2</label>
+                    <input type="text" id="sq-a2" class="input" placeholder="请输入答案">
+                  </div>
+                  <div style="display:flex;gap:8px;">
+                    <button class="btn btn-sm" id="btn-sq-cancel">取消</button>
+                    <button class="btn btn-sm btn-primary" id="btn-sq-save">保存密保问题</button>
+                  </div>
+                </div>
+                <!-- 右侧：填写规则提示 -->
+                <div style="flex:0 0 200px;font-size:12px;color:var(--text-muted);background:var(--bg-tertiary);border-radius:var(--radius-sm);padding:12px;align-self:flex-start;line-height:1.8;">
+                  <div style="font-weight:500;color:var(--text-secondary);margin-bottom:6px;">📋 填写规则</div>
+                  <div>① 问题与答案均不能为空</div>
+                  <div>② 答案不区分大小写</div>
+                  <div>③ 自动去除首尾空格</div>
+                  <div>④ 建议用不易被猜到的内容</div>
+                </div>
               </div>
             </div>
             <!-- 已设置时显示状态 -->
@@ -3082,6 +3095,12 @@ html.scrolling {
           </div>
 
           <hr style="margin:16px 0;border:none;border-top:1px solid var(--border-color);">
+
+          <div style="margin-bottom:12px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;padding:8px 12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:12px;">
+              <input type="checkbox" id="check-include-pool" checked> 包含客户池数据
+            </label>
+          </div>
 
           <div style="margin-bottom:12px;">
             <div style="font-size:14px;font-weight:500;margin-bottom:8px;">选择导出字段</div>
@@ -3350,6 +3369,8 @@ const SETTINGS_KEY = 'crm_settings_v1';
 const DRAFT_KEY = 'crm_form_draft_v1';
 const LOG_KEY = 'crm_log_v1';
 const DATA_FILENAME = 'customer_data_encrypted.dat';
+const SQ_STORAGE_KEY = 'crm_sq_data_v1';   // 密保问题独立存储（无需主密码即可读取）
+const SQ_PW_VAULT_KEY = 'crm_sq_pw_vault';  // 密码恢复保险箱：密保答案派生密钥加密当前密码
 const PBKDF2_ITERATIONS = 200000;
 
 /* ================================================================
@@ -3578,7 +3599,7 @@ const Store = {
   // 运行态内存：解锁成功后保存
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
-  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', poolCustomers: [] }, // 明文内存
+  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] }, // 明文内存
   settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
@@ -3594,7 +3615,7 @@ const Store = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', poolCustomers: [] };
+        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] };
         return;
       }
       const plain = await decryptData(raw, this.password);
@@ -3676,6 +3697,7 @@ const Store = {
   _saveVersionSnapshot() {
     const snapshot = JSON.parse(JSON.stringify({
       customers: this.data.customers,
+      poolCustomers: this.data.poolCustomers,
       tags: this.data.tags,
       customerLevels: this.data.customerLevels,
       customerSources: this.data.customerSources,
@@ -8541,6 +8563,10 @@ function renderDataDownloadPage() {
 
   chContainer.addEventListener('change', () => updateDownloadInfo());
 
+  // 客户池包含复选框监听
+  const poolCheck = document.getElementById('check-include-pool');
+  if (poolCheck) poolCheck.addEventListener('change', () => updateDownloadInfo());
+
   // 渠道全选 / 全不选
   const btnChannelSelectAll = document.getElementById('btn-channel-select-all');
   const btnChannelDeselectAll = document.getElementById('btn-channel-deselect-all');
@@ -8565,10 +8591,13 @@ function renderDataDownloadPage() {
     if (selectedChannels.length === 0) { showToast('请至少选择一个客户渠道', 'error'); return; }
 
     const allCustomers = (Store.data.customers || []).filter(c => c.deleted !== true);
-    if (allCustomers.length === 0) { showToast('没有客户数据可下载', 'warning'); return; }
+    const includePool = document.getElementById('check-include-pool').checked;
+    const poolCustomers = includePool ? (Store.data.poolCustomers || []).filter(c => c.deleted !== true) : [];
+    if (allCustomers.length === 0 && poolCustomers.length === 0) { showToast('没有客户数据可下载', 'warning'); return; }
 
     const headerRow = selectedFields.map(i => DOWNLOAD_FIELDS[i].label);
     const wb = XLSX.utils.book_new();
+    let totalExported = 0;
 
     selectedChannels.forEach(chKey => {
       const chLabel = DOWNLOAD_CHANNELS.find(ch => ch.key === chKey).label;
@@ -8582,6 +8611,7 @@ function renderDataDownloadPage() {
       channelCustomers.forEach(c => {
         dataRows.push(selectedFields.map(i => DOWNLOAD_FIELDS[i].get(c)));
       });
+      totalExported += channelCustomers.length;
 
       const ws = XLSX.utils.aoa_to_sheet(dataRows);
       const colWidths = headerRow.map((h, i) => {
@@ -8594,6 +8624,25 @@ function renderDataDownloadPage() {
       ws['!cols'] = colWidths;
       XLSX.utils.book_append_sheet(wb, ws, chLabel);
     });
+
+    // 导出客户池数据（作为独立工作表）
+    if (poolCustomers.length > 0) {
+      const poolRows = [headerRow];
+      poolCustomers.forEach(c => {
+        poolRows.push(selectedFields.map(i => DOWNLOAD_FIELDS[i].get(c)));
+      });
+      const ws = XLSX.utils.aoa_to_sheet(poolRows);
+      const colWidths = headerRow.map((h, i) => {
+        const maxLen = poolRows.reduce((max, row) => {
+          const val = String(row[i] || '');
+          return Math.max(max, val.length);
+        }, h.length);
+        return { wch: Math.min(Math.max(maxLen * 1.2, 8), 40) };
+      });
+      ws['!cols'] = colWidths;
+      XLSX.utils.book_append_sheet(wb, ws, '客户池');
+      totalExported += poolCustomers.length;
+    }
 
     if (wb.SheetNames.length === 0) { showToast('所选渠道没有客户数据', 'warning'); return; }
 
@@ -8608,11 +8657,7 @@ function renderDataDownloadPage() {
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-    const totalExported = selectedChannels.reduce((sum, chKey) => {
-      const list = chKey === 'all' ? allCustomers : allCustomers.filter(c => hasChannel(c, chKey));
-      return sum + list.length;
-    }, 0);
-    Store.addLog('数据下载与导入', '成功', `导出 Excel（${selectedChannels.length} 个渠道，${totalExported} 条记录，${selectedFields.length} 个字段）`);
+    Store.addLog('数据下载与导入', '成功', `导出 Excel（${selectedChannels.length} 个渠道${includePool && poolCustomers.length > 0 ? ' + 客户池' : ''}，${totalExported} 条记录，${selectedFields.length} 个字段）`);
     Store.save();
     showToast('Excel 下载成功', 'success');
   };
@@ -8671,7 +8716,11 @@ function renderDataDownloadPage() {
     const fc = Array.from(fieldCbs).filter(cb => cb.checked).length;
     const cc = Array.from(channelCbs).filter(cb => cb.checked).length;
     const allCustomers = (Store.data.customers || []).filter(c => c.deleted !== true).length;
-    info.textContent = `已选择 ${cc} 个渠道 · ${fc} 个字段 · 共 ${allCustomers} 条客户记录`;
+    const poolCheck = document.getElementById('check-include-pool');
+    const poolCount = poolCheck && poolCheck.checked ? (Store.data.poolCustomers || []).filter(c => c.deleted !== true).length : 0;
+    const total = allCustomers + poolCount;
+    const poolSuffix = poolCount > 0 ? `（含客户池 ${poolCount} 条）` : '';
+    info.textContent = `已选择 ${cc} 个渠道 · ${fc} 个字段 · 共 ${total} 条客户记录${poolSuffix}`;
   }
   updateDownloadInfo();
   initCustomerListImport();
@@ -9046,7 +9095,7 @@ function navigate(pageName) {
   else if (pageName === 'xianyu') renderChannelPage('xianyu');
   else if (pageName === 'trash') renderTrashPage();
   else if (pageName === 'settings') renderSettingsPage();
-  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); if(typeof renderSettingsPage === 'function') renderSettingsPage(); }
+  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); }
   else if (pageName === 'data-download') renderDataDownloadPage();
   else if (pageName === 'help') renderHelpPage();
   // 进入列表页面自动隐藏移动端侧边栏
@@ -9293,8 +9342,20 @@ async function enterApp(password) {
   updateSidebarUser();
   // 同步密保问题标志位
   const hasSQ = Array.isArray(Store.data.securityQuestions) && Store.data.securityQuestions.length === 2;
-  if (hasSQ) localStorage.setItem('crm_has_sq', '1');
-  else localStorage.removeItem('crm_has_sq');
+  if (hasSQ) {
+    localStorage.setItem('crm_has_sq', '1');
+    // 同步密保问题到独立存储（确保登录页忘记密码可读）
+    localStorage.setItem(SQ_STORAGE_KEY, JSON.stringify(Store.data.securityQuestions));
+    // 确保密码恢复保险箱存在
+    if (!localStorage.getItem(SQ_PW_VAULT_KEY) && Store.password) {
+      const sqAnswers = Store.data.securityQuestions[0].a + '||' + Store.data.securityQuestions[1].a;
+      encryptData(Store.password, sqAnswers).then(vault => {
+        localStorage.setItem(SQ_PW_VAULT_KEY, vault);
+      }).catch(() => {});
+    }
+  } else {
+    localStorage.removeItem('crm_has_sq');
+  }
   // 保存一次（记录解锁日志 + 同步到文件夹）
   Store.addLog('解锁系统', '成功', '用户登录');
   await Store.save();
@@ -9368,7 +9429,7 @@ function initAuthPage() {
             sessionStorage.removeItem('crm_session_pw');
             sessionStorage.removeItem('crm_session_pw_mask');
             localStorage.removeItem('crm_remembered_username');
-            Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [] };
+            Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] };
             Store.unlocked = false;
             Store._dirty = false;
             showToast('数据已清空，请重新初始化', 'success');
@@ -9465,7 +9526,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       if (Store.data.username && Store.data.username !== username) {
-        Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [] };
+        Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] };
         Store.password = null;
         unlockFailCount++;
         document.getElementById('unlock-error').style.display = 'block';
@@ -9527,7 +9588,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // 首次保存空数据以派生密钥
     Store.password = pw;
-    Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: username, avatar: '', securityQuestions: [] };
+    Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: username, avatar: '', securityQuestions: [], poolCustomers: [] };
     Store.addLog('初始化系统', '成功', '注册账户：' + username);
     await Store.save();
     enterApp(pw);
@@ -10039,9 +10100,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const latest = Store.data.versions[0];
     confirmDialog('回滚数据', `将恢复到最近一份备份（共 ${Store.data.versions.length} 个版本），当前最新变更将移到下一版本，是否继续？`, true, async () => {
       promptPassword('二次验证', '请输入解锁密码以执行回滚', async () => {
-        // 当前数据作为一个新版本，再将 customers 替换为历史数据
-        const currentSnapshot = JSON.parse(JSON.stringify({ customers: Store.data.customers, tags: Store.data.tags, createdAt: Date.now() }));
+        // 当前数据作为一个新版本，再将 customers/poolCustomers 替换为历史数据
+        const currentSnapshot = JSON.parse(JSON.stringify({ customers: Store.data.customers, poolCustomers: Store.data.poolCustomers, tags: Store.data.tags, createdAt: Date.now() }));
         Store.data.customers = JSON.parse(JSON.stringify(latest.customers || []));
+        Store.data.poolCustomers = JSON.parse(JSON.stringify(latest.poolCustomers || []));
         if (latest.tags) Store.data.tags = JSON.parse(JSON.stringify(latest.tags || []));
         Store.data.versions.unshift(currentSnapshot);
         if (Store.data.versions.length > 3) Store.data.versions.length = 3;
@@ -10053,7 +10115,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-reset-data').onclick = () => {
     confirmDialog('清空全部数据', '将清空所有客户、标签和操作日志，不可逆。是否继续？', true, () => {
       promptPassword('二次验证', '请输入解锁密码以清空全部数据', async () => {
-        Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: Store.data.username || '', avatar: Store.data.avatar || '' };
+        Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: Store.data.username || '', avatar: Store.data.avatar || '', securityQuestions: [], poolCustomers: [] };
         // 同时清除文件夹同步文件
         if (Store.folderHandle) {
           try {
@@ -10096,9 +10158,32 @@ document.addEventListener('DOMContentLoaded', function () {
           Store._expectedHash = null; // 失效旧缓存
           sessionStorage.setItem('crm_session_pw', _obfuscatePw(np));
           Store.addLog('修改密码', '成功', '用户修改了解锁密码');
+          // 更新密码恢复保险箱
+          const sqRaw = localStorage.getItem(SQ_STORAGE_KEY);
+          if (sqRaw) {
+            try {
+              const sqData = JSON.parse(sqRaw);
+              if (Array.isArray(sqData) && sqData.length === 2) {
+                const sqAnswers = sqData[0].a + '||' + sqData[1].a;
+                encryptData(np, sqAnswers).then(vault => {
+                  localStorage.setItem(SQ_PW_VAULT_KEY, vault);
+                }).catch(() => {});
+              }
+            } catch (e) {}
+          }
           await Store.save();
           closeModal();
-          showToast('密码已更新，请使用新密码解锁', 'success');
+          // 如果有已授权的同步文件夹，强制重新加密同步
+          if (Store.folderHandle) {
+            try {
+              await Store.syncToFile();
+              showToast('密码已更新，同步文件已用新密码重新加密', 'success');
+            } catch (e) {
+              showToast('密码已更新，但同步文件重加密失败，请手动重新同步', 'warning');
+            }
+          } else {
+            showToast('密码已更新，请使用新密码解锁', 'success');
+          }
         };
       }
     });
@@ -10228,7 +10313,7 @@ function refreshUI() {
   else if (active.id === 'page-xianyu') renderChannelPage('xianyu');
   else if (active.id === 'page-trash') renderTrashPage();
   else if (active.id === 'page-settings') renderSettingsPage();
-  else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); }
+  else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); }
   else if (active.id === 'page-data-download') renderDataDownloadPage();
   else if (active.id === 'page-help') renderHelpPage();
   updateNavCounts();
@@ -11773,25 +11858,28 @@ function refreshUI() {
   }
 
   // 睡眠时停止追踪（省电）
-  const origSetState = PET.setState.bind(PET);
-  PET.setState = function(s) {
-    origSetState(s);
-    if (s === 'sleep') {
-      isRunning = false;
-      if (rafId) cancelAnimationFrame(rafId);
-      // 瞳孔归位
-      const eyes = document.querySelector('.pet-eyes-tracking');
-      if (eyes) {
-        eyes.style.setProperty('--pupil-x', '0px');
-        eyes.style.setProperty('--pupil-y', '0px');
+  const CRMPet = window.CRMPet;
+  if (CRMPet) {
+    const origSetState = CRMPet.setState.bind(CRMPet);
+    CRMPet.setState = function(s) {
+      origSetState(s);
+      if (s === 'sleep') {
+        isRunning = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        // 瞳孔归位
+        const eyes = document.querySelector('.pet-eyes-tracking');
+        if (eyes) {
+          eyes.style.setProperty('--pupil-x', '0px');
+          eyes.style.setProperty('--pupil-y', '0px');
+        }
+      } else {
+        if (!isRunning) {
+          isRunning = true;
+          rafId = requestAnimationFrame(tick);
+        }
       }
-    } else {
-      if (!isRunning) {
-        isRunning = true;
-        rafId = requestAnimationFrame(tick);
-      }
-    }
-  };
+    };
+  }
 
   // 启动追踪
   document.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -11815,6 +11903,7 @@ function refreshUI() {
     // 同步明文标志位
     if (hasSQ) {
       localStorage.setItem('crm_has_sq', '1');
+      localStorage.setItem(SQ_STORAGE_KEY, JSON.stringify(Store.data.securityQuestions));
     } else {
       localStorage.removeItem('crm_has_sq');
     }
@@ -11822,10 +11911,10 @@ function refreshUI() {
     const hasSetEl = document.getElementById('sq-has-set');
     const setupBtn = document.getElementById('btn-sq-setup');
     if (!notSetEl || !hasSetEl) return;
-    // 根据是否已有密保控制表单/状态显示
-    notSetEl.style.display = hasSQ ? 'none' : 'flex';
+    // 未设置密保：仅显示"设置密保问题"按钮，隐藏表单
+    // 已设置密保：显示状态信息，隐藏表单和设置按钮
+    notSetEl.style.display = 'none';
     hasSetEl.style.display = hasSQ ? 'block' : 'none';
-    // 设置密保按钮：已设置时隐藏（用户通过清除后再设置），未设置时显示
     if (setupBtn) {
       setupBtn.style.display = hasSQ ? 'none' : 'inline-flex';
     }
@@ -11834,25 +11923,43 @@ function refreshUI() {
   // 保存密保问题
   const btnSqSave = document.getElementById('btn-sq-save');
   if (btnSqSave) {
-    btnSqSave.onclick = () => {
-      const q1 = document.getElementById('sq-q1').value.trim();
-      const a1 = document.getElementById('sq-a1').value.trim();
-      const q2 = document.getElementById('sq-q2').value.trim();
-      const a2 = document.getElementById('sq-a2').value.trim();
-      if (!q1 || !a1 || !q2 || !a2) {
-        showToast('请完整填写2个密保问题和答案', 'error');
-        return;
+    btnSqSave.onclick = async () => {
+      try {
+        const q1 = document.getElementById('sq-q1')?.value?.trim() ?? '';
+        const a1 = document.getElementById('sq-a1')?.value?.trim() ?? '';
+        const q2 = document.getElementById('sq-q2')?.value?.trim() ?? '';
+        const a2 = document.getElementById('sq-a2')?.value?.trim() ?? '';
+        if (!q1 || !a1 || !q2 || !a2) {
+          showToast('请完整填写2个密保问题和答案', 'error');
+          return;
+        }
+        Store.data.securityQuestions = [
+          { q: q1, a: a1.toLowerCase() },
+          { q: q2, a: a2.toLowerCase() }
+        ];
+        // 同步到独立存储（登录页忘记密码时无需主密码即可读取）
+        localStorage.setItem(SQ_STORAGE_KEY, JSON.stringify(Store.data.securityQuestions));
+        localStorage.setItem('crm_has_sq', '1');
+        // 创建密码恢复保险箱：用密保答案派生密钥加密当前密码
+        if (Store.password) {
+          const sqAnswers = a1.toLowerCase() + '||' + a2.toLowerCase();
+          encryptData(Store.password, sqAnswers).then(vault => {
+            localStorage.setItem(SQ_PW_VAULT_KEY, vault);
+          }).catch(() => {});
+        }
+        Store.markDirty();
+        try {
+          await Store.save();
+          showToast('密保问题已保存', 'success');
+          initSecurityQuestionsUI();
+        } catch (saveErr) {
+          console.error('[initSecurityModule] 保存密保失败:', saveErr);
+          showToast('保存失败：' + (saveErr.message || '未知错误'), 'error');
+        }
+      } catch (e) {
+        console.error('[initSecurityModule] 保存密保异常:', e);
+        showToast('保存失败：' + (e.message || '未知错误'), 'error');
       }
-      Store.data.securityQuestions = [
-        { q: q1, a: a1.toLowerCase() },
-        { q: q2, a: a2.toLowerCase() }
-      ];
-      localStorage.setItem('crm_has_sq', '1');
-      Store.markDirty();
-      Store.save().then(() => {
-        showToast('密保问题已保存', 'success');
-        initSecurityQuestionsUI();
-      });
     };
   }
 
@@ -11874,13 +11981,23 @@ function refreshUI() {
   if (btnSqClear) {
     btnSqClear.onclick = () => {
       confirmDialog('清除密保问题', '清除后忘记密码将无法通过密保问题重置，是否继续？', false, () => {
-        Store.data.securityQuestions = [];
-        localStorage.removeItem('crm_has_sq');
-        Store.markDirty();
-        Store.save().then(() => {
-          showToast('密保问题已清除', 'success');
-          initSecurityQuestionsUI();
-        });
+        // 等 confirmDialog 的 finally closeModal() 执行完毕后再弹出密码验证
+        setTimeout(() => {
+          promptPassword('身份验证', '请输入当前解锁密码以确认清除密保问题', () => {
+            Store.data.securityQuestions = [];
+            localStorage.removeItem('crm_has_sq');
+            localStorage.removeItem(SQ_STORAGE_KEY);
+            localStorage.removeItem(SQ_PW_VAULT_KEY);
+            Store.markDirty();
+            Store.save().then(() => {
+              showToast('密保问题已清除', 'success');
+              initSecurityQuestionsUI();
+            }).catch(e => {
+              console.error('[initSecurityModule] 清除密保失败:', e);
+              showToast('清除失败：' + (e.message || '未知错误'), 'error');
+            });
+          });
+        }, 100);
       });
     };
   }
@@ -11912,9 +12029,16 @@ function refreshUI() {
 
   // ── 通过密保问题重置密码（从解锁页面"忘记密码"进入）────────────────────────────
   window.openResetBySecurityQuestionsDialog = function() {
-    const sq = Store.data.securityQuestions;
+    // 从独立存储读取密保问题（登录页时 Store 尚未解密，不能用 Store.data）
+    let sq;
+    try {
+      const raw = localStorage.getItem(SQ_STORAGE_KEY);
+      sq = raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      sq = null;
+    }
     if (!Array.isArray(sq) || sq.length !== 2) {
-      showToast('未设置密保问题，请先注册并设置密保问题', 'error');
+      showToast('未检测到有效的密保设置，请使用"强制清空并重置"', 'error');
       return;
     }
     openModal({
@@ -12008,13 +12132,53 @@ function refreshUI() {
             return;
           }
           try {
-            Store.password = newPw;
-            await Store.save();
-            Store.addLog('密码修改', '成功', '通过密保问题重置密码');
-            showToast('密码已重置，下次请使用新密码登录', 'success');
-            closeModal();
-            // 回到解锁页面
-            setTimeout(initAuthPage, 500);
+            // ── 尝试从密码恢复保险箱恢复旧数据 ──
+            let recovered = false;
+            const vaultRaw = localStorage.getItem(SQ_PW_VAULT_KEY);
+            const sqRaw = localStorage.getItem(SQ_STORAGE_KEY);
+            if (vaultRaw && sqRaw) {
+              try {
+                const sqData = JSON.parse(sqRaw);
+                if (Array.isArray(sqData) && sqData.length === 2) {
+                  // 用密保答案派生密钥，解密保险箱获取旧密码
+                  const sqAnswers = sqData[0].a + '||' + sqData[1].a;
+                  const oldPassword = await decryptData(vaultRaw, sqAnswers);
+                  if (oldPassword) {
+                    // 用旧密码解密主数据
+                    Store.password = oldPassword;
+                    await Store.load();
+                    // 数据恢复成功，改用新密码重新加密保存
+                    Store.password = newPw;
+                    Store._expectedHash = null;
+                    Store.addLog('密码重置', '成功', '通过密保问题重置密码（含数据迁移）');
+                    await Store.save();
+                    // 同步更新保险箱
+                    encryptData(newPw, sqAnswers).then(v => localStorage.setItem(SQ_PW_VAULT_KEY, v)).catch(() => {});
+                    recovered = true;
+                    showToast('密码已重置，数据已用新密码重新加密', 'success');
+                    closeModal();
+                    setTimeout(initAuthPage, 500);
+                  }
+                }
+              } catch (e) {
+                // 恢复失败，走兜底
+              }
+            }
+            if (!recovered) {
+              // 兜底：无法恢复旧数据，重置为空数据
+              Store.password = newPw;
+              Store._expectedHash = null;
+              Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] };
+              // 清除相关存储，避免旧密保/保险箱残留导致后续状态混乱
+              localStorage.removeItem(SQ_PW_VAULT_KEY);
+              localStorage.removeItem(SQ_STORAGE_KEY);
+              localStorage.removeItem('crm_has_sq');
+              await Store.save();
+              Store.addLog('密码重置', '成功', '通过密保问题重置密码（旧数据不可恢复）');
+              showToast('密码已重置，旧数据无法恢复，请重新开始', 'warning');
+              closeModal();
+              setTimeout(initAuthPage, 500);
+            }
           } catch (e) {
             showToast('密码重置失败：' + e.message, 'error');
           }
