@@ -2673,7 +2673,7 @@ html.scrolling {
               <button class="btn btn-sm btn-primary" id="btn-report-daily">📅 生成日报</button>
               <button class="btn btn-sm btn-primary" id="btn-report-weekly">📆 生成周报</button>
               <button class="btn btn-sm btn-primary" id="btn-report-monthly">📊 生成月报</button>
-              <button class="btn btn-sm btn-outline" id="btn-report-export">📤 一键导出CSV</button>
+              <button class="btn btn-sm btn-outline" id="btn-report-export">📤 一键导出Excel</button>
             </div>
             <div class="bi-report-preview" id="bi-report-preview">点击上方按钮生成报表</div>
           </div>
@@ -2971,8 +2971,8 @@ html.scrolling {
           <div class="security-actions">
             <button class="btn btn-primary" id="btn-export-encrypted">导出加密备份</button>
             <button class="btn" id="btn-import-encrypted">导入加密备份</button>
-            <button class="btn" id="btn-export-masked">导出脱敏数据 (CSV)</button>
-            <button class="btn btn-warning" id="btn-export-plain">导出明文数据 (CSV)</button>
+            <button class="btn" id="btn-export-masked">导出脱敏数据 (Excel)</button>
+            <button class="btn btn-warning" id="btn-export-plain">导出明文数据 (Excel)</button>
             <button class="btn" id="btn-rollback">回滚到上一版本</button>
             <button class="btn btn-danger" id="btn-reset-data">清空全部数据</button>
           </div>
@@ -2995,7 +2995,10 @@ html.scrolling {
       <!-- 数据下载 -->
       <section class="page" id="page-data-download">
         <div class="card">
-          <h2 style="font-size:18px;margin-bottom:10px;">📥 数据下载</h2>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h2 style="font-size:18px;">📥 数据下载</h2>
+            <button class="btn btn-sm btn-outline" id="btn-download-template">📄 导入数据模板下载</button>
+          </div>
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
             选择需要导出的客户渠道和字段，点击下载按钮即可导出 Excel 格式的客户数据。每个渠道的客户数据将单独生成一个工作表（Sheet）。
           </div>
@@ -3024,6 +3027,33 @@ html.scrolling {
           <div style="display:flex;gap:10px;align-items:center;">
             <button class="btn btn-primary" id="btn-download-selected">⬇ 下载 Excel</button>
             <span id="download-info" style="font-size:13px;color:var(--text-muted);">请选择渠道和字段</span>
+          </div>
+        </div>
+
+        <!-- 数据导入 -->
+        <div class="card" style="margin-top:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h2 style="font-size:18px;">📤 数据导入</h2>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            上传 Excel 文件导入客户数据，系统将自动匹配表头。不匹配的列将被忽略。
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+            <label class="btn btn-primary btn-sm" style="cursor:pointer;">
+              📂 选择 Excel 文件
+              <input type="file" id="btn-import-excel" accept=".xlsx,.xls" style="display:none;">
+            </label>
+            <button class="btn btn-sm btn-outline" id="btn-import-excel-clear" style="display:none;">清除</button>
+            <span id="import-file-name" style="font-size:13px;color:var(--text-muted);"></span>
+          </div>
+          <div id="import-preview-area" style="margin-top:12px;display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span id="import-summary" style="font-size:13px;color:var(--text-secondary);"></span>
+              <button class="btn btn-primary btn-sm" id="btn-confirm-import">✅ 确认导入</button>
+            </div>
+            <div style="overflow-x:auto;border:1px solid var(--border-color);border-radius:var(--radius-sm);max-height:300px;overflow-y:auto;">
+              <table class="data-table" id="import-preview-table" style="width:100%;font-size:12px;"></table>
+            </div>
           </div>
         </div>
       </section>
@@ -3170,6 +3200,20 @@ function parseDateStr(s) {
 // 生成 UUID
 function uuid() {
   return 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+}
+
+/** 生成 5 位唯一客户 ID（数字 + 大写字母） */
+function generateCustomerId() {
+  const chars = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  const existing = new Set((Store.data.customers || []).map(c => c.cid).filter(Boolean));
+  let attempts = 0;
+  while (attempts < 100) {
+    let id = '';
+    for (let i = 0; i < 5; i++) id += chars[Math.floor(Math.random() * chars.length)];
+    if (!existing.has(id)) return id;
+    attempts++;
+  }
+  return Date.now().toString(36).slice(-5).toUpperCase();
 }
 
 // roundRect polyfill（某些浏览器不支持 CanvasRenderingContext2D.roundRect）
@@ -3474,6 +3518,10 @@ const Store = {
         this.data.customerSources = getDefaultSources();
       }
       // 数据迁移：将旧的等级值转换为新的 A/B/C/D 格式
+      const cidSet = new Set();
+      this.data.customers.forEach(c => {
+        if (c.cid) cidSet.add(c.cid);
+      });
       this.data.customers.forEach(c => {
         if (c.level === 'VIP') c.level = 'A';
         else if (c.level === '重点') c.level = 'B';
@@ -3485,6 +3533,18 @@ const Store = {
             if (tagId === 't_hot' || tagId === 't_b' || tagId === 't_c') return 't_old';
             return tagId;
           });
+        }
+        // 为没有客户ID的客户分配唯一ID
+        if (!c.cid) {
+          const chars = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+          let id = '';
+          for (let i = 0; i < 5; i++) id += chars[Math.floor(Math.random() * chars.length)];
+          while (cidSet.has(id)) {
+            id = '';
+            for (let i = 0; i < 5; i++) id += chars[Math.floor(Math.random() * chars.length)];
+          }
+          c.cid = id;
+          cidSet.add(id);
         }
       });
     } catch (e) {
@@ -4342,7 +4402,7 @@ function openCustomerForm(customer) {
           }
           return;
         } else {
-          const newC = { ...safe, id: c.id, createdAt: Date.now(), remarkHistory: [], channels: safe.channels || [], platforms: safe.platforms || [] };
+          const newC = { ...safe, id: c.id, cid: generateCustomerId(), createdAt: Date.now(), remarkHistory: [], channels: safe.channels || [], platforms: safe.platforms || [] };
           // 清理旧 channel 字段
           if (newC.channel !== undefined) { delete newC.channel; }
           if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark, images: formImages.slice() });
@@ -4405,6 +4465,7 @@ const channelFilters = {};
 
 const COLUMN_DEFS = [
   { key: 'name', label: '姓名', sortable: true },
+  { key: 'cid', label: '客户ID' },
   { key: 'phone', label: '手机号', sortable: true },
   { key: 'wechat', label: '微信' },
   { key: 'product', label: '意向产品' },
@@ -4523,6 +4584,8 @@ function renderColumnCells(c, config, start, i, masked, channel) {
     const key = col.key;
     if (key === 'name') {
       html += `<td><strong>${escapeHTML(m.name || '-')}</strong></td>`;
+    } else if (key === 'cid') {
+      html += `<td style="font-family:monospace;font-size:12px;color:var(--text-secondary);">${escapeHTML(c.cid || '-')}</td>`;
     } else if (key === 'phone') {
       html += `<td>${escapeHTML(m.phone || '-')}</td>`;
     } else if (key === 'level') {
@@ -5451,8 +5514,8 @@ function openCustomerDetail(c, fromPopup) {
           setTimeout(() => openCustomerForm(c), 10);
         };
         document.getElementById('exportOne').onclick = () => {
-          const row = exportCustomerRows([c], true);
-          downloadCSV(`${c.name.replace(/[\\/:*?"<>|]/g, '_')}_客户资料.csv`, row);
+          const rows = buildExcelData([c], true);
+          downloadExcel(`${c.name.replace(/[\\/:*?"<>|]/g, '_')}_客户资料.xlsx`, '客户资料', rows);
           showToast('已导出单客户资料', 'success');
         };
         document.getElementById('delDetail').onclick = () => {
@@ -5473,11 +5536,11 @@ function openCustomerDetail(c, fromPopup) {
 }
 
 /* ================================================================
-   模块 9：CSV 导出工具
+   模块 9：Excel 导出工具
    ================================================================ */
-function exportCustomerRows(list, plain) {
+function buildExcelData(list, plain) {
   const header = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
-  const rows = [header.join(',')];
+  const rows = [header];
   list.forEach(c => {
     const d = plain ? c : maskCustomer(c);
     const addr = plain ? (c.address || '') : maskAddress(c.address);
@@ -5492,56 +5555,29 @@ function exportCustomerRows(list, plain) {
       c.remark || '',
       getCustomerChannels(c).map(ch => ({ geo: 'GEO', '360': '360', bing: 'Bing', baidu: '百度', douyin: '抖音', xianyu: '闲鱼' }[ch] || ch)).join('|')
     ];
-    rows.push(row.map(v => csvEscape(v)).join(','));
+    rows.push(row);
   });
-  return rows.join('\r\n');
-}
-function csvEscape(v) {
-  if (v == null) return '';
-  const s = String(v);
-  if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
-  return s;
-}
-function parseCSV(content) {
-  const rows = [];
-  const lines = content.replace(/\r\n/g, '\n').split('\n');
-  let currentRow = [];
-  let currentCell = '';
-  let inQuotes = false;
-  for (const line of lines) {
-    currentCell = '';
-    inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          currentCell += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char === ',' && !inQuotes) {
-        currentRow.push(currentCell.trim());
-        currentCell = '';
-      } else {
-        currentCell += char;
-      }
-    }
-    currentRow.push(currentCell.trim());
-    if (currentRow.length > 0 && !(currentRow.length === 1 && currentRow[0] === '')) {
-      rows.push(currentRow);
-    }
-    currentRow = [];
-  }
   return rows;
 }
-function downloadCSV(filename, content) {
-  // 添加 BOM 以保证中文在 Excel 正常显示
-  const blob = new Blob(['\ufeff' + content], { type: 'text/csv;charset=utf-8;' });
+
+function downloadExcel(filename, sheetName, dataRows) {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(dataRows);
+  const colWidths = dataRows[0].map((h, i) => {
+    const maxLen = dataRows.reduce((max, row) => {
+      const val = String(row[i] || '');
+      return Math.max(max, val.length);
+    }, h.length);
+    return { wch: Math.min(Math.max(maxLen * 1.2, 8), 40) };
+  });
+  ws['!cols'] = colWidths;
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
@@ -6591,18 +6627,11 @@ function generateBIReport(type) {
   showToast(`${title}已生成`, 'success');
 }
 
-function exportBIReportCSV() {
+function exportBIReport() {
   if (!_lastReport) { showToast('请先生成报表', 'error'); return; }
-  // 生成带 BOM 的 UTF-8 文本文件，确保 Excel / 记事本正常显示中文
-  const bom = '\uFEFF';
-  const content = bom + _lastReport;
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `CRM报表_${new Date().toISOString().slice(0,10)}.txt`;
-  document.body.appendChild(a); a.click();
-  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  const lines = _lastReport.split('\n');
+  const dataRows = lines.map(line => [line]);
+  downloadExcel(`CRM报表_${new Date().toISOString().slice(0,10)}.xlsx`, '报表', dataRows);
   showToast('报表已导出', 'success');
 }
 
@@ -8046,6 +8075,31 @@ function renderDataDownloadPage() {
     showToast('Excel 下载成功', 'success');
   };
 
+  // 导入数据模板下载
+  const btnTemplate = document.getElementById('btn-download-template');
+  if (btnTemplate) {
+    btnTemplate.onclick = () => {
+      const headerRow = ['姓名', '性别', '年龄', '手机号', '微信', '邮箱', '省', '市', '区', '详细地址', '来源', '等级', '成交状态', '一级行业', '二级行业', '客户网址', '客户在投平台', '意向产品', '预算', '备注'];
+      const dataRows = [headerRow];
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(dataRows);
+      const colWidths = headerRow.map(h => ({ wch: Math.max(h.length * 1.5, 12) }));
+      ws['!cols'] = colWidths;
+      XLSX.utils.book_append_sheet(wb, ws, '导入模板');
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '客户导入模板.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('导入模板下载成功', 'success');
+    };
+  }
+
   function updateDownloadInfo() {
     const fc = Array.from(fieldCbs).filter(cb => cb.checked).length;
     const cc = Array.from(channelCbs).filter(cb => cb.checked).length;
@@ -8053,6 +8107,157 @@ function renderDataDownloadPage() {
     info.textContent = `已选择 ${cc} 个渠道 · ${fc} 个字段 · 共 ${allCustomers} 条客户记录`;
   }
   updateDownloadInfo();
+  initDataImport();
+}
+
+/** Excel 导入：表头精确匹配 → 导入客户列表 */
+function initDataImport() {
+  const fileInput = document.getElementById('btn-import-excel');
+  const fileNameEl = document.getElementById('import-file-name');
+  const clearBtn = document.getElementById('btn-import-excel-clear');
+  const previewArea = document.getElementById('import-preview-area');
+  const previewTable = document.getElementById('import-preview-table');
+  const summaryEl = document.getElementById('import-summary');
+  const confirmBtn = document.getElementById('btn-confirm-import');
+
+  if (!fileInput || fileInput.dataset.initialized) return;
+  fileInput.dataset.initialized = '1';
+
+  const reversePlatformMap = {};
+  for (const [key, name] of Object.entries(platformDisplayNames)) {
+    reversePlatformMap[name] = key;
+  }
+  const reverseChannelMap = { 'GEO': 'geo', '360': '360', 'Bing': 'bing', '百度': 'baidu', '抖音': 'douyin', '闲鱼': 'xianyu', '客户列表': 'all' };
+
+  const IMPORT_FIELD_MAP = [
+    { label: '姓名', key: 'name', parse: v => v },
+    { label: '性别', key: 'gender', parse: v => v },
+    { label: '年龄', key: 'age', parse: v => v },
+    { label: '手机号', key: 'phone', parse: v => v },
+    { label: '微信', key: 'wechat', parse: v => v },
+    { label: '邮箱', key: 'email', parse: v => v },
+    { label: '省', key: 'province', parse: v => v },
+    { label: '市', key: 'city', parse: v => v },
+    { label: '区', key: 'district', parse: v => v },
+    { label: '详细地址', key: 'address', parse: v => v },
+    { label: '来源', key: 'source', parse: v => v },
+    { label: '等级', key: 'level', parse: v => v },
+    { label: '成交状态', key: 'status', parse: v => v },
+    { label: '一级行业', key: 'industryLevel1', parse: v => v },
+    { label: '二级行业', key: 'industryLevel2', parse: v => v },
+    { label: '客户网址', key: 'website', parse: v => v },
+    { label: '客户在投平台', key: 'platforms', parse: v => { if (!v) return []; return v.split('|').map(s => reversePlatformMap[s.trim()] || s.trim()).filter(Boolean); } },
+    { label: '意向产品', key: 'product', parse: v => v },
+    { label: '预算', key: 'budget', parse: v => v },
+    { label: '下次跟进日期', key: 'nextFollowDate', parse: v => v || '' },
+    { label: '录入时间', key: 'createdAt', parse: v => { if (!v) return Date.now(); const t = parseDateStr(v); return t !== null ? t : Date.now(); } },
+    { label: '标签', key: 'tags', parse: v => { if (!v) return []; return v.split('|').map(name => { const t = (Store.data.tags || []).find(x => x.name === name.trim()); return t ? t.id : null; }).filter(Boolean); } },
+    { label: '客户标签', key: 'tags', parse: v => { if (!v) return []; return v.split('|').map(name => { const t = (Store.data.tags || []).find(x => x.name === name.trim()); return t ? t.id : null; }).filter(Boolean); } },
+    { label: '备注', key: 'remark', parse: v => v || '' },
+    { label: '渠道', key: 'channels', parse: v => { if (!v) return []; return v.split('|').map(s => reverseChannelMap[s.trim()] || s.trim()).filter(Boolean); } }
+  ];
+
+  let parsedData = null;
+  let importedFields = [];
+
+  fileInput.onchange = () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    fileNameEl.textContent = file.name;
+    clearBtn.style.display = '';
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+        if (json.length < 2) { showToast('Excel 文件缺少数据行', 'error'); return; }
+
+        const headerRow = json[0].map(h => String(h).trim());
+        const matchedFields = [];
+        const matchedCols = [];
+        headerRow.forEach((h, idx) => {
+          const field = IMPORT_FIELD_MAP.find(f => f.label === h);
+          if (field) {
+            matchedFields.push({ idx, ...field });
+            matchedCols.push(field.label);
+          }
+        });
+        if (matchedFields.length === 0) { showToast('未匹配到任何已知列，请使用模板下载生成的格式', 'error'); return; }
+
+        parsedData = { matchedFields, rows: json.slice(1) };
+        importedFields = matchedFields;
+
+        const dataRows = json.slice(1).filter(r => r.some(v => String(v).trim() !== ''));
+        let previewHtml = '<thead><tr>';
+        matchedCols.forEach(label => { previewHtml += `<th>${escapeHTML(label)}</th>`; });
+        previewHtml += '</tr></thead><tbody>';
+        const showCount = Math.min(dataRows.length, 10);
+        for (let i = 0; i < showCount; i++) {
+          previewHtml += '<tr>';
+          matchedFields.forEach(f => { previewHtml += `<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(String(dataRows[i][f.idx] || ''))}</td>`; });
+          previewHtml += '</tr>';
+        }
+        if (dataRows.length > showCount) {
+          previewHtml += `<tr><td colspan="${matchedFields.length}" style="text-align:center;color:var(--text-muted);">... 共 ${dataRows.length} 行数据，仅显示前 ${showCount} 行</td></tr>`;
+        }
+        previewHtml += '</tbody>';
+        previewTable.innerHTML = previewHtml;
+        summaryEl.textContent = `识别到 ${matchedFields.length} 个匹配字段，${dataRows.length} 条客户数据`;
+        previewArea.style.display = '';
+      } catch (err) {
+        showToast('文件解析失败：' + err.message, 'error');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  clearBtn.onclick = () => {
+    fileInput.value = '';
+    fileNameEl.textContent = '';
+    clearBtn.style.display = 'none';
+    previewArea.style.display = 'none';
+    parsedData = null;
+  };
+
+  confirmBtn.onclick = async () => {
+    if (!parsedData) { showToast('请先选择导入文件', 'error'); return; }
+    const { matchedFields, rows } = parsedData;
+    const dataRows = rows.filter(r => r.some(v => String(v).trim() !== ''));
+    if (dataRows.length === 0) { showToast('没有有效数据可导入', 'warning'); return; }
+
+    const existingPhones = new Set((Store.data.customers || []).map(c => (c.phone || '').trim()).filter(Boolean));
+    let imported = 0, skipped = 0;
+
+    for (const row of dataRows) {
+      const customer = { id: uuid(), cid: generateCustomerId(), createdAt: Date.now(), remarkHistory: [], channels: [], platforms: [] };
+      matchedFields.forEach(f => {
+        const raw = String(row[f.idx] || '').trim();
+        if (raw !== '') {
+          customer[f.key] = f.parse(raw);
+        }
+      });
+      if (customer.tags === undefined) customer.tags = [];
+
+      const phone = (customer.phone || '').trim();
+      if (phone && existingPhones.has(phone)) { skipped++; continue; }
+      if (phone) existingPhones.add(phone);
+
+      if (!customer.name || !customer.name.trim()) { skipped++; continue; }
+
+      customer.updatedAt = Date.now();
+      Store.data.customers.unshift(customer);
+      imported++;
+    }
+
+    if (imported === 0) { showToast('没有新客户可导入（可能手机号已存在或姓名为空）', 'warning'); return; }
+    await Store.saveWithLog('数据导入', '成功', `导入 ${imported} 条客户数据，跳过 ${skipped} 条（手机号重复或无姓名）`);
+    showToast(`导入成功：${imported} 条客户（跳过 ${skipped} 条）`, 'success');
+    clearBtn.onclick();
+    refreshUI();
+  };
 }
 
 function renderHelpPage() {
@@ -8151,7 +8356,7 @@ function ensureSeedData() {
     const now = Date.now();
     Store.data.customers = [
       {
-        id: 'demo_1', name: '张敏', gender: '女', age: '32', phone: '13900000001',
+        id: 'demo_1', cid: generateCustomerId(), name: '张敏', gender: '女', age: '32', phone: '13900000001',
         wechat: 'zhangmin_wx', email: 'zhangmin@example.com',
         source: '老客户介绍', level: 'A', status: '跟进中',
         province: '北京市', city: '北京市', district: '朝阳区', address: '建国路 88 号 SOHO 现代城',
@@ -8161,7 +8366,7 @@ function ensureSeedData() {
         channels: ['geo']
       },
       {
-        id: 'demo_2', name: '李伟', gender: '男', age: '41', phone: '13900000002',
+        id: 'demo_2', cid: generateCustomerId(), name: '李伟', gender: '男', age: '41', phone: '13900000002',
         wechat: 'liwei_wx', email: 'liwei@example.com',
         source: '网络推广', level: 'B', status: '已成交',
         province: '上海市', city: '上海市', district: '徐汇区', address: '漕溪北路 18 号',
@@ -8170,7 +8375,7 @@ function ensureSeedData() {
         tags: ['t_old'], remark: '签约成功', remarkHistory: [{ time: now - 20 * 86400000, text: '签约成功，首期款已收到。' }]
       },
       {
-        id: 'demo_3', name: '王芳', gender: '女', age: '28', phone: '13900000003',
+        id: 'demo_3', cid: generateCustomerId(), name: '王芳', gender: '女', age: '28', phone: '13900000003',
         wechat: 'wangfang_wx', email: 'wangfang@example.com',
         source: '线下活动', level: 'C', status: '未沟通',
         province: '广东省', city: '广州市', district: '天河区', address: '珠江新城花城大道 85 号',
@@ -8988,17 +9193,17 @@ document.addEventListener('DOMContentLoaded', function () {
     input.click();
   };
   document.getElementById('btn-export-masked').onclick = () => {
-    const content = exportCustomerRows(Store.data.customers || [], false);
-    downloadCSV('客户资料_脱敏.csv', content);
-    Store.addLog('导出数据', '成功', '脱敏 CSV');
+    const rows = buildExcelData(Store.data.customers || [], false);
+    downloadExcel('客户资料_脱敏.xlsx', '客户资料', rows);
+    Store.addLog('导出数据', '成功', '脱敏 Excel');
     Store.save();
-    showToast('已导出脱敏 CSV', 'success');
+    showToast('已导出脱敏 Excel', 'success');
   };
   document.getElementById('btn-export-plain').onclick = () => {
-    promptPassword('导出明文二次验证', '请输入解锁密码以导出包含完整敏感信息的 CSV', async () => {
-      const content = exportCustomerRows(Store.data.customers || [], true);
-      downloadCSV('客户资料_明文.csv', content);
-      Store.addLog('导出明文数据', '成功', '导出完整明文 CSV');
+    promptPassword('导出明文二次验证', '请输入解锁密码以导出包含完整敏感信息的 Excel', async () => {
+      const rows = buildExcelData(Store.data.customers || [], true);
+      downloadExcel('客户资料_明文.xlsx', '客户资料', rows);
+      Store.addLog('导出明文数据', '成功', '导出完整明文 Excel');
       await Store.save();
       showToast('注意：已导出明文数据，请妥善保管', 'warning');
     });
@@ -9074,8 +9279,10 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   document.getElementById('btn-export-log').onclick = () => {
     const list = Store.data.logs || [];
-    const content = ['时间,类型,详情'].concat(list.map(l => `${formatDate(l.time)},${csvEscape(l.type)},${csvEscape(l.detail || '')}`)).join('\r\n');
-    downloadCSV('操作日志.csv', content);
+    const header = ['时间', '类型', '详情'];
+    const rows = [header];
+    list.forEach(l => { rows.push([formatDate(l.time), l.type, l.detail || '']); });
+    downloadExcel('操作日志.xlsx', '操作日志', rows);
     showToast('日志已导出', 'success');
   };
 
@@ -9089,7 +9296,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
   const exportBtn = document.getElementById('btn-report-export');
-  if (exportBtn) exportBtn.onclick = exportBIReportCSV;
+  if (exportBtn) exportBtn.onclick = exportBIReport;
 
   // 注：自动锁屏监控已在 setupIdleDetection 中统一处理
 
