@@ -202,9 +202,6 @@
 [data-theme="dark"] .bi-card {
   background: var(--bg-secondary);
 }
-[data-theme="dark"] .quick-action-btn {
-  background: var(--bg-secondary);
-}
 [data-theme="dark"] .filter-bar {
   background: var(--bg-secondary);
 }
@@ -1693,30 +1690,6 @@ input[type="checkbox"]:checked {
   .bi-analysis-grid { grid-template-columns: 1fr; }
 }
 
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--space-3);
-}
-.quick-action-btn {
-  background: var(--color-neutral-0);
-  border: 1.5px solid var(--color-neutral-200);
-  border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-3);
-  text-align: center;
-  transition: all 0.18s var(--ease-out);
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-  cursor: pointer;
-  font-size: 14px;
-}
-.quick-action-btn:hover { 
-  border-color: var(--color-primary-400); 
-  transform: translateY(-2px); 
-  box-shadow: var(--shadow-md);
-}
-.quick-action-icon { font-size: 22px; margin-bottom: var(--space-2); }
-.quick-action-text { font-size: 13px; font-weight: 500; }
 
 /* ========================================
    列表页（紧凑）
@@ -1854,6 +1827,20 @@ table.data-table {
 .data-table.resizing th,
 .data-table.resizing td {
   user-select: none;
+}
+.data-table th .col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 2;
+}
+.data-table th .col-resizer:hover,
+.data-table th .col-resizer.active {
+  background: var(--accent);
+  opacity: 0.35;
 }
 
 .pagination {
@@ -2581,31 +2568,6 @@ html.scrolling {
             <canvas id="chart-trend" width="400" height="280"></canvas>
           </div>
         </div>
-        <div class="card">
-          <div style="font-size:16px;font-weight:600;margin-bottom:10px;">快捷操作</div>
-          <div class="quick-actions">
-            <button class="quick-action-btn" data-nav="new">
-              <div class="quick-action-icon">➕</div>
-              <div class="quick-action-text">新增客户</div>
-            </button>
-            <button class="quick-action-btn" id="qa-backup">
-              <div class="quick-action-icon">💾</div>
-              <div class="quick-action-text">手动备份</div>
-            </button>
-            <button class="quick-action-btn" id="qa-import">
-              <div class="quick-action-icon">📥</div>
-              <div class="quick-action-text">导入数据</div>
-            </button>
-            <button class="quick-action-btn" id="qa-export">
-              <div class="quick-action-icon">📤</div>
-              <div class="quick-action-text">导出数据</div>
-            </button>
-            <button class="quick-action-btn" id="qa-sync">
-              <div class="quick-action-icon">🔗</div>
-              <div class="quick-action-text">同步存储</div>
-            </button>
-          </div>
-        </div>
       </section>
 
       <!-- BI 看板 -->
@@ -2727,16 +2689,6 @@ html.scrolling {
               <input type="text" class="input" id="filter-keyword" placeholder="姓名 / 脱敏手机号">
             </div>
             <div>
-              <label class="label">成交状态</label>
-              <select class="select" id="filter-status">
-                <option value="">全部</option>
-                <option value="未沟通">未沟通</option>
-                <option value="跟进中">跟进中</option>
-                <option value="已成交">已成交</option>
-                <option value="流失">流失</option>
-              </select>
-            </div>
-            <div>
               <label class="label">客户来源</label>
               <select class="select" id="filter-source">
                 <option value="">全部</option>
@@ -2771,7 +2723,6 @@ html.scrolling {
                 <th data-sort="phone">手机号 ▾</th>
                 <th>意向产品</th>
                 <th data-sort="source">来源 ▾</th>
-                <th data-sort="status">成交状态 ▾</th>
                 <th>行业</th>
                 <th data-sort="createdAt">录入时间 ▾</th>
                 <th style="width:240px;">操作</th>
@@ -4404,7 +4355,6 @@ function openCustomerForm(customer) {
         // 保存后重置筛选条件并跳转到客户列表页面，确保显示新客户
         listState.page = 1; // 重置到第一页
         listState.keyword = '';
-        listState.status = '';
         listState.source = '';
         listState.dateStart = '';
         listState.dateEnd = '';
@@ -4418,7 +4368,7 @@ function openCustomerForm(customer) {
    模块 7：客户列表（筛选、排序、分页、批量删除）
    ================================================================ */
 let listState = {
-  keyword: '', status: '', source: '',
+  keyword: '', source: '',
   dateStart: '', dateEnd: '', sortKey: 'createdAt', sortAsc: false,
   page: 1, pageSize: 10, selected: new Set()
 };
@@ -4460,7 +4410,6 @@ const COLUMN_DEFS = [
   { key: 'product', label: '意向产品' },
   { key: 'budget', label: '预算范围' },
   { key: 'source', label: '来源', sortable: true },
-  { key: 'status', label: '成交状态', sortable: true },
   { key: 'industry', label: '行业' },
   { key: 'industryLevel1', label: '一级行业' },
   { key: 'industryLevel2', label: '二级行业' },
@@ -4520,7 +4469,7 @@ function getChannelColumnConfig(channel) {
   if (!Array.isArray(config)) {
     config = COLUMN_DEFS.map(d => ({ key: d.key, visible: true }));
   } else {
-    const validKeys = COLUMN_DEFS.map(d => d.key);
+    const validKeys = [...COLUMN_DEFS.map(d => d.key), 'level', 'status'];
     config = config.filter(c => validKeys.includes(c.key));
     COLUMN_DEFS.forEach(def => {
       if (!config.find(c => c.key === def.key)) {
@@ -4528,8 +4477,8 @@ function getChannelColumnConfig(channel) {
       }
     });
   }
-  // 注入等级和标签列
-  [{ key: 'level', visible: true }, { key: 'tags', visible: true }].forEach(ec => {
+  // 注入等级、成交状态和标签列（渠道页独立跟踪）
+  [{ key: 'level', visible: true }, { key: 'status', visible: true }, { key: 'tags', visible: true }].forEach(ec => {
     if (!config.find(c => c.key === ec.key)) {
       config.push(ec);
     }
@@ -4554,14 +4503,14 @@ function saveChannelColumnConfig(channel, config) {
 
 function renderColumnHeaders(config) {
   let html = '';
-  const labelMap = { level: '等级', tags: '标签' };
+  const labelMap = { level: '等级', status: '成交状态', tags: '标签' };
   config.forEach(c => {
     if (!c.visible) return;
     const def = COLUMN_DEFS.find(d => d.key === c.key);
     const label = def ? def.label : (labelMap[c.key] || c.key);
     if (!label) return;
     const sortAttr = def && def.sortable ? ` data-sort="${c.key}"` : '';
-    html += `<th${sortAttr}>${escapeHTML(label)} ${def && def.sortable ? '▾' : ''}</th>`;
+    html += `<th data-key="${c.key}"${sortAttr}>${escapeHTML(label)} ${def && def.sortable ? '▾' : ''}</th>`;
   });
   return html;
 }
@@ -4620,7 +4569,7 @@ function openColumnCustomizer(channel) {
   let itemsHtml = '';
   config.forEach((c, idx) => {
     const def = COLUMN_DEFS.find(d => d.key === c.key);
-    const label = def ? def.label : ({ level: '等级', tags: '标签' })[c.key] || c.key;
+    const label = def ? def.label : ({ level: '等级', status: '成交状态', tags: '标签' })[c.key] || c.key;
     if (!def && !channel) return;
     const disabled = c.key === 'name' ? ' disabled' : '';
     const checked = c.visible ? 'checked' : '';
@@ -4893,7 +4842,6 @@ function applyListFilters() {
       return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
     });
   }
-  if (listState.status) arr = arr.filter(c => c.status === listState.status);
   if (listState.source) arr = arr.filter(c => c.source === listState.source);
   if (listState.dateStart) {
     const t = parseDateStr(listState.dateStart);
@@ -4964,6 +4912,90 @@ function initColumnResizers() {
         document.body.dataset.colDrag = '1';
         setTimeout(() => { delete document.body.dataset.colDrag; }, 100);
       }
+    });
+  }
+}
+
+/** 渠道表格列宽拖拽调节 */
+let _channelDragState = null;
+let _channelResizersDocInit = false;
+function initChannelColumnResizers(tableEl, channel) {
+  if (!tableEl) return;
+  const storageKey = 'crm_col_widths_' + (channel || 'main');
+  let savedWidths = {};
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (raw) savedWidths = JSON.parse(raw);
+  } catch (e) {}
+
+  const headers = tableEl.querySelectorAll('thead th[data-key]');
+  const bodyRows = tableEl.querySelectorAll('tbody tr');
+
+  headers.forEach(th => {
+    const key = th.dataset.key;
+    const colIdx = Array.from(th.parentElement.children).indexOf(th);
+
+    let maxContentW = th.scrollWidth;
+    bodyRows.forEach(row => {
+      const cell = row.children[colIdx];
+      if (cell) {
+        const w = cell.scrollWidth;
+        if (w > maxContentW) maxContentW = w;
+      }
+    });
+    th._colMaxWidth = maxContentW + 20;
+
+    if (savedWidths[key]) {
+      th.style.width = savedWidths[key];
+      th.style.minWidth = savedWidths[key];
+    }
+    let resizer = th.querySelector('.col-resizer');
+    if (!resizer) {
+      resizer = document.createElement('div');
+      resizer.className = 'col-resizer';
+      th.appendChild(resizer);
+    }
+    const handler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const rect = th.getBoundingClientRect();
+      resizer.classList.add('active');
+      _channelDragState = { th, key, startX: e.clientX, startWidth: rect.width, resizer, storageKey, tbl: tableEl };
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    };
+    resizer.onmousedown = handler;
+  });
+
+  if (!_channelResizersDocInit) {
+    _channelResizersDocInit = true;
+    document.addEventListener('mousemove', (e) => {
+      if (!_channelDragState) return;
+      const diff = e.clientX - _channelDragState.startX;
+      const maxW = _channelDragState.th._colMaxWidth || 500;
+      let newWidth = _channelDragState.startWidth + diff;
+      newWidth = Math.max(60, Math.min(maxW, newWidth));
+      _channelDragState.th.style.width = newWidth + 'px';
+      _channelDragState.th.style.minWidth = newWidth + 'px';
+    });
+    document.addEventListener('mouseup', () => {
+      if (!_channelDragState) return;
+      const { resizer, storageKey, tbl } = _channelDragState;
+      _channelDragState = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      if (resizer) resizer.classList.remove('active');
+      let savedWidths = {};
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) savedWidths = JSON.parse(raw);
+      } catch (e) {}
+      if (tbl) {
+        tbl.querySelectorAll('thead th[data-key]').forEach(th => {
+          if (th.style.width) savedWidths[th.dataset.key] = th.style.width;
+        });
+      }
+      try { localStorage.setItem(storageKey, JSON.stringify(savedWidths)); } catch (e) {}
     });
   }
 }
@@ -5170,6 +5202,7 @@ function renderChannelPage(channel) {
   
   html += `</tbody></table></div>`;
   container.innerHTML = html;
+  initChannelColumnResizers(container.querySelector('.data-table'), channel);
   
   renderChannelFilterLevels(channel);
   renderChannelFilterSources(channel);
@@ -8741,11 +8774,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
   }
 
-  // 快捷操作
-  document.querySelector('[data-nav="new"]').onclick = () => {
-    // 以弹窗形式（更便捷）打开新增客户表单
-    openCustomerForm(null);
-  };
+  // 新增客户（快捷操作已移除，入口见客户列表页"新增客户"按钮）
   
   // 添加到渠道功能
   document.getElementById('btn-add-to-channel').onclick = () => {
@@ -8837,159 +8866,11 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('customer-float-close').onclick = closeCustomerFloat;
   document.getElementById('customer-float-overlay').onclick = closeCustomerFloat;
 
-  document.getElementById('qa-backup').onclick = async () => {
-    await Store.save();
-    const enc = localStorage.getItem(STORAGE_KEY);
-    const payload = JSON.stringify({ app: 'CRM_LOCAL_V1', createdAt: Date.now(), encrypted: enc });
-    const blob = new Blob([payload], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `crm_backup_${new Date().toISOString().slice(0,10)}.dat`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    showToast('已生成加密备份文件', 'success');
-  };
-  document.getElementById('qa-export').onclick = () => {
-    promptPassword('导出数据验证', '请输入解锁密码以导出明文数据', async () => {
-      const content = exportCustomerRows(Store.data.customers || [], true);
-      downloadCSV('客户资料_明文.csv', content);
-      Store.addLog('导出数据', '成功', '导出完整明文 CSV');
-      await Store.save();
-      showToast('已导出明文数据，请妥善保管', 'warning');
-    });
-  };
-  document.getElementById('qa-import').onclick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.csv,.xls,.xlsx';
-    input.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        const content = await file.text();
-        const rows = parseCSV(content);
-        if (rows.length < 2) {
-          showToast('CSV文件内容为空或格式不正确', 'error');
-          return;
-        }
-        const header = rows[0];
-        const oldExpected = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
-        const newExpected = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
-        const isNewFormat = header.length >= 24 && header.every((h, i) => i >= newExpected.length || h.trim() === newExpected[i]);
-        const isOldFormat = header.length === 20 && header.every((h, i) => h.trim() === oldExpected[i]);
-        if (!isNewFormat && !isOldFormat) {
-          showToast('表头格式不正确，请使用导出数据的表头格式', 'error');
-          return;
-        }
-        const imported = [];
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
-          if (row.length === 0 || row.every(c => c.trim() === '')) continue;
-          const customer = {};
-          if (isNewFormat) {
-            customer.id = uuid();
-            customer.name = row[0] || '';
-            customer.gender = row[1] || '';
-            customer.age = row[2] ? (function(){ const v=parseInt(row[2]); return isNaN(v)?null:v; })() : null;
-            customer.phone = row[3] || '';
-            customer.wechat = row[4] || '';
-            customer.email = row[5] || '';
-            customer.province = row[6] || '';
-            customer.city = row[7] || '';
-            customer.district = row[8] || '';
-            customer.address = row[9] || '';
-            customer.source = row[10] || '';
-            customer.level = row[11] || (getLevels()[Math.floor(getLevels().length / 2)] || {}).name || '';
-            customer.status = row[12] || '未沟通';
-            customer.industryLevel1 = row[13] || '';
-            customer.industryLevel2 = row[14] || '';
-            customer.website = row[15] || '';
-            customer.platforms = (row[16] || '').split('|').filter(Boolean);
-            customer.product = row[17] || '';
-            customer.budget = row[18] || '';
-            customer.nextFollowDate = row[19] || '';
-            customer.createdAt = row[20] ? parseDateStr(row[20]) || Date.now() : Date.now();
-            customer.tags = (row[21] || '').split('|').filter(t => t.trim()).map(t => {
-              let tag = (Store.data.tags || []).find(x => x.name === t.trim());
-              if (!tag) {
-                tag = { id: uuid(), name: t.trim(), color: '#2563eb' };
-                Store.data.tags.push(tag);
-              }
-              return tag.id;
-            });
-            customer.remark = row[22] || '';
-            customer.channels = (row[23] || '').split('|').map(s => {
-              const map = { 'GEO': 'geo', '360': '360', 'Bing': 'bing', '百度': 'baidu', '抖音': 'douyin', '闲鱼': 'xianyu' };
-              return map[s.trim()] || s.trim();
-            }).filter(Boolean);
-          } else {
-            // 旧格式 20 列兼容
-            customer.id = uuid();
-            customer.name = row[0] || '';
-            customer.gender = row[1] || '';
-            customer.age = row[2] ? (function(){ const v=parseInt(row[2]); return isNaN(v)?null:v; })() : null;
-            customer.phone = row[3] || '';
-            customer.wechat = row[4] || '';
-            customer.email = row[5] || '';
-            customer.province = row[6] || '';
-            customer.city = row[7] || '';
-            customer.district = row[8] || '';
-            customer.address = row[9] || '';
-            customer.source = row[10] || '';
-            customer.level = row[11] || (getLevels()[Math.floor(getLevels().length / 2)] || {}).name || '';
-            customer.status = row[12] || '未沟通';
-            customer.product = row[13] || '';
-            customer.budget = row[14] || '';
-            customer.nextFollowDate = row[15] || '';
-            customer.createdAt = row[16] ? parseDateStr(row[16]) || Date.now() : Date.now();
-            customer.tags = (row[17] || '').split('|').filter(t => t.trim()).map(t => {
-              let tag = (Store.data.tags || []).find(x => x.name === t.trim());
-              if (!tag) {
-                tag = { id: uuid(), name: t.trim(), color: '#2563eb' };
-                Store.data.tags.push(tag);
-              }
-              return tag.id;
-            });
-            customer.remark = row[18] || '';
-            customer.channels = (row[19] || '').split('|').map(s => {
-              const map = { 'GEO': 'geo', '360': '360', 'Bing': 'bing', '百度': 'baidu', '抖音': 'douyin', '闲鱼': 'xianyu' };
-              return map[s.trim()] || s.trim();
-            }).filter(Boolean);
-          }
-          customer.createdBy = 'import';
-          customer.updatedAt = Date.now();
-          customer.remarkHistory = [];
-          customer.deleted = false;
-          imported.push(customer);
-        }
-        if (imported.length === 0) {
-          showToast('未找到有效数据行', 'warning');
-          return;
-        }
-        confirmDialog('导入数据', `即将导入 ${imported.length} 条客户数据，是否继续？`, false, async () => {
-          Store.data.customers = Store.data.customers.concat(imported);
-          await Store.saveWithLog('导入数据', `成功导入 ${imported.length} 条客户`);
-          showToast(`已成功导入 ${imported.length} 条客户数据`, 'success');
-          refreshUI();
-        });
-      } catch (err) {
-        showToast('导入失败：' + err.message, 'error');
-      }
-    };
-    input.click();
-  };
-
-  document.getElementById('qa-sync').onclick = async () => {
-    if (!Store.isFolderApiSupported()) {
-      showToast('当前浏览器不支持文件夹 API，请使用手动备份', 'warning'); return;
-    }
-    await Store.selectFolder();
-  };
+  // 快捷操作模块已移除：备份/导出/导入/同步功能请前往"数据与安全"页面操作
 
   // 列表页筛选、分页、排序、全选、批量删除、新增
   document.getElementById('btn-apply-filter').onclick = () => {
     listState.keyword = document.getElementById('filter-keyword').value.trim();
-    listState.status = document.getElementById('filter-status').value;
     listState.source = document.getElementById('filter-source').value;
     listState.dateStart = document.getElementById('filter-date-start').value;
     listState.dateEnd = document.getElementById('filter-date-end').value;
@@ -8998,11 +8879,10 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   document.getElementById('btn-reset-filter').onclick = () => {
     document.getElementById('filter-keyword').value = '';
-    document.getElementById('filter-status').value = '';
     document.getElementById('filter-source').value = '';
     document.getElementById('filter-date-start').value = '';
     document.getElementById('filter-date-end').value = '';
-    listState = Object.assign(listState, { keyword: '', status: '', source: '', dateStart: '', dateEnd: '', page: 1 });
+    listState = Object.assign(listState, { keyword: '', source: '', dateStart: '', dateEnd: '', page: 1 });
     renderCustomerTable();
   };
   document.getElementById('btn-new-customer').onclick = () => openCustomerForm(null);
