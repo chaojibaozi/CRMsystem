@@ -2708,6 +2708,7 @@ html.scrolling {
             <button class="btn btn-primary btn-sm" id="pool-btn-apply-filter">筛选</button>
             <button class="btn btn-sm btn-outline" id="pool-btn-reset-filter">重置</button>
             <button class="btn btn-sm" id="pool-btn-new-customer">➕ 新增客户池客户</button>
+            <button class="btn btn-sm btn-primary" id="pool-btn-transfer">📋 添加到客户列表</button>
             <button class="btn btn-sm btn-danger" id="pool-btn-batch-delete">🗑 批量删除</button>
           </div>
         </div>
@@ -9710,37 +9711,55 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     openModal({
-      title: '添加到渠道',
+      title: '添加到',
       size: 'sm',
       bodyHTML: `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">
-        已选择 ${selectedIds.length} 位客户，选择要添加到的渠道（可多选）：
+        已选择 ${selectedIds.length} 位客户：
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;font-weight:600;">
+          <input type="checkbox" id="batch-move-to-pool" style="accent-color:var(--accent);width:18px;height:18px;">
+          📋 转移到客户池
+        </label>
+        <div style="border-top:1px dashed var(--border-color);margin:4px 0;"></div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">或添加到渠道（可多选）：</div>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
-          <input type="checkbox" id="batch-channel-geo" style="accent-color:var(--accent);width:18px;height:18px;">
+          <input type="checkbox" class="batch-channel-cb" id="batch-channel-geo" style="accent-color:var(--accent);width:18px;height:18px;">
           🌍 GEO客户
         </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
-          <input type="checkbox" id="batch-channel-360" style="accent-color:var(--accent);width:18px;height:18px;">
+          <input type="checkbox" class="batch-channel-cb" id="batch-channel-360" style="accent-color:var(--accent);width:18px;height:18px;">
           🔄 360客户
         </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
-          <input type="checkbox" id="batch-channel-bing" style="accent-color:var(--accent);width:18px;height:18px;">
+          <input type="checkbox" class="batch-channel-cb" id="batch-channel-bing" style="accent-color:var(--accent);width:18px;height:18px;">
           🔍 Bing客户
         </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
-          <input type="checkbox" id="batch-channel-baidu" style="accent-color:var(--accent);width:18px;height:18px;">
+          <input type="checkbox" class="batch-channel-cb" id="batch-channel-baidu" style="accent-color:var(--accent);width:18px;height:18px;">
           🔎 百度客户
         </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
-          <input type="checkbox" id="batch-channel-douyin" style="accent-color:var(--accent);width:18px;height:18px;">
+          <input type="checkbox" class="batch-channel-cb" id="batch-channel-douyin" style="accent-color:var(--accent);width:18px;height:18px;">
           🎵 抖音客户
         </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border-color);background:var(--bg-secondary);font-size:14px;">
-          <input type="checkbox" id="batch-channel-xianyu" style="accent-color:var(--accent);width:18px;height:18px;">
+          <input type="checkbox" class="batch-channel-cb" id="batch-channel-xianyu" style="accent-color:var(--accent);width:18px;height:18px;">
           🐟 闲鱼客户
         </label>
       </div>`,
+      onOpen: () => {
+        const poolCb = document.getElementById('batch-move-to-pool');
+        const channelCbs = document.querySelectorAll('.batch-channel-cb');
+        poolCb.addEventListener('change', () => {
+          channelCbs.forEach(cb => { cb.checked = false; cb.disabled = poolCb.checked; });
+        });
+        channelCbs.forEach(cb => {
+          cb.addEventListener('change', () => {
+            if (cb.checked) { poolCb.checked = false; }
+          });
+        });
+      },
       footer: (f) => {
         const cancel = document.createElement('button');
         cancel.className = 'btn btn-sm btn-outline';
@@ -9750,34 +9769,51 @@ document.addEventListener('DOMContentLoaded', function () {
         
         const confirmBtn = document.createElement('button');
         confirmBtn.className = 'btn btn-sm btn-primary';
-        safeText(confirmBtn, '确认添加');
+        safeText(confirmBtn, '确认');
         f.appendChild(confirmBtn);
         confirmBtn.onclick = async () => {
-          const selectedChannels = [];
-          if (document.getElementById('batch-channel-geo').checked) selectedChannels.push('geo');
-          if (document.getElementById('batch-channel-360').checked) selectedChannels.push('360');
-          if (document.getElementById('batch-channel-bing').checked) selectedChannels.push('bing');
-          if (document.getElementById('batch-channel-baidu').checked) selectedChannels.push('baidu');
-          if (document.getElementById('batch-channel-douyin').checked) selectedChannels.push('douyin');
-          if (document.getElementById('batch-channel-xianyu').checked) selectedChannels.push('xianyu');
-          if (selectedChannels.length === 0) { showToast('请至少选择一个渠道', 'warning'); return; }
-          const count = selectedIds.length;
-          selectedIds.forEach(id => {
-            const c = Store.data.customers.find(x => x.id === id);
-            if (c) {
-              if (!c.channels) c.channels = c.channel ? [c.channel] : [];
-              if (c.channel !== undefined) delete c.channel;
-              selectedChannels.forEach(ch => {
-                if (c.channels.indexOf(ch) === -1) c.channels.push(ch);
-              });
-              c.updatedAt = Date.now();
-            }
-          });
-          listState.selected.clear();
-          await Store.saveWithLog('批量添加客户到渠道', `${count} 位客户 → ${selectedChannels.join('/')}`);
-          showToast(`已将 ${count} 位客户添加到渠道`, 'success');
-          closeModal();
-          refreshUI();
+          const poolCb = document.getElementById('batch-move-to-pool');
+          if (poolCb.checked) {
+            const count = selectedIds.length;
+            const ids = new Set(selectedIds);
+            const toMove = Store.data.customers.filter(c => ids.has(c.id));
+            if (!Array.isArray(Store.data.poolCustomers)) Store.data.poolCustomers = [];
+            toMove.forEach(c => {
+              Store.data.poolCustomers.unshift(c);
+            });
+            Store.data.customers = Store.data.customers.filter(c => !ids.has(c.id));
+            listState.selected.clear();
+            await Store.saveWithLog('客户列表转客户池', '成功', `转移 ${toMove.length} 位客户到客户池`);
+            showToast(`已将 ${toMove.length} 位客户转移到客户池`, 'success');
+            closeModal();
+            refreshUI();
+          } else {
+            const selectedChannels = [];
+            if (document.getElementById('batch-channel-geo').checked) selectedChannels.push('geo');
+            if (document.getElementById('batch-channel-360').checked) selectedChannels.push('360');
+            if (document.getElementById('batch-channel-bing').checked) selectedChannels.push('bing');
+            if (document.getElementById('batch-channel-baidu').checked) selectedChannels.push('baidu');
+            if (document.getElementById('batch-channel-douyin').checked) selectedChannels.push('douyin');
+            if (document.getElementById('batch-channel-xianyu').checked) selectedChannels.push('xianyu');
+            if (selectedChannels.length === 0) { showToast('请至少选择一个渠道或勾选转移到客户池', 'warning'); return; }
+            const count = selectedIds.length;
+            selectedIds.forEach(id => {
+              const c = Store.data.customers.find(x => x.id === id);
+              if (c) {
+                if (!c.channels) c.channels = c.channel ? [c.channel] : [];
+                if (c.channel !== undefined) delete c.channel;
+                selectedChannels.forEach(ch => {
+                  if (c.channels.indexOf(ch) === -1) c.channels.push(ch);
+                });
+                c.updatedAt = Date.now();
+              }
+            });
+            listState.selected.clear();
+            await Store.saveWithLog('批量添加客户到渠道', `${count} 位客户 → ${selectedChannels.join('/')}`);
+            showToast(`已将 ${count} 位客户添加到渠道`, 'success');
+            closeModal();
+            refreshUI();
+          }
         };
       }
     });
@@ -9892,6 +9928,29 @@ document.addEventListener('DOMContentLoaded', function () {
       showToast('已批量删除', 'success');
       renderPoolTable();
     });
+  };
+  document.getElementById('pool-btn-transfer').onclick = async () => {
+    if (!poolState.selected || poolState.selected.size === 0) { showToast('请先勾选需要转移到客户列表的客户', 'warning'); return; }
+    const pool = Store.data.poolCustomers || [];
+    const customers = Store.data.customers || [];
+    const existingPhones = new Set(customers.map(c => (c.phone || '').trim()).filter(Boolean));
+    let transferred = 0, skipped = 0;
+    const ids = new Set(poolState.selected);
+    const toMove = pool.filter(c => ids.has(c.id));
+    for (const c of toMove) {
+      const phone = (c.phone || '').trim();
+      if (phone && existingPhones.has(phone)) { skipped++; continue; }
+      if (phone) existingPhones.add(phone);
+      if (!c.name || !c.name.trim()) { skipped++; continue; }
+      customers.unshift(c);
+      transferred++;
+    }
+    Store.data.poolCustomers = pool.filter(c => !ids.has(c.id));
+    poolState.selected.clear();
+    await Store.saveWithLog('客户池转客户列表', '成功', `转移 ${transferred} 条，跳过 ${skipped} 条（手机号重复或无姓名）`);
+    Store.markDirty();
+    showToast(`已转移 ${transferred} 条到客户列表${skipped > 0 ? `，跳过 ${skipped} 条` : ''}`, 'success');
+    renderPoolTable();
   };
 
   // 数据安全中心按钮
