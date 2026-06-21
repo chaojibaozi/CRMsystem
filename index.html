@@ -868,6 +868,7 @@ input[type="checkbox"]:checked {
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-neutral-200);
 }
+.topbar-left { display: flex; flex-direction: column; }
 .topbar-left h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
 .topbar-left p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .topbar-right { display: flex; align-items: center; gap: 8px; }
@@ -6458,6 +6459,139 @@ function stopAIRefresh() {
   }
 }
 
+// ── 渠道 / 作废页面 AI 摘要 ──
+const _channelNames = { geo: 'GEO', '360': '360', bing: 'Bing', baidu: '百度', douyin: '抖音', xianyu: '闲鱼', trash: '作废' };
+let _channelAITimer = null;
+let _lastChannelAIHash = '';
+let _activeChannelSuffix = '';
+
+function renderChannelAISummary(suffix) {
+  const label = _channelNames[suffix] || suffix;
+  const isTrash = suffix === 'trash';
+  const list = isTrash
+    ? (Store.data.customers || []).filter(c => c.deleted === true)
+    : (Store.data.customers || []).filter(c => c.deleted !== true && hasChannel(c, suffix));
+
+  const total = list.length;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+
+  const todayNew = list.filter(c => c.createdAt >= todayStart.getTime()).length;
+  const monthNew = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+
+  // 等级分布（渠道页用 getChannelField）
+  const levelDist = {};
+  list.forEach(c => {
+    const l = isTrash ? (c.level || '未分级') : (getChannelField(c, suffix, 'level') || '未分级');
+    levelDist[l] = (levelDist[l] || 0) + 1;
+  });
+  const levelRows = getLevels().filter(l => levelDist[l.name]).map(l => `${l.name}<strong>${levelDist[l.name]}</strong>`);
+  const ungraded = levelDist['未分级'] || 0;
+
+  // 状态分布
+  const statusDist = {};
+  list.forEach(c => {
+    const s = isTrash ? (c.status || '未沟通') : (getChannelField(c, suffix, 'status') || '未沟通');
+    statusDist[s] = (statusDist[s] || 0) + 1;
+  });
+  const statusOrder = ['未沟通', '跟进中', '已成交', '流失'];
+  const statusHtml = statusOrder.filter(s => statusDist[s]).map(s => {
+    const cls = s === '已成交' ? 'color:#059669;' : s === '流失' ? 'color:#dc2626;' : s === '跟进中' ? 'color:#2563eb;' : '';
+    return `<span style="${cls}font-size:12px;font-weight:500;">${s}<strong>${statusDist[s]}</strong></span>`;
+  }).join(' ');
+
+  // 跟进动态
+  const followCount = list.filter(c => {
+    if (!isTrash && getChannelField(c, suffix, 'status') === '跟进中') return true;
+    const fd = isTrash ? c.nextFollowDate : getChannelField(c, suffix, 'nextFollowDate');
+    if (!fd) return false;
+    const ft = typeof fd === 'number' ? fd : parseDateStr(fd);
+    return ft !== null && ft >= todayStart.getTime();
+  }).length;
+  const overdueCount = list.filter(c => {
+    const fd = isTrash ? c.nextFollowDate : getChannelField(c, suffix, 'nextFollowDate');
+    if (!fd) return false;
+    const ft = typeof fd === 'number' ? fd : parseDateStr(fd);
+    return ft !== null && ft < todayStart.getTime();
+  }).length;
+
+  const followupDays = (Store.settings && Store.settings.followupDays) || 3;
+  const severeOverdue = list.filter(c => {
+    const fd = isTrash ? c.nextFollowDate : getChannelField(c, suffix, 'nextFollowDate');
+    if (!fd) return false;
+    const ft = typeof fd === 'number' ? fd : parseDateStr(fd);
+    if (ft === null || ft >= todayStart.getTime()) return false;
+    return (todayStart.getTime() - ft) / 86400000 > followupDays;
+  }).length;
+
+  const timeStr = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+  let html = `<div class="channel-ai-summary">`;
+  html += `<div class="channel-ai-main">${label} 共 <strong>${total}</strong> 位`;
+  if (todayNew > 0) html += `，今日 <span class="ai-badge ai-badge-up">+${todayNew}</span>`;
+  if (monthNew > 0) html += `，本月 <span class="ai-badge ai-badge-up">+${monthNew}</span>`;
+  html += '</div>';
+  if (statusHtml) html += `<div class="channel-ai-row"><span class="channel-ai-label">状态</span>${statusHtml}</div>`;
+  if (levelRows.length > 0) {
+    let lvHtml = levelRows.join('');
+    if (ungraded > 0) lvHtml += `未分级<strong>${ungraded}</strong>`;
+    html += `<div class="channel-ai-row"><span class="channel-ai-label">等级</span>${lvHtml}</div>`;
+  }
+  if (!isTrash) {
+    let followHtml = `待跟进<strong>${followCount}</strong>`;
+    if (overdueCount > 0) {
+      const cls = severeOverdue > 0 ? 'color:#dc2626;font-weight:600;' : 'color:#d97706;font-weight:600;';
+      followHtml += ` <span style="${cls}">逾期 ${overdueCount}</span>`;
+    }
+    if (severeOverdue > 0) followHtml += ` <span style="color:#dc2626;font-weight:600;">严重 ${severeOverdue}</span>`;
+    html += `<div class="channel-ai-row"><span class="channel-ai-label">跟进</span>${followHtml}</div>`;
+  }
+  html += `<div class="channel-ai-time">${timeStr}</div>`;
+  html += `</div>`;
+
+  // 在 topbar-left 中（标题下方）显示 AI 摘要，隐藏 right 区域
+  let container = document.getElementById('channel-ai-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'channel-ai-container';
+    const tl = document.querySelector('.topbar-left');
+    if (tl) tl.appendChild(container);
+  }
+  container.style.display = '';
+  container.innerHTML = html;
+
+  const tr = document.querySelector('.topbar-right');
+  if (tr) tr.style.display = 'none';
+}
+
+function startChannelAIRefresh(suffix) {
+  stopChannelAIRefresh();
+  _activeChannelSuffix = suffix;
+  _lastChannelAIHash = JSON.stringify(Store.data.customers || []);
+  _channelAITimer = setInterval(function() {
+    const curHash = JSON.stringify(Store.data.customers || []);
+    if (curHash !== _lastChannelAIHash) {
+      _lastChannelAIHash = curHash;
+      renderChannelAISummary(_activeChannelSuffix);
+    }
+  }, 5000);
+}
+
+function stopChannelAIRefresh() {
+  if (_channelAITimer) {
+    clearInterval(_channelAITimer);
+    _channelAITimer = null;
+  }
+}
+
+function restoreTopbar() {
+  const container = document.getElementById('channel-ai-container');
+  if (container) container.style.display = 'none';
+  const tr = document.querySelector('.topbar-right');
+  if (tr) tr.style.display = '';
+  if (Store.updateSyncUI) Store.updateSyncUI();
+}
+
 // 显示统计浮层
 function showStatPopup(type) {
   const list = (Store.data.customers || []).filter(c => c.deleted !== true);
@@ -9563,6 +9697,27 @@ function navigate(pageName) {
   const t = titleMap[pageName] || ['系统', ''];
   safeText(document.getElementById('page-title'), t[0]);
   safeText(document.getElementById('page-subtitle'), t[1]);
+
+  // 渠道/作废页面：标题改为 AI摘要，内容从左边开始
+  const channelPages = ['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu', 'trash'];
+  const isChannelPage = channelPages.includes(pageName);
+
+  if (isChannelPage) {
+    stopAIRefresh();
+    document.getElementById('page-title').textContent = 'AI摘要';
+    document.getElementById('page-subtitle') && (document.getElementById('page-subtitle').style.display = 'none');
+    document.querySelector('.topbar') && document.querySelector('.topbar').classList.add('channel-ai-mode');
+    startChannelAIRefresh(pageName);
+    renderChannelAISummary(pageName);
+  } else {
+    stopChannelAIRefresh();
+    restoreTopbar();
+    const origTitle = titleMap[pageName] ? titleMap[pageName][0] : '系统';
+    document.getElementById('page-title').textContent = origTitle;
+    document.getElementById('page-subtitle') && (document.getElementById('page-subtitle').style.display = '');
+    document.querySelector('.topbar') && document.querySelector('.topbar').classList.remove('channel-ai-mode');
+  }
+
   if (pageName === 'dashboard') { renderDashboard(); startAIRefresh(); }
   else {
     stopAIRefresh();
@@ -10915,10 +11070,13 @@ function refreshUI() {
       font-size: 13px;
       color: var(--text-primary);
       line-height: 1.6;
-      min-height: 36px;
+      min-height: 20px;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      flex-flow: row wrap;
+      gap: 2px 16px;
+    }
+    .ai-summary-body > div {
+      white-space: nowrap;
     }
     .ai-summary-body strong {
       font-weight: 700;
@@ -10928,15 +11086,12 @@ function refreshUI() {
       font-size: 14px;
       font-weight: 500;
       color: var(--text-primary);
-      padding-bottom: 4px;
-      border-bottom: 1px dashed var(--border-color);
-      margin-bottom: 2px;
     }
     .ai-summary-row {
-      display: flex;
+      display: inline-flex;
       flex-wrap: wrap;
       align-items: baseline;
-      gap: 3px 10px;
+      gap: 3px 8px;
       font-size: 12px;
       color: var(--text-secondary);
     }
@@ -10947,8 +11102,6 @@ function refreshUI() {
     .ai-summary-label {
       font-size: 11px;
       color: var(--text-muted);
-      flex-shrink: 0;
-      min-width: 44px;
     }
     .ai-badge {
       display: inline-block;
@@ -10980,10 +11133,60 @@ function refreshUI() {
     .ai-summary-time {
       font-size: 10px;
       color: var(--text-muted);
-      text-align: right;
-      margin-top: 2px;
-      padding-top: 4px;
-      border-top: 1px dashed var(--border-color);
+    }
+
+    /* ═══ 渠道 / 作废页面 AI 摘要（topbar-left 区域） ═══ */
+    .channel-ai-summary {
+      display: flex;
+      flex-flow: row wrap;
+      gap: 2px 16px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .channel-ai-summary > div {
+      white-space: nowrap;
+    }
+    .channel-ai-main {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+    .channel-ai-main .ai-badge {
+      display: inline-block;
+      padding: 0 5px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+    .channel-ai-row {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      color: var(--text-secondary);
+    }
+    .channel-ai-row strong {
+      margin-left: 1px;
+      margin-right: 4px;
+    }
+    .channel-ai-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .channel-ai-time {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .topbar.channel-ai-mode {
+      align-items: flex-start;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .topbar.channel-ai-mode .topbar-left {
+      padding-top: 2px;
+    }
+    .topbar.channel-ai-mode #channel-ai-container {
+      margin-top: 4px;
     }
 
     @media (max-width: 900px) {
