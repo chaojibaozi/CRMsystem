@@ -2680,6 +2680,19 @@ html.scrolling {
           </div>
         </div>
 
+        <!-- 各频道金额漏斗 -->
+        <div class="bi-section">
+          <div class="bi-section-title">
+            <span class="bi-section-icon">💰</span>
+            <span>各频道金额漏斗</span>
+            <span class="bi-section-meta" id="bi-amount-meta"></span>
+            <button class="bi-collapse-btn" title="折叠/展开"><svg viewBox="0 0 14 14"><polyline points="3,5 7,9 11,5"/></svg></button>
+          </div>
+          <div class="bi-section-body">
+            <div class="bi-channel-funnel" id="bi-channel-funnel"></div>
+          </div>
+        </div>
+
         <!-- 自动化报表 -->
         <div class="bi-section">
           <div class="bi-section-title">
@@ -4131,6 +4144,7 @@ function openCustomerForm(customer) {
       fields: [
         { key: 'product', label: '意向产品', type: 'text', max: 100 },
         { key: 'budget', label: '预算范围', type: 'text', max: 50 },
+        { key: 'amount', label: '预计金额(元)', type: 'number', max: 10 },
         { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'] },
         { key: 'nextFollowDate', label: '下次跟进日期', type: 'date' },
         { key: 'website', label: '客户网址', type: 'text', max: 200 },
@@ -4176,8 +4190,9 @@ function openCustomerForm(customer) {
       const disabledAttr = isReadonly ? ' disabled' : '';
       const disabledStyle = isReadonly ? 'background:var(--color-neutral-100);color:var(--text-muted);cursor:not-allowed;' : '';
       let val = c[f.key] || '';
-      if (_currentChannel && (f.key === 'status' || f.key === 'nextFollowDate' || f.key === 'level')) {
-        val = getChannelField(c, _currentChannel, f.key) || '';
+      if (_currentChannel && (f.key === 'status' || f.key === 'nextFollowDate' || f.key === 'level' || f.key === 'amount')) {
+        val = getChannelField(c, _currentChannel, f.key);
+        if (f.key === 'amount' && val === undefined) val = '';
       }
       if (f.type === 'date') {
         if (typeof val === 'number') val = dateOnly(val);
@@ -4449,8 +4464,9 @@ function openCustomerForm(customer) {
       btnR.onclick = () => {
         document.querySelectorAll('#modal-box .input, #modal-box .textarea').forEach(el => {
           let v = c[el.dataset.key] || '';
-          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate')) {
-            v = getChannelField(c, _currentChannel, el.dataset.key) || '';
+          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate' || el.dataset.key === 'amount')) {
+            v = getChannelField(c, _currentChannel, el.dataset.key);
+            if (el.dataset.key === 'amount' && v === undefined) v = '';
           }
           el.value = v;
         });
@@ -4527,6 +4543,9 @@ function openCustomerForm(customer) {
             if (safe.status !== undefined) setChannelField(old, _currentChannel, 'status', safe.status);
             if (safe.nextFollowDate !== undefined) setChannelField(old, _currentChannel, 'nextFollowDate', safe.nextFollowDate);
             if (safe.tags !== undefined) setChannelField(old, _currentChannel, 'tags', safe.tags);
+            if (safe.amount !== undefined && safe.amount !== '') {
+              setChannelField(old, _currentChannel, 'amount', Number(safe.amount) || 0);
+            }
             if (safe.remark && safe.remark !== (getChannelField(c, _currentChannel, 'lastRemark') || '')) {
               addChannelRemark(old, _currentChannel, safe.remark, formImages.slice());
             }
@@ -4629,6 +4648,7 @@ const COLUMN_DEFS = [
   { key: 'wechat', label: '微信' },
   { key: 'product', label: '意向产品' },
   { key: 'budget', label: '预算范围' },
+  { key: 'amount', label: '预计金额(元)', sortable: true },
   { key: 'source', label: '来源', sortable: true },
   { key: 'industry', label: '行业' },
   { key: 'industryLevel1', label: '一级行业' },
@@ -4770,6 +4790,9 @@ function renderColumnCells(c, config, start, i, masked, channel) {
       html += `<td>${escapeHTML(m.wechat || '-')}</td>`;
     } else if (key === 'budget') {
       html += `<td>${escapeHTML(c.budget || '-')}</td>`;
+    } else if (key === 'amount') {
+      const amt = channel ? getChannelField(c, channel, 'amount') : undefined;
+      html += `<td style="font-weight:600;color:var(--color-primary-600);">${amt ? '¥' + Number(amt).toLocaleString('zh-CN') : '-'}</td>`;
     } else if (key === 'industryLevel1') {
       html += `<td>${escapeHTML(c.industryLevel1 || '-')}</td>`;
     } else if (key === 'industryLevel2') {
@@ -5463,6 +5486,8 @@ function renderPoolTable() {
   const pageData = data.slice(start, start + poolState.pageSize);
   const showAll = window.__showPlain !== false;
   const colConfig = getColumnConfig();
+  // 客户池不显示预计金额列
+  colConfig.forEach(c => { if (c.key === 'amount') c.visible = false; });
   const visibleCount = colConfig.filter(c => c.visible).length;
   const totalCols = 2 + visibleCount + 1;
 
@@ -6500,6 +6525,18 @@ function renderChannelAISummary(suffix) {
     return `<span style="${cls}font-size:12px;font-weight:500;">${s}<strong>${statusDist[s]}</strong></span>`;
   }).join(' ');
 
+  // 金额统计（频道页）
+  let totalAmount = 0, followAmount = 0, dealAmount = 0;
+  if (!isTrash) {
+    list.forEach(c => {
+      const amt = getChannelField(c, suffix, 'amount') || 0;
+      const st = getChannelField(c, suffix, 'status') || '未沟通';
+      totalAmount += Number(amt) || 0;
+      if (st === '已成交') dealAmount += Number(amt) || 0;
+      else if (st !== '流失') followAmount += Number(amt) || 0;
+    });
+  }
+
   // 跟进动态
   const followCount = list.filter(c => {
     if (!isTrash && getChannelField(c, suffix, 'status') === '跟进中') return true;
@@ -6536,6 +6573,12 @@ function renderChannelAISummary(suffix) {
     let lvHtml = levelRows.join('');
     if (ungraded > 0) lvHtml += `未分级<strong>${ungraded}</strong>`;
     html += `<div class="channel-ai-row"><span class="channel-ai-label">等级</span>${lvHtml}</div>`;
+  }
+  if (!isTrash && totalAmount > 0) {
+    let amtHtml = `预估总额<strong>¥${totalAmount.toLocaleString('zh-CN')}</strong>`;
+    if (followAmount > 0) amtHtml += `跟进中<strong>¥${followAmount.toLocaleString('zh-CN')}</strong>`;
+    if (dealAmount > 0) amtHtml += `已成交<strong>¥${dealAmount.toLocaleString('zh-CN')}</strong>`;
+    html += `<div class="channel-ai-row"><span class="channel-ai-label">金额</span>${amtHtml}</div>`;
   }
   if (!isTrash) {
     let followHtml = `待跟进<strong>${followCount}</strong>`;
@@ -7433,6 +7476,116 @@ function drawGridLines(ctx, W, H, padding, maxVal, steps, tc) {
   ctx.setLineDash([]);
 }
 
+/* ─── 各频道金额漏斗 ─── */
+function renderChannelFunnel(list) {
+  const el = document.getElementById('bi-channel-funnel');
+  const meta = document.getElementById('bi-amount-meta');
+  if (!el) return;
+
+  const channels = [
+    { key: 'geo', label: 'GEO', color: '#2563eb', icon: '🌍' },
+    { key: '360', label: '360', color: '#7c3aed', icon: '🔄' },
+    { key: 'bing', label: 'Bing', color: '#d97706', icon: '🔍' },
+    { key: 'baidu', label: '百度', color: '#dc2626', icon: '🔎' },
+    { key: 'douyin', label: '抖音', color: '#db2777', icon: '🎵' },
+    { key: 'xianyu', label: '闲鱼', color: '#0891b2', icon: '🐟' }
+  ];
+
+  const stages = [
+    { key: 'uncontacted', label: '未沟通', pct: 10 },
+    { key: 'following', label: '跟进中', pct: 50 },
+    { key: 'won', label: '已成交', pct: 100 },
+    { key: 'lost', label: '流失', pct: 0 }
+  ];
+
+  // 统计每个频道每个阶段的客户数和金额
+  const stats = channels.map(ch => {
+    const channelCustomers = list.filter(c => c.deleted !== true && hasChannel(c, ch.key));
+    let totalAmount = 0;
+    let completedAmount = 0;
+
+    const stageStats = stages.map(s => {
+      let customers, amount = 0;
+      if (s.key === 'uncontacted') {
+        customers = channelCustomers.filter(c => getChannelField(c, ch.key, 'status') === '未沟通');
+      } else if (s.key === 'following') {
+        customers = channelCustomers.filter(c => getChannelField(c, ch.key, 'status') === '跟进中');
+      } else if (s.key === 'won') {
+        customers = channelCustomers.filter(c => getChannelField(c, ch.key, 'status') === '已成交');
+      } else {
+        customers = channelCustomers.filter(c => getChannelField(c, ch.key, 'status') === '流失');
+      }
+      amount = customers.reduce((sum, c) => {
+        const a = getChannelField(c, ch.key, 'amount');
+        return sum + (Number(a) || 0);
+      }, 0);
+      if (s.key !== 'lost') totalAmount += amount;
+      if (s.key === 'won') completedAmount = amount;
+      return { ...s, count: customers.length, amount };
+    });
+
+    // 加权预期收入 = 跟进中金额 * 50%（默认跟进转化概率）
+    const expectedRevenue = stageStats[1].amount * 0.5 + stageStats[2].amount;
+    return { ...ch, stageStats, totalAmount, completedAmount, expectedRevenue, customersCount: channelCustomers.length };
+  });
+
+  // 总金额
+  const grandTotal = stats.reduce((s, ch) => s + ch.totalAmount, 0);
+  const grandCompleted = stats.reduce((s, ch) => s + ch.completedAmount, 0);
+  const grandExpected = stats.reduce((s, ch) => s + ch.expectedRevenue, 0);
+  if (meta) {
+    meta.textContent = '总预估 ¥' + (grandExpected >= 10000 ? (grandExpected/10000).toFixed(1) + '万' : grandExpected) + ' · 已成交 ¥' + (grandCompleted >= 10000 ? (grandCompleted/10000).toFixed(1) + '万' : grandCompleted);
+  }
+
+  // 渲染表格风格的面板
+  function fmt(v) {
+    if (!v && v !== 0) return '-';
+    return '¥' + Number(v).toLocaleString('zh-CN');
+  }
+
+  let html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="border-bottom:2px solid var(--border-color);">';
+  html += '<th style="text-align:left;padding:10px 12px;">频道</th>';
+  html += '<th style="text-align:center;padding:10px 12px;">客户数</th>';
+  html += '<th style="text-align:right;padding:10px 12px;">未沟通</th>';
+  html += '<th style="text-align:right;padding:10px 12px;">跟进中</th>';
+  html += '<th style="text-align:right;padding:10px 12px;">已成交</th>';
+  html += '<th style="text-align:right;padding:10px 12px;">跟进总额</th>';
+  html += '<th style="text-align:right;padding:10px 12px;color:var(--color-success);">已成交额</th>';
+  html += '<th style="text-align:right;padding:10px 12px;color:var(--accent);">预期收入</th>';
+  html += '</tr></thead><tbody>';
+
+  stats.forEach(ch => {
+    const u = ch.stageStats[0], f = ch.stageStats[1], w = ch.stageStats[2], l = ch.stageStats[3];
+    html += '<tr style="border-bottom:1px solid var(--border-color);">';
+    html += '<td style="padding:10px 12px;font-weight:600;"><span style="font-size:16px;">' + ch.icon + '</span> ' + ch.label + '</td>';
+    html += '<td style="text-align:center;padding:10px 12px;">' + ch.customersCount + '</td>';
+    html += '<td style="text-align:right;padding:10px 12px;color:var(--text-muted);">' + (u.count > 0 ? u.count + '/' + fmt(u.amount) : '-') + '</td>';
+    html += '<td style="text-align:right;padding:10px 12px;color:var(--color-warning);">' + (f.count > 0 ? f.count + '/' + fmt(f.amount) : '-') + '</td>';
+    html += '<td style="text-align:right;padding:10px 12px;color:var(--color-success);">' + (w.count > 0 ? w.count : '-') + '</td>';
+    html += '<td style="text-align:right;padding:10px 12px;font-weight:500;">' + (ch.totalAmount > 0 ? fmt(ch.totalAmount) : '-') + '</td>';
+    html += '<td style="text-align:right;padding:10px 12px;font-weight:600;color:var(--color-success);">' + (ch.completedAmount > 0 ? fmt(ch.completedAmount) : '-') + '</td>';
+    html += '<td style="text-align:right;padding:10px 12px;font-weight:700;color:var(--accent);">' + fmt(Math.round(ch.expectedRevenue)) + '</td>';
+    html += '</tr>';
+  });
+
+  // 汇总行
+  html += '<tr style="border-top:2px solid var(--border-color);font-weight:700;">';
+  html += '<td style="padding:10px 12px;">📊 合计</td>';
+  html += '<td style="text-align:center;padding:10px 12px;">' + stats.reduce((s, c) => s + c.customersCount, 0) + '</td>';
+  html += '<td style="text-align:right;padding:10px 12px;">' + stats.reduce((s, c) => s + c.stageStats[0].count, 0) + '位</td>';
+  html += '<td style="text-align:right;padding:10px 12px;">' + stats.reduce((s, c) => s + c.stageStats[1].count, 0) + '位</td>';
+  html += '<td style="text-align:right;padding:10px 12px;">' + stats.reduce((s, c) => s + c.stageStats[2].count, 0) + '位</td>';
+  html += '<td style="text-align:right;padding:10px 12px;">' + fmt(grandTotal) + '</td>';
+  html += '<td style="text-align:right;padding:10px 12px;color:var(--color-success);">' + fmt(grandCompleted) + '</td>';
+  html += '<td style="text-align:right;padding:10px 12px;color:var(--accent);">' + fmt(Math.round(grandExpected)) + '</td>';
+  html += '</tr></tbody></table></div>';
+
+  // 说明
+  html += '<div style="margin-top:8px;font-size:11px;color:var(--text-muted);line-height:1.6;">预期收入 = 跟进中金额 × 50% + 已成交金额（转化概率基于历史均值）<br>每格格式：客户数 / 金额合计 | 未填写金额的客户不参与金额统计</div>';
+
+  el.innerHTML = html;
+}
+
 function renderAllBICharts(list) {
   const charts = [
     { name: 'BILevel',       fn: drawBILevelChart },
@@ -7983,6 +8136,7 @@ function renderBIPage() {
 
   // ========== 图表渲染（延迟到布局完成后再绘制） ==========
   applyBISortOrder();
+  renderChannelFunnel(list);
   setTimeout(() => renderAllBICharts(list), 50);
 }
 
