@@ -6188,7 +6188,7 @@ function openCustomerDetail(c, fromPopup) {
    模块 9：Excel 导出工具
    ================================================================ */
 function buildExcelData(list, plain) {
-  const header = ['姓名','公司名称','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
+  const header = ['姓名','公司名称','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','预计金额','下次跟进日期','录入时间','标签','备注','渠道'];
   const rows = [header];
   list.forEach(c => {
     const d = plain ? c : maskCustomer(c);
@@ -6199,7 +6199,7 @@ function buildExcelData(list, plain) {
       d.province, d.city, d.district, addr,
       d.source, d.level, d.status, d.industryLevel1 || '', d.industryLevel2 || '', d.website || '',
       (d.platforms || []).map(p => platformDisplayNames[p] || p).join('|'),
-      d.product, d.budget, d.nextFollowDate,
+      d.product, d.budget, c.amount || '', d.nextFollowDate,
       formatDate(c.createdAt),
       (d.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|'),
       c.remark || '',
@@ -9275,6 +9275,7 @@ const DOWNLOAD_FIELDS = [
   { label: '客户在投平台', key: 'platforms', get: c => (c.platforms || []).map(p => platformDisplayNames[p] || p).join('|') },
   { label: '意向产品', key: 'product', get: c => c.product },
   { label: '预算', key: 'budget', get: c => c.budget },
+  { label: '预计金额', key: 'amount', get: c => c.amount },
   { label: '下次跟进日期', key: 'nextFollowDate', get: c => c.nextFollowDate },
   { label: '录入时间', key: 'createdAt', get: c => formatDate(c.createdAt) },
   { label: '标签', key: 'tags', get: c => (c.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|') },
@@ -9432,7 +9433,7 @@ function renderDataDownloadPage() {
   const btnListTemplate = document.getElementById('btn-download-list-template');
   if (btnListTemplate) {
     btnListTemplate.onclick = () => {
-      const headerRow = ['序号', '姓名', '公司名称', '手机号', '预算范围', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
+      const headerRow = ['序号', '姓名', '公司名称', '手机号', '预算范围', '预计金额', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
       const dataRows = [headerRow];
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(dataRows);
@@ -9457,7 +9458,7 @@ function renderDataDownloadPage() {
   const btnPoolTemplate = document.getElementById('btn-download-pool-template');
   if (btnPoolTemplate) {
     btnPoolTemplate.onclick = () => {
-      const headerRow = ['序号', '姓名', '公司名称', '手机号', '预算范围', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
+      const headerRow = ['序号', '姓名', '公司名称', '手机号', '预算范围', '预计金额', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
       const dataRows = [headerRow];
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(dataRows);
@@ -9535,6 +9536,7 @@ function initCustomerListImport() {
     { label: '意向产品', key: 'product', parse: v => v },
     { label: '预算', key: 'budget', parse: v => v },
     { label: '预算范围', key: 'budget', parse: v => v },
+    { label: '预计金额', key: 'amount', parse: v => v },
     { label: '行业', key: 'industryLevel1', parse: v => v },
     { label: '下次跟进日期', key: 'nextFollowDate', parse: v => v || '' },
     { label: '录入时间', key: 'createdAt', parse: v => { if (!v) return Date.now(); const t = parseDateStr(v); return t !== null ? t : Date.now(); } },
@@ -9689,6 +9691,7 @@ function initCustomerPoolImport() {
     { label: '意向产品', key: 'product', parse: v => v },
     { label: '预算', key: 'budget', parse: v => v },
     { label: '预算范围', key: 'budget', parse: v => v },
+    { label: '预计金额', key: 'amount', parse: v => v },
     { label: '行业', key: 'industryLevel1', parse: v => v },
     { label: '下次跟进日期', key: 'nextFollowDate', parse: v => v || '' },
     { label: '录入时间', key: 'createdAt', parse: v => { if (!v) return Date.now(); const t = parseDateStr(v); return t !== null ? t : Date.now(); } },
