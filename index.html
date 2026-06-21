@@ -4742,9 +4742,9 @@ function renderColumnCells(c, config, start, i, masked, channel) {
     if (!col.visible) return;
     const key = col.key;
     if (key === 'name') {
-      html += `<td><strong>${escapeHTML(m.name || '-')}</strong></td>`;
+      html += `<td><strong class="cell-name-link" data-customer-id="${c.id}" style="cursor:pointer;color:var(--accent);">${escapeHTML(m.name || '-')}</strong></td>`;
     } else if (key === 'company') {
-      html += `<td>${escapeHTML(c.company || '-')}</td>`;
+      html += `<td><span class="cell-company-link" data-customer-id="${c.id}" style="cursor:pointer;color:var(--accent);">${escapeHTML(c.company || '-')}</span></td>`;
     } else if (key === 'cid') {
       html += `<td style="font-family:monospace;font-size:12px;color:var(--text-secondary);">${escapeHTML(c.cid || '-')}</td>`;
     } else if (key === 'phone') {
@@ -7061,6 +7061,17 @@ function closeCustomerFloat() {
   document.getElementById('customer-float-overlay').classList.remove('active');
   document.getElementById('customer-float-panel').classList.remove('active');
 }
+
+// 全局点击委托：表格中姓名/公司名称单元格点击弹出客户浮层
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('.cell-name-link, .cell-company-link');
+  if (!target) return;
+  const id = target.dataset.customerId;
+  if (!id) return;
+  const c = (Store.data.customers || []).find(x => x.id === id) ||
+            (Store.data.poolCustomers || []).find(x => x.id === id);
+  if (c) showCustomerFloat(c);
+});
 
 function buildAgendaContent(customer, lastFollowText) {
   const items = [];
