@@ -2557,7 +2557,16 @@ html.scrolling {
       <!-- 仪表盘 -->
       <section class="page active" id="page-dashboard">
         <div class="dashboard-top-row">
-          <div class="stats-grid" id="stats-grid"></div>
+          <div class="dashboard-left-col">
+            <div class="stats-grid" id="stats-grid"></div>
+            <div class="ai-summary-card" id="ai-summary-card">
+              <div class="ai-summary-header">
+                <span class="ai-summary-icon">🤖</span>
+                <span class="ai-summary-title">AI 摘要</span>
+              </div>
+              <div class="ai-summary-body" id="ai-summary-body"></div>
+            </div>
+          </div>
           <div class="alert-summary-card" id="alert-summary-card">
             <div class="asc-title">预警摘要</div>
             <div class="asc-body" id="alert-summary-card-body">
@@ -4106,6 +4115,7 @@ function openCustomerForm(customer) {
       key: 'basic', title: '基础信息（必填）', open: !_currentChannel,
       fields: [
         { key: 'name', label: '姓名', type: 'text', required: true, max: 50 },
+        { key: 'company', label: '公司名称', type: 'text', max: 100 },
         { key: 'gender', label: '性别', type: 'select', options: ['', '男', '女', '其他'] },
         { key: 'age', label: '年龄', type: 'number', max: 3 },
         { key: 'phone', label: '手机号', type: 'text', max: 11 },
@@ -4160,7 +4170,7 @@ function openCustomerForm(customer) {
     // 兼容旧数据：channel 字符串 → channels 数组
     const currentChannels = c.channels || (c.channel ? [c.channel] : []);
     for (const f of sec.fields) {
-      const readonlyKeys = ['name', 'gender', 'age', 'phone', 'wechat', 'email', 'source', 'product', 'budget', 'website', 'industryLevel1', 'industryLevel2', 'platforms', 'province', 'city', 'district', 'address'];
+      const readonlyKeys = ['name', 'company', 'gender', 'age', 'phone', 'wechat', 'email', 'source', 'product', 'budget', 'website', 'industryLevel1', 'industryLevel2', 'platforms', 'province', 'city', 'district', 'address'];
       const isReadonly = _currentChannel && readonlyKeys.includes(f.key);
       const disabledAttr = isReadonly ? ' disabled' : '';
       const disabledStyle = isReadonly ? 'background:var(--color-neutral-100);color:var(--text-muted);cursor:not-allowed;' : '';
@@ -4612,6 +4622,7 @@ const channelFilters = {};
 
 const COLUMN_DEFS = [
   { key: 'name', label: '姓名', sortable: true },
+  { key: 'company', label: '公司名称', sortable: true },
   { key: 'cid', label: '客户ID' },
   { key: 'phone', label: '手机号', sortable: true },
   { key: 'wechat', label: '微信' },
@@ -4732,6 +4743,8 @@ function renderColumnCells(c, config, start, i, masked, channel) {
     const key = col.key;
     if (key === 'name') {
       html += `<td><strong>${escapeHTML(m.name || '-')}</strong></td>`;
+    } else if (key === 'company') {
+      html += `<td>${escapeHTML(c.company || '-')}</td>`;
     } else if (key === 'cid') {
       html += `<td style="font-family:monospace;font-size:12px;color:var(--text-secondary);">${escapeHTML(c.cid || '-')}</td>`;
     } else if (key === 'phone') {
@@ -4911,8 +4924,9 @@ function applyChannelFilters(suffix, customers) {
   if (kw) {
     customers = customers.filter(c => {
       const name = (c.name || '').toLowerCase();
+      const company = (c.company || '').toLowerCase();
       const phone = (c.phone || '');
-      return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
+      return name.indexOf(kw) !== -1 || company.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
     });
   }
   if (f.level) customers = customers.filter(c => getChannelField(c, suffix, 'level') === f.level);
@@ -5051,8 +5065,9 @@ function applyListFilters() {
     arr = arr.filter(c => {
       // 在明文上做搜索，但显示时仍然脱敏
       const name = (c.name || '').toLowerCase();
+      const company = (c.company || '').toLowerCase();
       const phone = (c.phone || '');
-      return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
+      return name.indexOf(kw) !== -1 || company.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
     });
   }
   if (listState.source) arr = arr.filter(c => c.source === listState.source);
@@ -5357,7 +5372,8 @@ function renderCustomerTable() {
       });
     };
   }
-  initColumnResizers();
+  const listTbl = document.getElementById('customer-table');
+  if (listTbl) initChannelColumnResizers(listTbl, 'list');
 }
 
 /* ================================================================
@@ -5376,8 +5392,9 @@ function applyPoolFilters() {
   if (kw) {
     arr = arr.filter(c => {
       const name = (c.name || '').toLowerCase();
+      const company = (c.company || '').toLowerCase();
       const phone = (c.phone || '');
-      return name.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
+      return name.indexOf(kw) !== -1 || company.indexOf(kw) !== -1 || phone.indexOf(kw) !== -1;
     });
   }
   if (poolState.source) arr = arr.filter(c => c.source === poolState.source);
@@ -5566,7 +5583,8 @@ function renderPoolTable() {
       });
     };
   }
-  initPoolColumnResizers();
+  const poolTbl = document.getElementById('pool-customer-table');
+  if (poolTbl) initChannelColumnResizers(poolTbl, 'pool');
 }
 
 function openPoolCustomerForm(customer) {
@@ -5754,6 +5772,7 @@ function openPoolCustomerDetail(c) {
       </div>
       <div class="detail-grid">
         <div class="detail-item"><div class="detail-label">手机号</div><div class="detail-value">${escapeHTML(c.phone || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">公司名称</div><div class="detail-value">${escapeHTML(c.company || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">微信</div><div class="detail-value">${escapeHTML(c.wechat || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(c.email || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">性别 / 年龄</div><div class="detail-value">${escapeHTML((c.gender || '-') + ' / ' + (c.age || '-'))}</div></div>
@@ -6062,6 +6081,7 @@ function openCustomerDetail(c, fromPopup) {
       </div>
       <div class="detail-grid">
         <div class="detail-item"><div class="detail-label">手机号</div><div class="detail-value">${escapeHTML(c.phone || '-')}</div></div>
+        <div class="detail-item"><div class="detail-label">公司名称</div><div class="detail-value">${escapeHTML(c.company || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">微信</div><div class="detail-value">${escapeHTML(c.wechat || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(c.email || '-')}</div></div>
         <div class="detail-item"><div class="detail-label">性别 / 年龄</div><div class="detail-value">${escapeHTML((c.gender || '-') + ' / ' + (c.age || '-'))}</div></div>
@@ -6142,13 +6162,14 @@ function openCustomerDetail(c, fromPopup) {
    模块 9：Excel 导出工具
    ================================================================ */
 function buildExcelData(list, plain) {
-  const header = ['姓名','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
+  const header = ['姓名','公司名称','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','下次跟进日期','录入时间','标签','备注','渠道'];
   const rows = [header];
   list.forEach(c => {
     const d = plain ? c : maskCustomer(c);
     const addr = plain ? (c.address || '') : maskAddress(c.address);
     const row = [
-      d.name, d.gender, d.age, d.phone, d.wechat, d.email,
+      d.name, d.company || '',
+      d.gender, d.age, d.phone, d.wechat, d.email,
       d.province, d.city, d.district, addr,
       d.source, d.level, d.status, d.industryLevel1 || '', d.industryLevel2 || '', d.website || '',
       (d.platforms || []).map(p => platformDisplayNames[p] || p).join('|'),
@@ -6219,13 +6240,13 @@ function renderDashboard() {
   const el = document.getElementById('stats-grid');
   if (el) {
     el.style.display = 'grid';
-    el.style.gridTemplateColumns = 'repeat(auto-fit, minmax(180px, 1fr))';
+    el.style.gridTemplateColumns = 'repeat(5, 1fr)';
     el.style.gap = '16px';
     el.innerHTML = stats.map(s => `
-      <div class="stat-card" data-stat-type="${s.type}" style="padding:18px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);cursor:pointer;transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),border-color 0.2s;" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)';this.style.borderColor='var(--accent)';" onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='';">
-        <div style="font-size:13px;color:var(--text-secondary);transition:color 0.2s;">${escapeHTML(s.label)}</div>
-        <div style="font-size:28px;font-weight:700;margin-top:6px;transition:transform 0.2s;">${s.value}</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${escapeHTML(s.hint)}</div>
+      <div class="stat-card" data-stat-type="${s.type}" style="padding:8px 14px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-secondary);cursor:pointer;transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),border-color 0.2s;" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)';this.style.borderColor='var(--accent)';" onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='';">
+        <div style="font-size:12px;color:var(--text-secondary);transition:color 0.2s;">${escapeHTML(s.label)}</div>
+        <div style="font-size:18px;font-weight:700;margin-top:3px;transition:transform 0.2s;">${s.value}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHTML(s.hint)}</div>
       </div>`).join('');
     // 添加点击事件
     el.querySelectorAll('.stat-card').forEach(card => {
@@ -6242,12 +6263,199 @@ function renderDashboard() {
     });
   }
 
+  // AI 摘要（由独立函数渲染）
+  renderAISummary();
+
   // 来源饼图
   drawSourcePie();
   drawTrendBar();
 
   // 客户预警及待跟进提醒
   renderAlertSection(list, todayStart);
+}
+
+// ── 智能 AI 摘要 ──
+function renderAISummary() {
+  const list = (Store.data.customers || []).filter(c => c.deleted !== true);
+  const total = list.length;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayEnd = todayStart.getTime() + 86400000;
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const followupDays = (Store.settings && Store.settings.followupDays) || 3;
+
+  // 今日 / 本月 新增
+  const todayCount = list.filter(c => c.createdAt && c.createdAt >= todayStart.getTime()).length;
+  const monthCount = list.filter(c => c.createdAt && c.createdAt >= monthStart.getTime()).length;
+
+  // 等级分布
+  const levels = getLevels();
+  const levelDist = {};
+  list.forEach(c => { const l = c.level || '未分级'; levelDist[l] = (levelDist[l] || 0) + 1; });
+  const levelRows = levels.filter(l => levelDist[l.name]).map(l => ({ name: l.name, count: levelDist[l.name] }));
+  const ungraded = levelDist['未分级'] || 0;
+
+  // 成交状态分布
+  const statusDist = {};
+  list.forEach(c => { const s = c.status || '未沟通'; statusDist[s] = (statusDist[s] || 0) + 1; });
+
+  // 跟进动态
+  const followCount = list.filter(c => {
+    if (c.status === '跟进中') return true;
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft >= todayStart.getTime();
+  }).length;
+  const todayFollow = list.filter(c => {
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft >= todayStart.getTime() && ft < todayEnd;
+  }).length;
+  const overdueCount = list.filter(c => {
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft < todayStart.getTime();
+  }).length;
+
+  // 来源分布 top 5
+  const sourceDist = {};
+  list.forEach(c => { const s = c.source || '未填写'; sourceDist[s] = (sourceDist[s] || 0) + 1; });
+  const topSources = Object.entries(sourceDist).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  // 渠道分布
+  const channelLabels = { geo: 'GEO', bing: '必应', baidu: '百度', douyin: '抖音', xianyu: '闲鱼', xiaohongshu: '小红书', qq: '腾讯', '360': '360' };
+  const channelDist = {};
+  list.forEach(c => {
+    if (c.channels) {
+      const chs = Array.isArray(c.channels) ? c.channels : [c.channels];
+      chs.forEach(ch => { channelDist[ch] = (channelDist[ch] || 0) + 1; });
+    }
+  });
+  const topChannels = Object.entries(channelDist).sort((a, b) => b[1] - a[1]);
+
+  // 近 7 天新增
+  const weekAgo = todayStart.getTime() - 7 * 86400000;
+  const weekCount = list.filter(c => c.createdAt && c.createdAt >= weekAgo).length;
+
+  // 标签分布 top 5
+  const tagDist = {};
+  list.forEach(c => {
+    if (c.tags) {
+      const ts = Array.isArray(c.tags) ? c.tags : [c.tags];
+      ts.forEach(t => { tagDist[t] = (tagDist[t] || 0) + 1; });
+    }
+  });
+  const topTags = Object.entries(tagDist).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  // 严重逾期（超期 > followupDays 天）
+  const severeOverdue = list.filter(c => {
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    if (ft === null || ft >= todayStart.getTime()) return false;
+    return (todayStart.getTime() - ft) / 86400000 > followupDays;
+  }).length;
+
+  // 已成交客户
+  const dealCount = statusDist['已成交'] || 0;
+
+  // ── 构建 HTML ──
+  let html = '';
+
+  // 概览行
+  html += '<div class="ai-summary-main">';
+  html += `共 <strong>${total}</strong> 位客户`;
+  if (todayCount > 0) html += `，今日 <span class="ai-badge ai-badge-up">+${todayCount}</span>`;
+  if (weekCount > 0 && weekCount !== todayCount) html += `，近 7 天 <span class="ai-badge ai-badge-up">+${weekCount}</span>`;
+  if (monthCount > 0) html += `，本月 <span class="ai-badge ai-badge-up">+${monthCount}</span>`;
+  if (dealCount > 0) html += `，已成交 <strong>${dealCount}</strong> 位`;
+  html += '</div>';
+
+  // 等级分布
+  if (levelRows.length > 0) {
+    html += '<div class="ai-summary-row">';
+    html += '<span class="ai-summary-label">等级</span>';
+    html += levelRows.map(l => `${l.name}<strong>${l.count}</strong>`).join('');
+    if (ungraded > 0) html += `未分级<strong>${ungraded}</strong>`;
+    html += '</div>';
+  }
+
+  // 成交状态
+  const statusOrder = ['未沟通', '跟进中', '已成交', '流失'];
+  html += '<div class="ai-summary-row">';
+  html += '<span class="ai-summary-label">状态</span>';
+  html += statusOrder.filter(s => statusDist[s]).map(s => {
+    const cls = s === '已成交' ? 'ai-status-deal' : s === '流失' ? 'ai-status-lost' : s === '跟进中' ? 'ai-status-follow' : '';
+    return `<span class="${cls}">${s}<strong>${statusDist[s]}</strong></span>`;
+  }).join('');
+  html += '</div>';
+
+  // 跟进动态
+  html += '<div class="ai-summary-row">';
+  html += '<span class="ai-summary-label">跟进</span>';
+  html += `待跟进<strong>${followCount}</strong>`;
+  if (todayFollow > 0) html += `<span class="ai-urgent">今日需跟进 ${todayFollow}</span>`;
+  if (overdueCount > 0) {
+    const cls = severeOverdue > 0 ? 'ai-danger' : 'ai-warn';
+    html += `<span class="${cls}">逾期 ${overdueCount}</span>`;
+  }
+  if (severeOverdue > 0) html += `<span class="ai-danger">严重逾期 ${severeOverdue}</span>`;
+  html += '</div>';
+
+  // 来源 TOP
+  if (topSources.length > 0) {
+    html += '<div class="ai-summary-row">';
+    html += '<span class="ai-summary-label">来源 TOP</span>';
+    html += topSources.map(([s, c]) => `${s}<strong>${c}</strong>`).join('');
+    if (Object.keys(sourceDist).length > 5) html += `其他<strong>${Object.keys(sourceDist).length - 5}</strong>`;
+    html += '</div>';
+  }
+
+  // 渠道分布
+  if (topChannels.length > 0) {
+    html += '<div class="ai-summary-row">';
+    html += '<span class="ai-summary-label">渠道</span>';
+    html += topChannels.map(([ch, c]) => `${channelLabels[ch] || ch}<strong>${c}</strong>`).join('');
+    html += '</div>';
+  }
+
+  // 热门标签
+  if (topTags.length > 0) {
+    html += '<div class="ai-summary-row">';
+    html += '<span class="ai-summary-label">热门标签</span>';
+    html += topTags.map(([t, c]) => `${t}<strong>${c}</strong>`).join('');
+    html += '</div>';
+  }
+
+  // 底部时间戳
+  const timeStr = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  html += `<div class="ai-summary-time">更新于 ${timeStr}</div>`;
+
+  const aiBody = document.getElementById('ai-summary-body');
+  if (aiBody) aiBody.innerHTML = html;
+}
+
+// ── 仪表盘 AI 定时刷新 ──
+let _aiRefreshTimer = null;
+let _lastAIDataHash = '';
+
+function startAIRefresh() {
+  stopAIRefresh();
+  _lastAIDataHash = JSON.stringify(Store.data.customers || []);
+  _aiRefreshTimer = setInterval(function() {
+    const active = document.querySelector('.page.active');
+    if (!active || active.id !== 'page-dashboard') return;
+    const curHash = JSON.stringify(Store.data.customers || []);
+    if (curHash !== _lastAIDataHash) {
+      _lastAIDataHash = curHash;
+      renderAISummary();
+    }
+  }, 5000);
+}
+
+function stopAIRefresh() {
+  if (_aiRefreshTimer) {
+    clearInterval(_aiRefreshTimer);
+    _aiRefreshTimer = null;
+  }
 }
 
 // 显示统计浮层
@@ -6818,6 +7026,7 @@ function showCustomerFloat(customer, source) {
 
   bodyEl.innerHTML = '<div class="customer-float-grid">' +
     '<div class="customer-float-item"><div class="customer-float-label">手机号</div><div class="customer-float-value">' + escapeHTML(customer.phone || '-') + '</div></div>' +
+    '<div class="customer-float-item"><div class="customer-float-label">公司名称</div><div class="customer-float-value">' + escapeHTML(customer.company || '-') + '</div></div>' +
     '<div class="customer-float-item"><div class="customer-float-label">微信</div><div class="customer-float-value">' + escapeHTML(customer.wechat || '-') + '</div></div>' +
     '<div class="customer-float-item"><div class="customer-float-label">来源</div><div class="customer-float-value">' + escapeHTML(customer.source || '-') + '</div></div>' +
     '<div class="customer-float-item"><div class="customer-float-label">渠道</div><div class="customer-float-value">' + escapeHTML(channelLabel) + '</div></div>' +
@@ -8748,6 +8957,7 @@ const DOWNLOAD_CHANNELS = [
 
 const DOWNLOAD_FIELDS = [
   { label: '姓名', key: 'name', get: c => c.name },
+  { label: '公司名称', key: 'company', get: c => c.company },
   { label: '性别', key: 'gender', get: c => c.gender },
   { label: '年龄', key: 'age', get: c => c.age },
   { label: '手机号', key: 'phone', get: c => c.phone },
@@ -8923,7 +9133,7 @@ function renderDataDownloadPage() {
   const btnListTemplate = document.getElementById('btn-download-list-template');
   if (btnListTemplate) {
     btnListTemplate.onclick = () => {
-      const headerRow = ['序号', '姓名', '手机号', '预算范围', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
+      const headerRow = ['序号', '姓名', '公司名称', '手机号', '预算范围', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
       const dataRows = [headerRow];
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(dataRows);
@@ -8948,7 +9158,7 @@ function renderDataDownloadPage() {
   const btnPoolTemplate = document.getElementById('btn-download-pool-template');
   if (btnPoolTemplate) {
     btnPoolTemplate.onclick = () => {
-      const headerRow = ['序号', '姓名', '手机号', '预算范围', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
+      const headerRow = ['序号', '姓名', '公司名称', '手机号', '预算范围', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
       const dataRows = [headerRow];
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(dataRows);
@@ -9005,6 +9215,7 @@ function initCustomerListImport() {
 
   const IMPORT_FIELD_MAP = [
     { label: '姓名', key: 'name', parse: v => v },
+    { label: '公司名称', key: 'company', parse: v => v },
     { label: '性别', key: 'gender', parse: v => v },
     { label: '年龄', key: 'age', parse: v => v },
     { label: '手机号', key: 'phone', parse: v => v },
@@ -9158,6 +9369,7 @@ function initCustomerPoolImport() {
 
   const IMPORT_FIELD_MAP = [
     { label: '姓名', key: 'name', parse: v => v },
+    { label: '公司名称', key: 'company', parse: v => v },
     { label: '性别', key: 'gender', parse: v => v },
     { label: '年龄', key: 'age', parse: v => v },
     { label: '手机号', key: 'phone', parse: v => v },
@@ -9340,21 +9552,24 @@ function navigate(pageName) {
   const t = titleMap[pageName] || ['系统', ''];
   safeText(document.getElementById('page-title'), t[0]);
   safeText(document.getElementById('page-subtitle'), t[1]);
-  if (pageName === 'dashboard') renderDashboard();
-  else if (pageName === 'bi') renderBIPage();
-  else if (pageName === 'pool') { renderPoolFilterSources(); renderPoolTable(); }
-  else if (pageName === 'list') { renderFilterSources(); renderCustomerTable(); }
-  else if (pageName === 'geo') renderChannelPage('geo');
-  else if (pageName === '360') renderChannelPage('360');
-  else if (pageName === 'bing') renderChannelPage('bing');
-  else if (pageName === 'baidu') renderChannelPage('baidu');
-  else if (pageName === 'douyin') renderChannelPage('douyin');
-  else if (pageName === 'xianyu') renderChannelPage('xianyu');
-  else if (pageName === 'trash') renderTrashPage();
-  else if (pageName === 'settings') renderSettingsPage();
-  else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); }
-  else if (pageName === 'data-download') renderDataDownloadPage();
-  else if (pageName === 'help') renderHelpPage();
+  if (pageName === 'dashboard') { renderDashboard(); startAIRefresh(); }
+  else {
+    stopAIRefresh();
+    if (pageName === 'bi') renderBIPage();
+    else if (pageName === 'pool') { renderPoolFilterSources(); renderPoolTable(); }
+    else if (pageName === 'list') { renderFilterSources(); renderCustomerTable(); }
+    else if (pageName === 'geo') renderChannelPage('geo');
+    else if (pageName === '360') renderChannelPage('360');
+    else if (pageName === 'bing') renderChannelPage('bing');
+    else if (pageName === 'baidu') renderChannelPage('baidu');
+    else if (pageName === 'douyin') renderChannelPage('douyin');
+    else if (pageName === 'xianyu') renderChannelPage('xianyu');
+    else if (pageName === 'trash') renderTrashPage();
+    else if (pageName === 'settings') renderSettingsPage();
+    else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); }
+    else if (pageName === 'data-download') renderDataDownloadPage();
+    else if (pageName === 'help') renderHelpPage();
+  }
   // 进入列表页面自动隐藏移动端侧边栏
   if (window.innerWidth < 768) {
     const sb = document.getElementById('sidebar'); if (sb) sb.classList.remove('show');
@@ -10582,9 +10797,14 @@ function refreshUI() {
       align-items: stretch;
       margin-bottom: 16px;
     }
-    .dashboard-top-row .stats-grid {
+    .dashboard-left-col {
       flex: 1 1 0;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dashboard-top-row .stats-grid {
       margin-bottom: 0 !important;
     }
     .alert-summary-card {
@@ -10646,6 +10866,115 @@ function refreshUI() {
       border-top: 1px dashed var(--border-color);
       cursor: default;
     }
+
+    /* ═══ AI 摘要卡片 ═══ */
+    .ai-summary-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .ai-summary-card:hover {
+      border-color: var(--color-primary-200);
+      box-shadow: var(--shadow-md);
+    }
+    .ai-summary-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .ai-summary-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+    .ai-summary-title {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .ai-summary-body {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ai-summary-body strong {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .ai-summary-main {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      padding-bottom: 4px;
+      border-bottom: 1px dashed var(--border-color);
+      margin-bottom: 2px;
+    }
+    .ai-summary-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 3px 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .ai-summary-row strong {
+      margin-left: 1px;
+      margin-right: 4px;
+    }
+    .ai-summary-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      min-width: 44px;
+    }
+    .ai-badge {
+      display: inline-block;
+      padding: 0 5px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+    .ai-badge-up {
+      color: #059669;
+      background: rgba(5, 150, 105, 0.1);
+    }
+    .ai-status-deal { color: #059669; }
+    .ai-status-lost { color: #dc2626; }
+    .ai-status-follow { color: #2563eb; }
+    .ai-urgent {
+      color: #d97706;
+      font-weight: 600;
+    }
+    .ai-warn {
+      color: #d97706;
+      font-weight: 600;
+    }
+    .ai-danger {
+      color: #dc2626;
+      font-weight: 600;
+    }
+    .ai-summary-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 2px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border-color);
+    }
+
     @media (max-width: 900px) {
       .dashboard-top-row { flex-direction: column; }
       .alert-summary-card { flex: none; }
