@@ -2556,7 +2556,15 @@ html.scrolling {
 
       <!-- 仪表盘 -->
       <section class="page active" id="page-dashboard">
-        <div class="stats-grid" id="stats-grid"></div>
+        <div class="dashboard-top-row">
+          <div class="stats-grid" id="stats-grid"></div>
+          <div class="alert-summary-card" id="alert-summary-card">
+            <div class="asc-title">预警摘要</div>
+            <div class="asc-body" id="alert-summary-card-body">
+              <div class="asc-loading">数据加载中…</div>
+            </div>
+          </div>
+        </div>
         <div class="alert-section" id="alert-section"></div>
         <div class="charts-grid">
           <div class="chart-card">
@@ -3464,6 +3472,22 @@ async function passwordHash(password) {
   return bytesToBase64(new Uint8Array(enc));
 }
 
+async function sha256(str) {
+  const enc = new TextEncoder().encode(str);
+  const hash = await crypto.subtle.digest('SHA-256', enc);
+  return bytesToBase64(new Uint8Array(hash));
+}
+
+function securityQuestionsToStorage(sq) {
+  if (!Array.isArray(sq) || sq.length !== 2) return;
+  Promise.all(sq.map(async q => ({
+    q: q.q,
+    a_hash: await sha256(q.a.toLowerCase())
+  }))).then(hashed => {
+    localStorage.setItem(SQ_STORAGE_KEY, JSON.stringify(hashed));
+  }).catch(() => {});
+}
+
 // 加密：输出 { iv, ciphertext, salt } 的 base64 JSON 文本
 async function encryptData(plaintext, password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -3670,14 +3694,15 @@ const Store = {
     }
   },
   async save(excludeAvatar) {
-    // 保存锁：防止自动保存与手动保存竞态
+    // 保存锁队列：防止自动保存与手动保存竞态
     if (this._saving) {
-      this._pendingSave = true;
-      return;
+      return new Promise(resolve => {
+        this._pendingSave = this._pendingSave || [];
+        this._pendingSave.push(resolve);
+      });
     }
     this._saving = true;
     try {
-      // 序列化时（自动保存）排除头像数据，降低每次全量加密的 payload
       const dataForSave = excludeAvatar ? { ...this.data, avatar: '' } : this.data;
       const plaintext = JSON.stringify(dataForSave);
       const enc = await encryptData(plaintext, this.password);
@@ -3686,8 +3711,10 @@ const Store = {
       this._dirty = false;
     } finally {
       this._saving = false;
-      if (this._pendingSave) {
-        this._pendingSave = false;
+      const queue = this._pendingSave;
+      this._pendingSave = null;
+      if (queue && queue.length) {
+        queue.forEach(resolve => resolve());
         return this.save(excludeAvatar);
       }
     }
@@ -3825,11 +3852,12 @@ const Store = {
         return;
       }
       const parsed = JSON.parse(plaintext);
-      const folderCount = (parsed.customers || []).length;
-      const localCount = this.data.customers.length;
+      const folderCount = (parsed.customers || []).length + (parsed.poolCustomers || []).length;
+      const localCount = this.data.customers.length + (this.data.poolCustomers || []).length;
       // 以条目更多 + 写入时间最新为权威
       if (folderCount > localCount) {
         this.data.customers = parsed.customers || this.data.customers;
+        this.data.poolCustomers = parsed.poolCustomers || this.data.poolCustomers;
         this.data.tags = parsed.tags || this.data.tags;
         if (parsed.versions) this.data.versions = parsed.versions;
         await this.save();
@@ -3890,7 +3918,7 @@ const Store = {
     this.addLog(type, '成功', detail);
     this._saveVersionSnapshot();
     const p = this.save();
-    updateNavCounts();
+    p.then(() => updateNavCounts()).catch(() => {});
     return p;
   }
 };
@@ -5612,12 +5640,12 @@ function openPoolCustomerForm(customer) {
         }
         html += `<div class="form-group"><label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label><select class="select" data-key="${f.key}" style="${f.key === 'source' ? 'width:100%;' : ''}">${opts}</select></div>`;
       } else if (f.type === 'select-industry') {
-        const industries = getIndustryOptions();
-        let opts = '<option value="">请选择</option>';
-        industries.forEach(ind => { opts += `<option value="${escapeHTML(ind)}" ${val === ind ? 'selected' : ''}>${escapeHTML(ind)}</option>`; });
-        html += `<div class="form-group"><label class="label">${escapeHTML(f.label)}</label><select class="select" data-key="industryLevel1" onchange="document.querySelector('[data-key=industryLevel2]').innerHTML='<option value=\\'\\'>请选择</option>'">${opts}</select></div>`;
+        const options = getIndustryLevel1Options();
+        html += `<div class="form-group"><label class="label">${escapeHTML(f.label)}</label><select class="select" data-key="industryLevel1" id="pool-industry-level1-select"><option value="">请选择</option>${options.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}</select></div>`;
       } else if (f.type === 'select-industry2') {
-        html += `<div class="form-group"><label class="label">${escapeHTML(f.label)}</label><select class="select" data-key="industryLevel2"><option value="">请选择</option></select></div>`;
+        const currentL1 = c.industryLevel1 || '';
+        const options2 = getIndustryLevel2Options(currentL1);
+        html += `<div class="form-group"><label class="label">${escapeHTML(f.label)}</label><select class="select" data-key="industryLevel2" id="pool-industry-level2-select"><option value="">请选择</option>${options2.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}</select></div>`;
       } else if (f.type === 'textarea') {
         html += `<div class="form-group" style="grid-column:1/-1;"><label class="label">${escapeHTML(f.label)}</label><textarea class="textarea" data-key="${f.key}" maxlength="${f.max || 500}">${escapeHTML(val)}</textarea></div>`;
       } else {
@@ -5631,7 +5659,7 @@ function openPoolCustomerForm(customer) {
     title, size: 'lg',
     bodyHTML: html,
     onOpen: () => {
-      const s1 = document.querySelector('[data-key=industryLevel1]');
+      const s1 = document.getElementById('pool-industry-level1-select');
       if (s1) s1.value = c.industryLevel1 || '';
     },
     footer: (f) => {
@@ -5639,6 +5667,17 @@ function openPoolCustomerForm(customer) {
       const save = document.createElement('button'); save.className = 'btn btn-sm btn-primary'; safeText(save, '保存');
       f.appendChild(cancel); f.appendChild(save);
       cancel.onclick = closeModal;
+      // 一级行业切换联动二级行业
+      const poolL1 = document.getElementById('pool-industry-level1-select');
+      const poolL2 = document.getElementById('pool-industry-level2-select');
+      if (poolL1 && poolL2) {
+        poolL1.addEventListener('change', () => {
+          const l1 = poolL1.value;
+          const opts = getIndustryLevel2Options(l1);
+          poolL2.innerHTML = '<option value="">请选择</option>' +
+            opts.map(o => `<option value="${escapeHTML(o)}">${escapeHTML(o)}</option>`).join('');
+        });
+      }
       save.onclick = async () => {
         const d = {};
         document.querySelectorAll('#modal-box .input, #modal-box .textarea, #modal-box .select[data-key]').forEach(el => {
@@ -6124,18 +6163,22 @@ function buildExcelData(list, plain) {
   return rows;
 }
 
-function downloadExcel(filename, sheetName, dataRows) {
+function downloadExcel(filename, sheetName, dataRows, extraSheets) {
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(dataRows);
-  const colWidths = dataRows[0].map((h, i) => {
-    const maxLen = dataRows.reduce((max, row) => {
-      const val = String(row[i] || '');
-      return Math.max(max, val.length);
-    }, h.length);
-    return { wch: Math.min(Math.max(maxLen * 1.2, 8), 40) };
+  const allSheets = [{ name: sheetName, data: dataRows }];
+  if (extraSheets) allSheets.push(...extraSheets);
+  allSheets.forEach(({name, data}) => {
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const colWidths = data[0].map((h, i) => {
+      const maxLen = data.reduce((max, row) => {
+        const val = String(row[i] || '');
+        return Math.max(max, val.length);
+      }, h.length);
+      return { wch: Math.min(Math.max(maxLen * 1.2, 8), 40) };
+    });
+    ws['!cols'] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, name);
   });
-  ws['!cols'] = colWidths;
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   const blob = new Blob([wbout], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
@@ -6171,7 +6214,7 @@ function renderDashboard() {
     { label: '今日新增', value: todayCount, hint: '今日 0 点后录入', type: 'today' },
     { label: '本月新增', value: monthCount, hint: '本月 1 号后录入', type: 'month' },
     { label: topLevelLabel + ' 级客户', value: vipCount, hint: '等级为 ' + topLevelLabel, type: 'vip' },
-    { label: '待跟进客户', value: followCount, hint: '状态为跟进中 或 下次跟进日期 >= 今日', type: 'follow' }
+    { label: '待跟进客户', value: followCount, hint: '跟进中客户 + 今日起有计划跟进日期的客户', type: 'follow' }
   ];
   const el = document.getElementById('stats-grid');
   if (el) {
@@ -6308,6 +6351,106 @@ function _restoreStatPopup() {
   }
 }
 
+// ── 辅助：判断是否为最高等级 ──
+function isTopLevel(levelName) {
+  const topNames = getLevels().slice(0, 2).map(l => l.name);
+  return topNames.includes(levelName);
+}
+
+// ── 一次预计算三个列表 ──
+// followupDays  = 跟进提醒天数（来自设置，默认 3）
+// 临近窗口      = [今日, 今日 + followupDays 天)  ← 与"超期阈值"保持一致
+// 议程窗口      = [今日 + followupDays 天, 今日 + followupDays*2 天)
+function processCustomerAlerts(list, now, ts, followupDays) {
+  const dayMs          = 86400000;
+  // 动态窗口：跟随用户设置的提醒天数
+  const upcomingEnd    = ts + followupDays * dayMs;          // Panel 2 上界
+  const agendaEnd      = ts + followupDays * 2 * dayMs;      // Panel 3 上界
+
+  const overdue  = [];
+  const upcoming = [];
+  const agenda   = [];
+  const stats = { overdueCount:0, upcomingCount:0, todayFollowCount:0,
+                  agendaCount:0, topLevelOverdue:0, maxOverdueDays:0,
+                  totalFollowups:0 };
+
+  for (const c of list) {
+    if (c.deleted || c.status === '已成交' || c.status === '流失') continue;
+
+    // 共用预计算
+    const ft = typeof c.nextFollowDate === 'number'
+      ? c.nextFollowDate : parseDateStr(c.nextFollowDate || '');
+    const lastRemarkTime = c.remarkHistory?.[0]?.time ?? c.createdAt;
+    const daysSinceLast  = lastRemarkTime ? Math.floor((now - lastRemarkTime) / dayMs) : 0;
+    const isNewCustomer  = c.createdAt && (now - c.createdAt) < followupDays * dayMs;
+
+    // 真实逾期：下次跟进日期 < 今日零点
+    const isOverdue    = ft !== null && ft < ts;
+    const overdueDays  = isOverdue ? Math.floor((ts - ft) / dayMs) : 0;
+
+    // 沉默天数（新客户无跟进记录不计为逾期）
+    let silentDays = daysSinceLast;
+    if (!c.remarkHistory?.length && isNewCustomer) silentDays = 0;
+    const isLongSilent = !isOverdue && silentDays > followupDays;
+
+    // === Panel 1: 超期未联系 ===
+    if (isOverdue || isLongSilent) {
+      // 严重度：以 followupDays 的倍数为分界
+      const highThreshold   = followupDays * 10;   // 超期 10 倍阈值 → 严重
+      const mediumThreshold = followupDays * 5;    // 超期 5 倍阈值 → 警告
+      const severity = (daysSinceLast > highThreshold || overdueDays > followupDays * 4) ? 'high'
+                     : (daysSinceLast > mediumThreshold || overdueDays > followupDays * 2) ? 'medium' : 'low';
+      const severityLabel = severity === 'high' ? '严重' : severity === 'medium' ? '警告' : '关注';
+      const reason = isOverdue ? `逾期${overdueDays}天` : `${silentDays}天未联系`;
+      overdue.push({ ...c, _overdueDays:overdueDays, _silentDays:silentDays,
+        _severity:severity, _severityLabel:severityLabel, _reason:reason,
+        _lastDate: dateOnly(lastRemarkTime || c.createdAt || now) });
+      stats.overdueCount++;
+      if (overdueDays > stats.maxOverdueDays) stats.maxOverdueDays = overdueDays;
+      if (c.level && isTopLevel(c.level)) stats.topLevelOverdue++;
+    }
+
+    // === Panel 2: 临近联系日期（ft ∈ [今日, 今日+followupDays 天)，排除已超期） ===
+    if (ft !== null && ft >= ts && ft < upcomingEnd && !isOverdue) {
+      const isToday   = ft < ts + dayMs;
+      const daysUntil = Math.ceil((ft - ts) / dayMs);
+      upcoming.push({ ...c, _isToday:isToday, _daysUntil:daysUntil,
+        _label: isToday ? '今天' : `${daysUntil}天后`,
+        _cssClass: isToday ? 'follow-today' : 'follow-upcoming',
+        _followText: formatNextFollowDate(c.nextFollowDate) });
+      stats.upcomingCount++;
+      if (isToday) stats.todayFollowCount++;
+    }
+
+    // === Panel 3: 下次沟通事项（ft ∈ [今日+followupDays, 今日+followupDays*2)，不与 P2 重叠） ===
+    if (ft !== null && ft >= upcomingEnd && ft < agendaEnd && !isOverdue) {
+      const lastRemark  = c.remarkHistory?.[0]?.text || c.remark || '';
+      const productInfo = [c.product, c.budget].filter(Boolean).join(' · ');
+      agenda.push({ ...c, _agenda: lastRemark || productInfo || '暂无沟通要点',
+        _followText: formatNextFollowDate(c.nextFollowDate),
+        _productInfo: productInfo });
+      stats.agendaCount++;
+    }
+
+    stats.totalFollowups++;
+  }
+
+  // 排序
+  overdue .sort((a,b) => (b._overdueDays - a._overdueDays) || (b._silentDays - a._silentDays));
+  upcoming.sort((a,b) => a._daysUntil - b._daysUntil);
+  agenda  .sort((a,b) => (parseDateStr(a.nextFollowDate)||0) - (parseDateStr(b.nextFollowDate)||0));
+
+  return {
+    overdue:  overdue.slice(0, 8),
+    upcoming: upcoming.slice(0, 8),
+    agenda:   agenda.slice(0, 8),
+    stats,
+    totals: { overdue:overdue.length, upcoming:upcoming.length, agenda:agenda.length },
+    // 透传实际生效的窗口天数，供渲染层显示
+    windows: { followupDays, upcomingDays: followupDays, agendaDays: followupDays * 2 }
+  };
+}
+
 function renderAlertSection(list, todayStart) {
   const el = document.getElementById('alert-section');
   if (!el) return;
@@ -6319,80 +6462,18 @@ function renderAlertSection(list, todayStart) {
   const now = Date.now();
   const followupDays = (Store.settings && Store.settings.followupDays) || 3;
   const ts = (todayStart && typeof todayStart.getTime === 'function') ? todayStart.getTime() : (() => { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
-  const threeDaysLater = ts + 3 * 86400000;
 
-  // ===== Panel 1: 超期未联系提醒 =====
-  const overdueList = list.filter(c => {
-    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
-    const daysSinceLast = c.remarkHistory && c.remarkHistory.length > 0
-      ? Math.floor((now - c.remarkHistory[0].time) / 86400000)
-      : Math.floor((now - c.createdAt) / 86400000);
-    const ft = c.nextFollowDate ? (typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate)) : null;
-    const isOverdue = ft !== null && ft < ts;
-    const isLongSilent = daysSinceLast > followupDays;
-    return isOverdue || isLongSilent;
-  }).map(c => {
-    const daysSinceLast = c.remarkHistory && c.remarkHistory.length > 0
-      ? Math.floor((now - c.remarkHistory[0].time) / 86400000)
-      : Math.floor((now - c.createdAt) / 86400000);
-    const ft = c.nextFollowDate ? (typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate)) : null;
-    const isOverdue = ft !== null && ft < ts;
-    const overdueDays = isOverdue && ft !== null ? Math.floor((ts - ft) / 86400000) : 0;
-    const severity = daysSinceLast > 30 || overdueDays > 14 ? 'high' : daysSinceLast > 14 || overdueDays > 7 ? 'medium' : 'low';
-    const severityLabel = severity === 'high' ? '严重' : severity === 'medium' ? '警告' : '关注';
-    const reason = isOverdue ? '逾期' + overdueDays + '天' : daysSinceLast + '天未联系';
-    return Object.assign({}, c, { _daysSinceLast: daysSinceLast, _isOverdue: isOverdue, _overdueDays: overdueDays, _severity: severity, _severityLabel: severityLabel, _reason: reason, _lastDate: dateOnly(c.remarkHistory && c.remarkHistory.length > 0 ? c.remarkHistory[0].time : c.createdAt) });
-  }).sort((a, b) => {
-    if (a._isOverdue !== b._isOverdue) return a._isOverdue ? -1 : 1;
-    if (a._isOverdue) return b._overdueDays - a._overdueDays;
-    return b._daysSinceLast - a._daysSinceLast;
-  }).slice(0, 8);
-
-  // ===== Panel 2: 临近联系日期提醒 =====
-  const upcomingList = list.filter(c => {
-    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
-    if (!c.nextFollowDate) return false;
-    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
-    if (ft === null) return false;
-    return ft >= ts && ft < threeDaysLater;
-  }).map(c => {
-    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
-    const isToday = ft >= ts && ft < ts + 86400000;
-    const daysUntil = Math.ceil((ft - ts) / 86400000);
-    const label = isToday ? '今天' : daysUntil + '天后';
-    const cssClass = isToday ? 'follow-today' : 'follow-upcoming';
-    return Object.assign({}, c, { _isToday: isToday, _daysUntil: daysUntil, _label: label, _cssClass: cssClass, _followText: formatNextFollowDate(c.nextFollowDate) });
-  }).sort((a, b) => {
-    const ftA = typeof a.nextFollowDate === 'number' ? a.nextFollowDate : (parseDateStr(a.nextFollowDate) || 0);
-    const ftB = typeof b.nextFollowDate === 'number' ? b.nextFollowDate : (parseDateStr(b.nextFollowDate) || 0);
-    return ftA - ftB;
-  }).slice(0, 8);
-
-  // ===== Panel 3: 下次沟通事项提醒 =====
-  const agendaList = list.filter(c => {
-    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
-    if (!c.nextFollowDate) return false;
-    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
-    if (ft === null) return false;
-    return ft >= ts;
-  }).map(c => {
-    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
-    const lastRemark = c.remarkHistory && c.remarkHistory.length > 0 ? c.remarkHistory[0].text : (c.remark || '');
-    const productInfo = [c.product, c.budget].filter(Boolean).join(' · ');
-    return { ...c, _agenda: lastRemark || productInfo || '暂无沟通要点', _followText: formatNextFollowDate(c.nextFollowDate), _productInfo: productInfo };
-  }).sort((a, b) => {
-    const ftA = typeof a.nextFollowDate === 'number' ? a.nextFollowDate : (parseDateStr(a.nextFollowDate) || 0);
-    const ftB = typeof b.nextFollowDate === 'number' ? b.nextFollowDate : (parseDateStr(b.nextFollowDate) || 0);
-    return ftA - ftB;
-  }).slice(0, 8);
+  const { overdue, upcoming, agenda, stats, totals, windows } = processCustomerAlerts(list, now, ts, followupDays);
 
   const avatarColors = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#65a30d','#db2777'];
 
-  function renderOverdueItem(c) {
+  function renderItem(c, source) {
     const initial = (c.name || '?').charAt(0);
     const levelColorVal = levelColor(c.level);
     const colorIdx = (c.name || '').length % avatarColors.length;
-    return `<div class="alert-customer-item" data-customer-id="${c.id}" data-source="overdue">
+    const isTop = c.level && isTopLevel(c.level);
+    const topCls = isTop ? ' top-level' : '';
+    return `<div class="alert-customer-item${topCls}" data-customer-id="${c.id}" data-source="${source}">
       <div class="alert-cust-avatar" style="background:${avatarColors[colorIdx]};">${escapeHTML(initial)}</div>
       <div class="alert-cust-info">
         <div class="alert-cust-name">
@@ -6400,51 +6481,77 @@ function renderAlertSection(list, todayStart) {
           ${c.level ? '<span class="alert-cust-level" style="background:' + levelColorVal + ';">' + escapeHTML(c.level) + '</span>' : ''}
         </div>
         <div class="alert-cust-meta">
-          <span>${c._reason}</span>
-          <span>最后: ${c._lastDate}</span>
+          ${c._reason ? `<span>${c._reason}</span><span>最后: ${c._lastDate}</span>` : ''}
+          ${c._followText ? `<span>联系日期: ${c._followText}</span>` : ''}
+          ${c.source && source === 'upcoming' ? '<span>' + escapeHTML(c.source) + '</span>' : ''}
         </div>
+        ${c._agenda !== undefined ? `<div class="alert-cust-agenda">💬 ${escapeHTML((c._agenda||'').length > 40 ? c._agenda.slice(0,40) + '…' : c._agenda)}</div>` : ''}
       </div>
-      <span class="alert-cust-badge risk-${c._severity}">${c._severityLabel}</span>
+      ${c._severity ? `<span class="alert-cust-badge risk-${c._severity}">${c._severityLabel}</span>` : ''}
+      ${c._label ? `<span class="alert-cust-badge ${c._cssClass || (c._isToday ? 'follow-today' : 'follow-upcoming')}">${c._label}</span>` : ''}
+      <button class="alert-cust-follow-btn" data-customer-id="${c.id}" data-source="${source}"
+        onclick="event.stopPropagation();quickFollow('${c.id}')">✏️ 跟进</button>
     </div>`;
   }
 
-  function renderUpcomingItem(c) {
-    const initial = (c.name || '?').charAt(0);
-    const levelColorVal = levelColor(c.level);
-    const colorIdx = (c.name || '').length % avatarColors.length;
-    return `<div class="alert-customer-item" data-customer-id="${c.id}" data-source="upcoming">
-      <div class="alert-cust-avatar" style="background:${avatarColors[colorIdx]};">${escapeHTML(initial)}</div>
-      <div class="alert-cust-info">
-        <div class="alert-cust-name">
-          ${escapeHTML(c.name || '未命名')}
-          ${c.level ? '<span class="alert-cust-level" style="background:' + levelColorVal + ';">' + escapeHTML(c.level) + '</span>' : ''}
-        </div>
-        <div class="alert-cust-meta">
-          <span>联系日期: ${c._followText}</span>
-          ${c.source ? '<span>' + escapeHTML(c.source) + '</span>' : ''}
-        </div>
-      </div>
-      <span class="alert-cust-badge ${c._cssClass}">${c._label}</span>
-    </div>`;
-  }
+  // 统计摘要条
+  const totalConcerns = totals.overdue + totals.upcoming + totals.agenda;
+  const summaryBar = totalConcerns > 0 ? `
+    <div class="alert-summary-bar">
+      <span class="alert-summary-item"><span class="dot" style="background:#dc2626;"></span> 逾期 ${totals.overdue}</span>
+      <span class="alert-summary-item"><span class="dot" style="background:#d97706;"></span> 临近 ${totals.upcoming}</span>
+      <span class="alert-summary-item"><span class="dot" style="background:#2563eb;"></span> 待沟通 ${totals.agenda}</span>
+      ${stats.todayFollowCount > 0 ? `<span class="alert-summary-item"><span class="dot" style="background:#059669;"></span> 🔔 今日 ${stats.todayFollowCount} 位需跟进</span>` : ''}
+      ${stats.topLevelOverdue > 0 ? `<span class="alert-summary-item">👑 高等级逾期 ${stats.topLevelOverdue} 位</span>` : ''}
+      <span style="margin-left:auto;color:var(--text-muted);">共 ${totalConcerns} 项关注</span>
+    </div>` : '';
 
-  function renderAgendaItem(c) {
-    const initial = (c.name || '?').charAt(0);
-    const levelColorVal = levelColor(c.level);
-    const colorIdx = (c.name || '').length % avatarColors.length;
-    return `<div class="alert-customer-item" data-customer-id="${c.id}" data-source="agenda">
-      <div class="alert-cust-avatar" style="background:${avatarColors[colorIdx]};">${escapeHTML(initial)}</div>
-      <div class="alert-cust-info">
-        <div class="alert-cust-name">
-          ${escapeHTML(c.name || '未命名')}
-          ${c.level ? '<span class="alert-cust-level" style="background:' + levelColorVal + ';">' + escapeHTML(c.level) + '</span>' : ''}
+  // 批量操作栏
+  const batchBar = totals.overdue > 1 ? `
+    <div class="alert-batch-bar">
+      <label class="checkbox-label">
+        <input type="checkbox" id="alert-select-all" onchange="toggleAllAlertSelection()">
+        <span>全选逾期</span>
+      </label>
+      <span id="alert-selected-count" style="font-size:12px;color:var(--text-muted);">已选 0 位</span>
+      <button class="btn btn-sm btn-primary" onclick="batchFollowSelected()" disabled id="btn-batch-follow">✏️ 批量跟进</button>
+      <button class="btn btn-sm btn-outline" onclick="exportAlertList()">📥 导出列表</button>
+    </div>` : '';
+
+  // 更新右侧预警摘要卡片
+  const summaryCardBody = document.getElementById('alert-summary-card-body');
+  if (summaryCardBody) {
+    const totalConcernsCard = totals.overdue + totals.upcoming + totals.agenda;
+    const settingHint = `<div class="asc-setting-hint" title="在账户设置-跟进提醒设置中修改">⚙️ 提醒阈值：${windows.followupDays} 天</div>`;
+    if (totalConcernsCard === 0) {
+      summaryCardBody.innerHTML = `<div class="asc-empty">✅ 暂无关注项</div>${settingHint}`;
+    } else {
+      summaryCardBody.innerHTML = `
+        <div class="asc-row">
+          <span class="asc-dot" style="background:#dc2626;"></span>
+          <span class="asc-label">逾期</span>
+          <span class="asc-count" style="color:${totals.overdue > 0 ? '#dc2626' : 'var(--text-secondary)'};">${totals.overdue}</span>
         </div>
-        <div class="alert-cust-meta">
-          <span>下次: ${c._followText}</span>
+        <div class="asc-row">
+          <span class="asc-dot" style="background:#d97706;"></span>
+          <span class="asc-label">临近 <span style="font-size:10px;color:var(--text-muted);">${windows.upcomingDays}天内</span></span>
+          <span class="asc-count" style="color:${totals.upcoming > 0 ? '#d97706' : 'var(--text-secondary)'};">${totals.upcoming}</span>
         </div>
-        <div class="alert-cust-agenda">💬 ${escapeHTML(c._agenda.length > 40 ? c._agenda.slice(0, 40) + '…' : c._agenda)}</div>
-      </div>
-    </div>`;
+        <div class="asc-row">
+          <span class="asc-dot" style="background:#2563eb;"></span>
+          <span class="asc-label">议程 <span style="font-size:10px;color:var(--text-muted);">${windows.upcomingDays}~${windows.agendaDays}天</span></span>
+          <span class="asc-count" style="color:var(--text-secondary);">${totals.agenda}</span>
+        </div>
+        <hr class="asc-divider">
+        ${stats.todayFollowCount > 0
+          ? `<div class="asc-today">🔔 今日 ${stats.todayFollowCount} 位需跟进</div>`
+          : `<div class="asc-row"><span class="asc-label" style="font-size:11px;">今日无紧急跟进</span></div>`}
+        ${stats.topLevelOverdue > 0
+          ? `<div class="asc-row" style="color:#f59e0b;font-size:12px;">👑 高等级逾期 ${stats.topLevelOverdue} 位</div>`
+          : ''}
+        ${settingHint}
+      `;
+    }
   }
 
   el.innerHTML = `
@@ -6452,53 +6559,216 @@ function renderAlertSection(list, todayStart) {
       <div class="alert-panel-header">
         <span class="alert-panel-icon">🔴</span>
         <span>超期未联系提醒</span>
-        <span class="alert-panel-count ${overdueList.length > 0 ? 'danger' : 'info'}">${overdueList.length} 位</span>
+        <span class="alert-panel-header-sub" title="超过${windows.followupDays}天未跟进或有逾期计划">超${windows.followupDays}天未联系</span>
+        <span class="alert-panel-count ${totals.overdue > 0 ? 'danger' : 'info'}">${totals.overdue} 位</span>
       </div>
       <div class="alert-panel-body">
-        ${overdueList.length === 0
-          ? '<div class="alert-panel-empty">✅ 所有客户跟进正常</div>'
-          : overdueList.map(renderOverdueItem).join('')}
+        ${overdue.length === 0
+          ? `<div class="alert-panel-empty">✅ 所有客户均在 ${windows.followupDays} 天内有跟进</div>`
+          : overdue.map(c => renderItem(c, 'overdue')).join('')}
+        ${totals.overdue > 8 ? `<div style="padding:6px 10px;font-size:11px;color:var(--text-muted);text-align:center;border-top:1px solid var(--border-color);">⚠️ 共 ${totals.overdue} 位超期，仅展示最严重的 8 位</div>` : ''}
       </div>
     </div>
     <div class="alert-panel">
       <div class="alert-panel-header">
         <span class="alert-panel-icon">🟡</span>
         <span>临近联系日期提醒</span>
-        <span class="alert-panel-count ${upcomingList.filter(c => c._isToday).length > 0 ? 'warn' : 'info'}">${upcomingList.length} 位</span>
+        <span class="alert-panel-header-sub" title="下次跟进日期在今天至${windows.upcomingDays}天内">今日~${windows.upcomingDays}天</span>
+        <span class="alert-panel-count ${stats.todayFollowCount > 0 ? 'warn' : 'info'}">${totals.upcoming} 位</span>
       </div>
       <div class="alert-panel-body">
-        ${upcomingList.length === 0
-          ? '<div class="alert-panel-empty">📅 近3天无待联系客户</div>'
-          : upcomingList.map(renderUpcomingItem).join('')}
+        ${upcoming.length === 0
+          ? `<div class="alert-panel-empty">📅 未来 ${windows.upcomingDays} 天内无待联系客户</div>`
+          : upcoming.map(c => renderItem(c, 'upcoming')).join('')}
       </div>
     </div>
     <div class="alert-panel">
       <div class="alert-panel-header">
         <span class="alert-panel-icon">📋</span>
         <span>下次沟通事项提醒</span>
-        <span class="alert-panel-count ${agendaList.length > 0 ? 'warn' : 'info'}">${agendaList.length} 位</span>
+        <span class="alert-panel-header-sub" title="下次跟进日期在${windows.upcomingDays}~${windows.agendaDays}天之间">${windows.upcomingDays}~${windows.agendaDays}天</span>
+        <span class="alert-panel-count ${totals.agenda > 0 ? 'warn' : 'info'}">${totals.agenda} 位</span>
       </div>
       <div class="alert-panel-body">
-        ${agendaList.length === 0
-          ? '<div class="alert-panel-empty">📋 暂无待沟通事项</div>'
-          : agendaList.map(renderAgendaItem).join('')}
+        ${agenda.length === 0
+          ? `<div class="alert-panel-empty">📋 ${windows.upcomingDays}~${windows.agendaDays} 天内暂无待沟通事项</div>`
+          : agenda.map(c => renderItem(c, 'agenda')).join('')}
       </div>
     </div>
+    ${batchBar}
   `;
 
+  // 客户行点击→弹出浮层
   el.querySelectorAll('.alert-customer-item').forEach(item => {
-    item.addEventListener('click', () => {
+    const followBtn = item.querySelector('.alert-cust-follow-btn');
+    item.addEventListener('click', (e) => {
+      if (followBtn && followBtn.contains(e.target)) return;
       const customerId = item.dataset.customerId;
       const customer = Store.data.customers.find(c => c.id === customerId);
-      if (customer) {
-        showCustomerFloat(customer, item.dataset.source);
-      }
+      if (customer) showCustomerFloat(customer, item.dataset.source);
     });
   });
   } catch(e) {
     el.innerHTML = '<div class="alert-panel" style="grid-column:1/-1;"><div class="alert-panel-header"><span class="alert-panel-icon">⚠️</span><span>预警模块加载异常</span></div><div class="alert-panel-body"><div class="alert-panel-empty">数据加载中，请刷新页面重试</div></div></div>';
     console.error('renderAlertSection error:', e);
   }
+}
+
+// ── 快捷跟进 ──
+function quickFollow(customerId) {
+  const customer = Store.data.customers.find(c => c.id === customerId);
+  if (!customer) return;
+  const nowDate = new Date();
+  const dateStr = nowDate.toISOString().slice(0, 10);
+  const modal = openModal({
+    title: '✏️ 跟进记录 - ' + (customer.name || '未命名'),
+    size: 'sm',
+    bodyHTML: `
+      <label class="label">跟进内容 *</label>
+      <textarea class="textarea" id="_qf_note" rows="4" maxlength="500" placeholder="输入跟进内容..." style="resize:vertical;"></textarea>
+      <label class="label" style="margin-top:10px;">下次跟进日期</label>
+      <input type="date" class="input" id="_qf_next" value="${dateStr}">
+    `,
+    footer: (f) => {
+      const cancel = document.createElement('button');
+      cancel.className = 'btn btn-sm btn-outline'; cancel.textContent = '取消';
+      const save = document.createElement('button');
+      save.className = 'btn btn-sm btn-primary'; save.textContent = '保存';
+      f.appendChild(cancel); f.appendChild(save);
+      cancel.onclick = closeModal;
+      save.onclick = async () => {
+        const note = document.getElementById('_qf_note').value.trim();
+        if (!note) { showToast('请输入跟进内容', 'error'); return; }
+        const nextDate = document.getElementById('_qf_next').value;
+        customer.status = '跟进中';
+        customer.remarkHistory = customer.remarkHistory || [];
+        customer.remarkHistory.unshift({ time: Date.now(), text: note, images: [] });
+        if (nextDate) customer.nextFollowDate = nextDate;
+        customer.updatedAt = Date.now();
+        await Store.saveWithLog('跟进客户', `客户：${customer.name}，内容：${note}`);
+        closeModal();
+        showToast('跟进记录已保存 ✅', 'success');
+        refreshUI();
+      };
+    }
+  });
+}
+
+// ── 批量操作：全选切换 ──
+window.__alertSelectedIds = new Set();
+function toggleAllAlertSelection() {
+  const checked = document.getElementById('alert-select-all').checked;
+  const ids = new Set();
+  if (checked) {
+    document.querySelectorAll('.alert-customer-item[data-source="overdue"]').forEach(item => {
+      ids.add(item.dataset.customerId);
+    });
+  }
+  window.__alertSelectedIds = ids;
+  updateBatchUI();
+}
+function updateBatchUI() {
+  const count = window.__alertSelectedIds.size;
+  const el = document.getElementById('alert-selected-count');
+  const btn = document.getElementById('btn-batch-follow');
+  if (el) el.textContent = `已选 ${count} 位`;
+  if (btn) btn.disabled = count === 0;
+}
+function batchFollowSelected() {
+  const ids = [...window.__alertSelectedIds];
+  if (ids.length === 0) return;
+  const nowDate = new Date();
+  const dateStr = nowDate.toISOString().slice(0, 10);
+  const modal = openModal({
+    title: `✏️ 批量跟进（${ids.length} 位客户）`,
+    size: 'sm',
+    bodyHTML: `
+      <label class="label">跟进内容 *</label>
+      <textarea class="textarea" id="_bf_note" rows="4" maxlength="500" placeholder="统一跟进内容..." style="resize:vertical;"></textarea>
+      <label class="label" style="margin-top:10px;">下次跟进日期</label>
+      <input type="date" class="input" id="_bf_next" value="${dateStr}">
+      <div style="margin-top:10px;font-size:12px;color:var(--text-muted);">将同时更新 ${ids.length} 位客户</div>
+    `,
+    footer: (f) => {
+      const cancel = document.createElement('button');
+      cancel.className = 'btn btn-sm btn-outline'; cancel.textContent = '取消';
+      const save = document.createElement('button');
+      save.className = 'btn btn-sm btn-primary'; save.textContent = '确认跟进';
+      f.appendChild(cancel); f.appendChild(save);
+      cancel.onclick = closeModal;
+      save.onclick = async () => {
+        const note = document.getElementById('_bf_note').value.trim();
+        if (!note) { showToast('请输入跟进内容', 'error'); return; }
+        const nextDate = document.getElementById('_bf_next').value;
+        for (const id of ids) {
+          const c = Store.data.customers.find(x => x.id === id);
+          if (!c) continue;
+          c.status = '跟进中';
+          c.remarkHistory = c.remarkHistory || [];
+          c.remarkHistory.unshift({ time: Date.now(), text: note, images: [] });
+          if (nextDate) c.nextFollowDate = nextDate;
+          c.updatedAt = Date.now();
+        }
+        await Store.saveWithLog('批量跟进', `跟进 ${ids.length} 位客户`);
+        window.__alertSelectedIds = new Set();
+        closeModal();
+        showToast(`已跟进 ${ids.length} 位客户 ✅`, 'success');
+        refreshUI();
+      };
+    }
+  });
+}
+
+// ── 导出逾期列表 ──
+function exportAlertList() {
+  const customers = (Store.data.customers || []).filter(c => {
+    if (c.deleted || c.status === '已成交' || c.status === '流失') return false;
+    const now = Date.now();
+    const ts = new Date(); ts.setHours(0,0,0,0);
+    const followupDays = (Store.settings && Store.settings.followupDays) || 3;
+    const lastRemarkTime = c.remarkHistory?.[0]?.time ?? c.createdAt;
+    const daysSinceLast = lastRemarkTime ? Math.floor((now - lastRemarkTime) / 86400000) : 0;
+    const isNewCustomer = c.createdAt && (now - c.createdAt) < followupDays * 86400000;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate || '');
+    const isOverdue = ft !== null && ft < ts.getTime();
+    let silentDays = daysSinceLast;
+    if (!c.remarkHistory?.length && isNewCustomer) silentDays = 0;
+    return isOverdue || silentDays > followupDays;
+  });
+
+  const header = '客户名,等级,电话,来源,逾期/未联系天数,最后跟进日期,跟进状态';
+  const rows = customers.map(c => {
+    const now = Date.now();
+    const ts = new Date(); ts.setHours(0,0,0,0);
+    const followupDays = (Store.settings && Store.settings.followupDays) || 3;
+    const lastRemarkTime = c.remarkHistory?.[0]?.time ?? c.createdAt;
+    const daysSinceLast = lastRemarkTime ? Math.floor((now - lastRemarkTime) / 86400000) : 0;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate || '');
+    const isOverdue = ft !== null && ft < ts.getTime();
+    const overdueDays = isOverdue ? Math.floor((ts.getTime() - ft) / 86400000) : 0;
+    const isNewCustomer = c.createdAt && (now - c.createdAt) < followupDays * 86400000;
+    let silentDays = daysSinceLast;
+    if (!c.remarkHistory?.length && isNewCustomer) silentDays = 0;
+    const reason = isOverdue ? `逾期${overdueDays}天` : `${silentDays}天未联系`;
+    const lastDate = dateOnly(lastRemarkTime || c.createdAt || now);
+    return [
+      c.name || '未命名',
+      c.level || '',
+      c.phone || '',
+      c.source || '',
+      reason,
+      lastDate,
+      c.status || ''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  }).join('\n');
+
+  const blob = new Blob(['\uFEFF' + header + '\n' + rows], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `逾期客户列表_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('逾期列表已导出 📥', 'success');
 }
 
 function showCustomerFloat(customer, source) {
@@ -6843,16 +7113,7 @@ function renderBIAlerts(list, total, todayStart) {
     alerts.push({ type: 'danger', icon: '📉', title: '业绩缺口', desc: `本月成交 ${monthDeal} 单，低于本月新增客户预期转化 ${expectedDeal} 单，缺口 ${expectedDeal - monthDeal} 单` });
   }
 
-  // 跟进逾期预警
-  const overdueList = list.filter(c => c.status === '跟进中' && c.nextFollowDate).filter(c => {
-    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
-    return ft !== null && ft < now;
-  });
-  if (overdueList.length > 0) {
-    alerts.push({ type: 'danger', icon: '⏰', title: '跟进逾期', desc: `${overdueList.length} 位客户已过跟进日期，最早逾期 ${overdueList.slice(0,3).map(c => c.name).join('、')} 等` });
-  }
-
-  // 高价值客户异动（A级客户最近7天未跟进）
+  // 高价值客户异动（top-2 等级客户最近7天未跟进）
   const weekAgo = now - 7 * 86400000;
   const topLevels = getLevels().slice(0, 2).map(l => l.name);
   const topLevelName = topLevels[0] || (getLevels()[0] || {}).name || '';
@@ -6868,16 +7129,6 @@ function renderBIAlerts(list, total, todayStart) {
     if (parseFloat(lostRate) > 10) {
       alerts.push({ type: 'warn', icon: '🚩', title: '流失率偏高', desc: `客户流失率 ${lostRate}%，超过10%警戒线，共 ${lostCount} 位客户流失` });
     }
-  }
-
-  // 今日待跟进
-  const todayFollow = list.filter(c => {
-    if (!c.nextFollowDate) return false;
-    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
-    return ft !== null && ft >= todayStart.getTime() && ft < todayStart.getTime() + 86400000;
-  }).length;
-  if (todayFollow > 0) {
-    alerts.unshift({ type: 'info', icon: '📌', title: '今日待跟进', desc: `今天有 ${todayFollow} 位客户需要跟进` });
   }
 
   if (alerts.length === 0) {
@@ -7232,6 +7483,12 @@ function applyBISortOrder() {
     if (!order || !Array.isArray(order) || order.length === 0) return;
     const children = Array.from(grid.children);
     const sorted = order.map(id => children.find(c => c.dataset.sortId === id)).filter(Boolean);
+    // 如果大多数存储的排序ID匹配不上，说明排序已过期（如KPI数量变化），清空该组排序
+    if (sorted.length <= order.length / 2) {
+      delete orders[groupId];
+      try { localStorage.setItem(BI_SORT_KEY, JSON.stringify(orders)); } catch(e) {}
+      return;
+    }
     // 追加未在排序列表中的新元素
     children.forEach(c => { if (!sorted.includes(c)) sorted.push(c); });
     sorted.forEach(c => grid.appendChild(c));
@@ -9345,7 +9602,7 @@ async function enterApp(password) {
   if (hasSQ) {
     localStorage.setItem('crm_has_sq', '1');
     // 同步密保问题到独立存储（确保登录页忘记密码可读）
-    localStorage.setItem(SQ_STORAGE_KEY, JSON.stringify(Store.data.securityQuestions));
+    securityQuestionsToStorage(Store.data.securityQuestions);
     // 确保密码恢复保险箱存在
     if (!localStorage.getItem(SQ_PW_VAULT_KEY) && Store.password) {
       const sqAnswers = Store.data.securityQuestions[0].a + '||' + Store.data.securityQuestions[1].a;
@@ -9673,8 +9930,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ── 锁屏浮层逻辑 ──────────────────────────────────────────────
   let lockFailCount = 0;
+  let lockCooldownTimer = null;
 
   function showLockOverlay() {
+    // 冷却中禁止打开锁屏
+    if (lockCooldownTimer) {
+      showToast('密码错误次数过多，请60秒后再试', 'error');
+      return;
+    }
     lockFailCount = 0;
     document.getElementById('lock-password').value = '';
     document.getElementById('lock-error').style.display = 'none';
@@ -10081,7 +10344,9 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   document.getElementById('btn-export-masked').onclick = () => {
     const rows = buildExcelData(Store.data.customers || [], false);
-    downloadExcel('客户资料_脱敏.xlsx', '客户资料', rows);
+    const poolRows = buildExcelData(Store.data.poolCustomers || [], false);
+    const extraSheets = poolRows.length > 1 ? [{ name: '客户池', data: poolRows }] : undefined;
+    downloadExcel('客户资料_脱敏.xlsx', '客户列表', rows, extraSheets);
     Store.addLog('导出数据', '成功', '脱敏 Excel');
     Store.save();
     showToast('已导出脱敏 Excel', 'success');
@@ -10089,7 +10354,9 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-export-plain').onclick = () => {
     promptPassword('导出明文二次验证', '请输入解锁密码以导出包含完整敏感信息的 Excel', async () => {
       const rows = buildExcelData(Store.data.customers || [], true);
-      downloadExcel('客户资料_明文.xlsx', '客户资料', rows);
+      const poolRows = buildExcelData(Store.data.poolCustomers || [], true);
+      const extraSheets = poolRows.length > 1 ? [{ name: '客户池', data: poolRows }] : undefined;
+      downloadExcel('客户资料_明文.xlsx', '客户列表', rows, extraSheets);
       Store.addLog('导出明文数据', '成功', '导出完整明文 Excel');
       await Store.save();
       showToast('注意：已导出明文数据，请妥善保管', 'warning');
@@ -10159,31 +10426,16 @@ document.addEventListener('DOMContentLoaded', function () {
           sessionStorage.setItem('crm_session_pw', _obfuscatePw(np));
           Store.addLog('修改密码', '成功', '用户修改了解锁密码');
           // 更新密码恢复保险箱
-          const sqRaw = localStorage.getItem(SQ_STORAGE_KEY);
-          if (sqRaw) {
-            try {
-              const sqData = JSON.parse(sqRaw);
-              if (Array.isArray(sqData) && sqData.length === 2) {
-                const sqAnswers = sqData[0].a + '||' + sqData[1].a;
-                encryptData(np, sqAnswers).then(vault => {
-                  localStorage.setItem(SQ_PW_VAULT_KEY, vault);
-                }).catch(() => {});
-              }
-            } catch (e) {}
+          const sqMemory = Store.data.securityQuestions;
+          if (Array.isArray(sqMemory) && sqMemory.length === 2) {
+            const sqAnswers = sqMemory[0].a + '||' + sqMemory[1].a;
+            encryptData(np, sqAnswers).then(vault => {
+              localStorage.setItem(SQ_PW_VAULT_KEY, vault);
+            }).catch(() => {});
           }
           await Store.save();
           closeModal();
-          // 如果有已授权的同步文件夹，强制重新加密同步
-          if (Store.folderHandle) {
-            try {
-              await Store.syncToFile();
-              showToast('密码已更新，同步文件已用新密码重新加密', 'success');
-            } catch (e) {
-              showToast('密码已更新，但同步文件重加密失败，请手动重新同步', 'warning');
-            }
-          } else {
-            showToast('密码已更新，请使用新密码解锁', 'success');
-          }
+          showToast('密码已更新，请使用新密码解锁', 'success');
         };
       }
     });
@@ -10318,6 +10570,164 @@ function refreshUI() {
   else if (active.id === 'page-help') renderHelpPage();
   updateNavCounts();
 }
+
+// ── 注入预警面板增强 CSS ──────────────────────────────────
+(function () {
+  const s = document.createElement('style');
+  s.textContent = `
+    /* ═══ 顶部行：统计卡片 + 预警摘要卡 ═══ */
+    .dashboard-top-row {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+    .dashboard-top-row .stats-grid {
+      flex: 1 1 0;
+      min-width: 0;
+      margin-bottom: 0 !important;
+    }
+    .alert-summary-card {
+      flex: 0 0 190px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .alert-summary-card:hover {
+      border-color: var(--color-primary-200);
+      box-shadow: var(--shadow-md);
+    }
+    .asc-title {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .asc-body {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      flex: 1;
+    }
+    .asc-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+    .asc-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .asc-label { color: var(--text-secondary); font-size: 12px; }
+    .asc-count { font-weight: 700; font-size: 15px; margin-left: auto; }
+    .asc-divider {
+      border: none; border-top: 1px dashed var(--border-color); margin: 2px 0;
+    }
+    .asc-today {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #059669; font-weight: 500;
+      padding: 4px 8px; border-radius: 6px;
+      background: rgba(5, 150, 105, 0.07);
+    }
+    .asc-loading { font-size: 12px; color: var(--text-muted); }
+    .asc-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 8px 0; }
+    .asc-setting-hint {
+      font-size: 11px; color: var(--text-muted);
+      margin-top: auto; padding-top: 6px;
+      border-top: 1px dashed var(--border-color);
+      cursor: default;
+    }
+    @media (max-width: 900px) {
+      .dashboard-top-row { flex-direction: column; }
+      .alert-summary-card { flex: none; }
+    }
+
+    /* ═══ 统计摘要条（保留旧样式，已不直接使用但兼容老代码引用） ═══ */
+    .alert-summary-bar {
+      display: none; /* 已迁移到 alert-summary-card，隐藏原有条形摘要 */
+    }
+    .alert-summary-item {
+      display: flex; align-items: center; gap: 4px;
+    }
+    .alert-summary-item .dot {
+      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+    }
+
+    /* ═══ 跟进按钮（hover 显示） ═══ */
+    .alert-cust-follow-btn {
+      display: none; padding: 2px 8px; font-size: 11px;
+      border: 1px solid var(--color-primary-300); border-radius: var(--radius-sm);
+      background: var(--color-primary-50); color: var(--color-primary-700);
+      cursor: pointer; white-space: nowrap;
+      transition: all 0.15s ease; flex-shrink: 0;
+    }
+    .alert-customer-item:hover .alert-cust-follow-btn {
+      display: inline-flex; align-items: center; gap: 2px;
+    }
+    .alert-cust-follow-btn:hover {
+      background: var(--color-primary-100); border-color: var(--color-primary-500);
+    }
+
+    /* ═══ 批量操作栏 ═══ */
+    .alert-batch-bar {
+      grid-column: 1 / -1; display: flex; align-items: center; gap: 10px;
+      padding: 8px 14px; background: var(--bg-tertiary);
+      border-radius: var(--radius-sm); margin-top: var(--space-2);
+    }
+    .checkbox-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; cursor: pointer; color: var(--text-secondary);
+    }
+
+    /* ═══ 面板标题副标签（显示生效天数） ═══ */
+    .alert-panel-header-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 2px;
+      white-space: nowrap;
+      cursor: default;
+    }
+
+    /* ═══ 高等级客户金色左边框 ═══ */
+    .alert-customer-item.top-level {
+      border-left: 3px solid #f59e0b;
+      background: linear-gradient(90deg, rgba(245,158,11,0.04), transparent);
+    }
+
+    /* ═══ hover 右箭头 ═══ */
+    .alert-customer-item::after {
+      content: '›'; position: absolute; right: 10px;
+      font-size: 18px; color: var(--text-muted);
+      opacity: 0; transition: opacity 0.2s, right 0.2s;
+    }
+    .alert-customer-item:hover::after {
+      opacity: 1; right: 8px;
+    }
+
+    /* ═══ 移动端响应式 ═══ */
+    @media (max-width: 768px) {
+      .alert-section { grid-template-columns: 1fr; }
+      .alert-customer-item .alert-cust-agenda {
+        white-space: normal; -webkit-line-clamp: 2; display: -webkit-box;
+        -webkit-box-orient: vertical;
+      }
+    }
+  `;
+  document.head.appendChild(s);
+})();
 
 /* ================================================================
    模块：猫咪小宠物浮层 - 实时提醒未跟进客户
@@ -11158,8 +11568,10 @@ function refreshUI() {
       }
       const customers = (Store.data.customers || []).filter(c => c.deleted !== true);
       const now = Date.now();
-      const threeDays = 3 * 86400000;
-      const sevenDays = 7 * 86400000;
+      // 使用用户配置的 followupDays，默认 3 天；alert 阈值=配置值，urgent 阈值=2倍(至少 7 天)
+      const followupDays = (Store.settings && Store.settings.followupDays) || 3;
+      const alertThreshold = Math.max(followupDays, 1) * 86400000;
+      const urgentThreshold = Math.max(followupDays * 2, 7) * 86400000;
 
       this.urgentList = [];
       this.alertList = [];
@@ -11172,10 +11584,10 @@ function refreshUI() {
         const elapsed = now - (lastTime || c.createdAt || now);
         const days = Math.floor(elapsed / 86400000);
 
-        if (elapsed >= sevenDays) {
+        if (elapsed >= urgentThreshold) {
           console.log(`[🐱猫咪] 逾期: ${c.name} | 状态=${c.status} | ${days}天未跟进 | lastTime=${lastTime ? new Date(lastTime).toISOString().slice(0,10) : '无'}`);
           this.urgentList.push(c);
-        } else if (elapsed >= threeDays) {
+        } else if (elapsed >= alertThreshold) {
           console.log(`[🐱猫咪] 待跟进: ${c.name} | 状态=${c.status} | ${days}天未跟进`);
           this.alertList.push(c);
         }
@@ -11247,7 +11659,11 @@ function refreshUI() {
     hideBubble() {
       const bubble = document.getElementById('crm-pet-bubble');
       if (bubble) bubble.classList.remove('show');
-      if (this.state !== 'sleep') this.setState('idle');
+      // 关闭气泡后重新扫描，让状态点和徽章保持同步
+      if (this.state !== 'sleep') {
+        const total = this.scan();
+        this.setState(total > 0 ? 'alert' : 'idle');
+      }
     },
 
     // 主动检查并提醒
@@ -11488,7 +11904,7 @@ function refreshUI() {
       const hours = elapsed / 3600000;
       // 每 3 小时减 15 饱腹度
       const decay = Math.floor(hours / 3) * 15;
-      const newFullness = Math.max(0, 80 - decay);
+      const newFullness = Math.max(0, this.petStats.fullness - decay);
 
       if (newFullness !== this.petStats.fullness) {
         this.petStats.fullness = newFullness;
@@ -11631,6 +12047,12 @@ function refreshUI() {
     const clickY = e.clientY - rect.top;
     const headThreshold = rect.height * 0.4;
     if (clickY <= headThreshold && !PET.isEating) {
+      // 气泡可见时先关闭气泡，不触发抚摸
+      const bubble = document.getElementById('crm-pet-bubble');
+      if (bubble && bubble.classList.contains('show')) {
+        PET.hideBubble();
+        return;
+      }
       PET.pat();
       return;
     }
@@ -11782,7 +12204,12 @@ function refreshUI() {
       PET.scan();
       const total = PET.urgentList.length + PET.alertList.length;
       console.log('[🐱猫咪] 30分钟定时扫描 | total=' + total);
-      if (total > 0) PET.check();
+      if (total > 0) {
+        PET.check();
+      } else if (PET.state === 'alert' || PET.state === 'happy') {
+        // 无待跟进且猫咪停留在 alert/happy → 静默恢复 idle，不弹气泡
+        PET.setState('idle');
+      }
     }, 30 * 60 * 1000);
 
     // 无操作 5 分钟后睡眠
@@ -11903,7 +12330,7 @@ function refreshUI() {
     // 同步明文标志位
     if (hasSQ) {
       localStorage.setItem('crm_has_sq', '1');
-      localStorage.setItem(SQ_STORAGE_KEY, JSON.stringify(Store.data.securityQuestions));
+      securityQuestionsToStorage(Store.data.securityQuestions);
     } else {
       localStorage.removeItem('crm_has_sq');
     }
@@ -11938,7 +12365,7 @@ function refreshUI() {
           { q: q2, a: a2.toLowerCase() }
         ];
         // 同步到独立存储（登录页忘记密码时无需主密码即可读取）
-        localStorage.setItem(SQ_STORAGE_KEY, JSON.stringify(Store.data.securityQuestions));
+        securityQuestionsToStorage(Store.data.securityQuestions);
         localStorage.setItem('crm_has_sq', '1');
         // 创建密码恢复保险箱：用密保答案派生密钥加密当前密码
         if (Store.password) {
@@ -12064,12 +12491,20 @@ function refreshUI() {
         btn.id = 'btn-sq-verify';
         btn.textContent = '验证并重置密码';
         f.appendChild(btn);
-        btn.onclick = () => {
+        btn.onclick = async () => {
           const ans1 = document.getElementById('sq-answer-1').value.trim().toLowerCase();
           const ans2 = document.getElementById('sq-answer-2').value.trim().toLowerCase();
-          if (ans1 === sq[0].a && ans2 === sq[1].a) {
+          let verified = false;
+          if (sq[0].a_hash !== undefined) {
+            const hash1 = await sha256(ans1);
+            const hash2 = await sha256(ans2);
+            verified = (hash1 === sq[0].a_hash && hash2 === sq[1].a_hash);
+          } else if (sq[0].a !== undefined) {
+            verified = (ans1 === sq[0].a && ans2 === sq[1].a);
+          }
+          if (verified) {
             closeModal();
-            setTimeout(() => openSetNewPasswordDialog(), 300);
+            setTimeout(() => openSetNewPasswordDialog(ans1 + '||' + ans2), 300);
           } else {
             document.getElementById('sq-verify-error').style.display = 'block';
           }
@@ -12079,7 +12514,7 @@ function refreshUI() {
   }
 
   // ── 通用：设置新密码弹窗 ──────────────────────────────────
-  function openSetNewPasswordDialog() {
+  function openSetNewPasswordDialog(verifiedAnswers) {
     openModal({
       title: '设置新密码',
       size: 'sm',
@@ -12138,10 +12573,16 @@ function refreshUI() {
             const sqRaw = localStorage.getItem(SQ_STORAGE_KEY);
             if (vaultRaw && sqRaw) {
               try {
-                const sqData = JSON.parse(sqRaw);
-                if (Array.isArray(sqData) && sqData.length === 2) {
-                  // 用密保答案派生密钥，解密保险箱获取旧密码
-                  const sqAnswers = sqData[0].a + '||' + sqData[1].a;
+                const sqDataInner = JSON.parse(sqRaw);
+                if (Array.isArray(sqDataInner) && sqDataInner.length === 2) {
+                  let sqAnswers;
+                  if (sqDataInner[0].a !== undefined) {
+                    sqAnswers = sqDataInner[0].a + '||' + sqDataInner[1].a;
+                  } else if (verifiedAnswers) {
+                    sqAnswers = verifiedAnswers;
+                  } else {
+                    sqAnswers = '';
+                  }
                   const oldPassword = await decryptData(vaultRaw, sqAnswers);
                   if (oldPassword) {
                     // 用旧密码解密主数据
