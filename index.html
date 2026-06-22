@@ -6670,7 +6670,7 @@ function openStockCustomerForm(module, dataKey, customer) {
         { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
         { key: 'level', label: '客户等级', type: 'select', options: ['', ...getLevelOptions()], val: moduleLevel },
         { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'], val: moduleStatus },
-        { key: 'product', label: '意向产品', type: 'text', max: 100 },
+        { key: 'product', label: '意向产品', type: 'select-product' },
         { key: 'budget', label: '预算范围', type: 'text', max: 50 },
         { key: 'amount', label: '预计金额(元)', type: 'number', max: 10, val: moduleAmount },
         { key: 'nextFollowDate', label: '下次跟进日期', type: 'date', val: moduleNextFollowDate },
@@ -6741,6 +6741,17 @@ function openStockCustomerForm(module, dataKey, customer) {
             ${f.options.map(o => {
               const display = o || '请选择';
               return `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(display)}</option>`;
+            }).join('')}
+          </select></div>`;
+      } else if (f.type === 'select-product') {
+        const productTags = Store.data.productTags || [];
+        html += `<div class="form-group">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <select class="select" data-key="${f.key}">
+            <option value="">请选择</option>
+            ${productTags.map(o => {
+              const tagName = typeof o === 'string' ? o : (o.name || o.label || String(o));
+              return `<option value="${escapeHTML(tagName)}" ${tagName === val ? 'selected' : ''}>${escapeHTML(tagName)}</option>`;
             }).join('')}
           </select></div>`;
       } else if (f.type === 'tags') {
@@ -6950,7 +6961,16 @@ function openCustomerDetail(c, fromPopup) {
         document.getElementById('editDetail').onclick = () => {
           closeModal();
           if (fromPopup) _statPopupState = null;
-          setTimeout(() => openCustomerForm(c), 10);
+          // 判断客户是否属于存量客户管理模块，若是则使用对应的编辑表单
+          const brandMatch = (Store.data.brandProducts || []).find(x => x.id === c.id);
+          const serviceMatch = (Store.data.serviceFees || []).find(x => x.id === c.id);
+          const qifuMatch = (Store.data.qiFuProducts || []).find(x => x.id === c.id);
+          const stockMatch = c.id && (Store.data.stockCustomers || []).find(x => x.id === c.id);
+          if (brandMatch) setTimeout(() => openStockCustomerForm('brand', 'brandProducts', c), 10);
+          else if (qifuMatch) setTimeout(() => openStockCustomerForm('qifu', 'qiFuProducts', c), 10);
+          else if (serviceMatch) setTimeout(() => openStockCustomerForm('service', 'serviceFees', c), 10);
+          else if (stockMatch) setTimeout(() => openStockCustomerForm('stock-list', 'stockCustomers', c), 10);
+          else setTimeout(() => openCustomerForm(c), 10);
         };
         document.getElementById('exportOne').onclick = () => {
           const rows = buildExcelData([c], true);
