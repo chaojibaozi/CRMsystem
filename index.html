@@ -2506,7 +2506,7 @@ html.scrolling {
         <li class="nav-item active" data-page="dashboard"><span class="nav-icon">■</span>仪表盘</li>
         <li class="nav-item" data-page="bi"><span class="nav-icon">📊</span>BI看板</li>
       </ul>
-      <span class="nav-group-label">客户管理</span>
+      <span class="nav-group-label">销售开发管理</span>
       <ul class="nav-list">
         <li class="nav-item" data-page="pool"><span class="nav-icon">📋</span>客户池<span class="nav-count" id="nav-count-pool">0</span></li>
         <li class="nav-item" data-page="list"><span class="nav-icon">≡</span>客户列表<span class="nav-count" id="nav-count-all">0</span></li>
@@ -2517,6 +2517,13 @@ html.scrolling {
         <li class="nav-item" data-page="douyin"><span class="nav-icon">🎵</span>抖音客户<span class="nav-count" id="nav-count-douyin">0</span></li>
         <li class="nav-item" data-page="xianyu"><span class="nav-icon">🐟</span>闲鱼客户<span class="nav-count" id="nav-count-xianyu">0</span></li>
         <li class="nav-item" data-page="trash"><span class="nav-icon">🗑️</span>作废客户<span class="nav-count" id="nav-count-trash">0</span></li>
+      </ul>
+      <span class="nav-group-label">存量客户管理</span>
+      <ul class="nav-list">
+        <li class="nav-item" data-page="stock-list"><span class="nav-icon">📋</span>客户列表<span class="nav-count" id="nav-count-stock-list">0</span></li>
+        <li class="nav-item" data-page="brand"><span class="nav-icon">🏷️</span>品牌产品管理<span class="nav-count" id="nav-count-brand">0</span></li>
+        <li class="nav-item" data-page="service"><span class="nav-icon">💰</span>服务费管理<span class="nav-count" id="nav-count-service">0</span></li>
+        <li class="nav-item" data-page="qifu"><span class="nav-icon">🤝</span>企服产品管理<span class="nav-count" id="nav-count-qifu">0</span></li>
       </ul>
       <span class="nav-group-label">数据管理</span>
       <ul class="nav-list">
@@ -2921,6 +2928,50 @@ html.scrolling {
             <div style="font-size:12px;color:var(--text-muted);">已作废的客户列表</div>
           </div>
           <div id="customer-form-container-trash"></div>
+        </div>
+      </section>
+
+      <!-- 客户列表（存量客户管理） -->
+      <section class="page" id="page-stock-list">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h2 style="font-size:18px;" id="form-title-stock-list">客户列表</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-stock-list">存量客户管理</div>
+          </div>
+          <div id="customer-form-container-stock-list"></div>
+        </div>
+      </section>
+
+      <!-- 品牌产品管理 -->
+      <section class="page" id="page-brand">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h2 style="font-size:18px;" id="form-title-brand">品牌产品管理</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-brand">存量客户管理</div>
+          </div>
+          <div id="customer-form-container-brand"></div>
+        </div>
+      </section>
+
+      <!-- 服务费管理 -->
+      <section class="page" id="page-service">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h2 style="font-size:18px;" id="form-title-service">服务费管理</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-service">存量客户管理</div>
+          </div>
+          <div id="customer-form-container-service"></div>
+        </div>
+      </section>
+
+      <!-- 企服产品管理 -->
+      <section class="page" id="page-qifu">
+        <div class="card" style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h2 style="font-size:18px;" id="form-title-qifu">企服产品管理</h2>
+            <div style="font-size:12px;color:var(--text-muted);" id="form-draft-status-qifu">存量客户管理</div>
+          </div>
+          <div id="customer-form-container-qifu"></div>
         </div>
       </section>
 
@@ -3646,7 +3697,7 @@ const Store = {
   // 运行态内存：解锁成功后保存
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
-  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] }, // 明文内存
+  data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] }, // 明文内存
   settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
@@ -3662,15 +3713,19 @@ const Store = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] };
+        this.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] };
         return;
       }
       const plain = await decryptData(raw, this.password);
       const parsed = JSON.parse(plain);
-      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] }, parsed);
+      this.data = Object.assign({ customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] }, parsed);
       // 确保关键字段存在
       if (!Array.isArray(this.data.customers)) this.data.customers = [];
       if (!Array.isArray(this.data.poolCustomers)) this.data.poolCustomers = [];
+      if (!Array.isArray(this.data.stockCustomers)) this.data.stockCustomers = [];
+      if (!Array.isArray(this.data.brandProducts)) this.data.brandProducts = [];
+      if (!Array.isArray(this.data.serviceFees)) this.data.serviceFees = [];
+      if (!Array.isArray(this.data.qiFuProducts)) this.data.qiFuProducts = [];
       if (!Array.isArray(this.data.tags)) this.data.tags = [];
       if (!Array.isArray(this.data.logs)) this.data.logs = [];
       if (!Array.isArray(this.data.versions)) this.data.versions = [];
@@ -4636,7 +4691,7 @@ function addChannelRemark(c, channel, text, images) {
 }
 
 const channelFilters = {};
-['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu', 'trash'].forEach(key => {
+['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu', 'trash', 'stock-list', 'brand', 'service', 'qifu'].forEach(key => {
   channelFilters[key] = { keyword: '', level: '', status: '', source: '', dateStart: '', dateEnd: '', selected: new Set() };
 });
 
@@ -4981,6 +5036,10 @@ function renderChannelFilterSources(suffix) {
   if (!sel) return;
   const sources = new Set();
   (Store.data.customers || []).forEach(c => { if (c.source) sources.add(c.source); });
+  if (_isStockModule(suffix)) {
+    const dk = _stockModuleToDataKey(suffix);
+    (Store.data[dk] || []).forEach(c => { if (c.source) sources.add(c.source); });
+  }
   (Store.data.customerSources || []).forEach(s => { if (s.name) sources.add(s.name); });
   const cur = channelFilters[suffix]?.source || '';
   sel.innerHTML = '<option value="">全部</option>' +
@@ -4999,7 +5058,9 @@ function bindChannelFilterEvents(suffix) {
       f.source = document.getElementById('filter-source-' + suffix).value;
       f.dateStart = document.getElementById('filter-date-start-' + suffix).value;
       f.dateEnd = document.getElementById('filter-date-end-' + suffix).value;
-      if (suffix === 'trash') renderTrashPage(); else renderChannelPage(suffix);
+      if (suffix === 'trash') renderTrashPage();
+      else if (_isStockModule(suffix)) renderStockCustomerPage(suffix, _stockModuleToDataKey(suffix), suffix);
+      else renderChannelPage(suffix);
       showToast('已应用筛选条件', 'success');
     };
   }
@@ -5013,7 +5074,9 @@ function bindChannelFilterEvents(suffix) {
       document.getElementById('filter-source-' + suffix).value = '';
       document.getElementById('filter-date-start-' + suffix).value = '';
       document.getElementById('filter-date-end-' + suffix).value = '';
-      if (suffix === 'trash') renderTrashPage(); else renderChannelPage(suffix);
+      if (suffix === 'trash') renderTrashPage();
+      else if (_isStockModule(suffix)) renderStockCustomerPage(suffix, _stockModuleToDataKey(suffix), suffix);
+      else renderChannelPage(suffix);
     };
   }
 }
@@ -5050,11 +5113,18 @@ function bindChannelCheckboxEvents(suffix) {
       const ids = new Set(channelFilters[suffix].selected);
       if (ids.size === 0) { showToast('请先勾选客户', 'warning'); return; }
       confirmDialog('批量删除客户', `确认删除 ${ids.size} 个客户？操作不可逆。`, true, () => {
-        Store.data.customers = (Store.data.customers || []).filter(c => !ids.has(c.id));
+        if (_isStockModule(suffix)) {
+          const dk = _stockModuleToDataKey(suffix);
+          Store.data[dk] = (Store.data[dk] || []).filter(c => !ids.has(c.id));
+        } else {
+          Store.data.customers = (Store.data.customers || []).filter(c => !ids.has(c.id));
+        }
         channelFilters[suffix].selected.clear();
         Store.saveWithLog('批量删除客户', `共删除 ${ids.size} 条`).then(() => {
           showToast('已批量删除', 'success');
-          if (suffix === 'trash') renderTrashPage(); else renderChannelPage(suffix);
+          if (suffix === 'trash') renderTrashPage();
+          else if (_isStockModule(suffix)) renderStockCustomerPage(suffix, _stockModuleToDataKey(suffix), suffix);
+          else renderChannelPage(suffix);
         });
       });
     };
@@ -6067,6 +6137,501 @@ function renderTrashPage() {
       }
     };
   });
+}
+
+function renderStockCustomerPage(module, dataKey, moduleName) {
+  const moduleNames = {
+    'stock-list': '客户列表',
+    brand: '品牌产品管理',
+    service: '服务费管理',
+    qifu: '企服产品管理'
+  };
+  const displayName = moduleNames[module] || moduleName;
+
+  const rawCustomers = (Store.data[dataKey] || []).filter(c => c.deleted !== true);
+  const container = document.getElementById(`customer-form-container-${module}`);
+  if (!container) return;
+
+  const filtered = applyChannelFilters(module, rawCustomers);
+  const colConfig = getChannelColumnConfig(module);
+
+  let html = getChannelFilterBarHTML(module);
+
+  // 新增客户按钮（放在筛选栏上方）
+  html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <div style="font-size:13px;color:var(--text-muted);">共 ${rawCustomers.length} 位客户${filtered.length !== rawCustomers.length ? '，筛选后 ' + filtered.length + ' 位' : ''}</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-sm btn-primary" id="_${module}_add_btn">+ 新增客户</button>
+    </div>
+  </div>` + html;
+
+  if (filtered.length === 0) {
+    html += `<div style="padding:40px;text-align:center;color:var(--text-muted);">${rawCustomers.length === 0 ? '暂无 ' + displayName + ' 客户' : '无符合条件的客户'}</div>`;
+    container.innerHTML = html;
+    _bindStockPageEvents(module, dataKey);
+    return;
+  }
+
+  html += `<div class="table-wrap"><table class="data-table" style="width:100%;">
+    <thead>
+      <tr>
+        <th style="width:40px;"><input type="checkbox" class="chk-all" data-suffix="${module}"></th>
+        <th style="width:50px;">序号</th>
+        ${renderColumnHeaders(colConfig)}
+        <th style="width:120px;">操作</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  const sel = channelFilters[module].selected;
+  filtered.forEach((c, i) => {
+    const checked = sel.has(c.id) ? 'checked' : '';
+    html += `<tr>
+      <td><input type="checkbox" class="chk-item" data-id="${c.id}" data-suffix="${module}" ${checked}></td>
+      <td>${i + 1}</td>
+      ${renderColumnCells(c, colConfig, null, null, null, module)}
+      <td>
+        <button class="btn btn-sm" data-act="view" data-id="${c.id}">详情</button>
+        <button class="btn btn-sm btn-outline" data-act="edit" data-id="${c.id}">编辑</button>
+        <button class="btn btn-sm btn-outline" data-act="follow" data-id="${c.id}">跟进</button>
+        <button class="btn btn-sm btn-danger" data-act="del" data-id="${c.id}">删除</button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  container.innerHTML = html;
+  initChannelColumnResizers(container.querySelector('.data-table'), module);
+
+  renderChannelFilterLevels(module);
+  renderChannelFilterSources(module);
+  bindChannelFilterEvents(module);
+  bindChannelCheckboxEvents(module);
+  _bindStockPageEvents(module, dataKey);
+}
+
+function _stockModuleToDataKey(module) {
+  const map = { 'stock-list': 'stockCustomers', brand: 'brandProducts', service: 'serviceFees', qifu: 'qiFuProducts' };
+  return map[module];
+}
+
+function _isStockModule(module) {
+  return module === 'stock-list' || module === 'brand' || module === 'service' || module === 'qifu';
+}
+
+function _bindStockPageEvents(module, dataKey) {
+  // 新增按钮
+  const addBtn = document.getElementById(`_${module}_add_btn`);
+  if (addBtn) {
+    addBtn.onclick = () => openStockCustomerForm(module, dataKey);
+  }
+
+  const container = document.getElementById(`customer-form-container-${module}`);
+  if (!container) return;
+
+  container.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      const customers = Store.data[dataKey] || [];
+      const c = customers.find(x => x.id === id);
+      if (!c) return;
+
+      if (btn.dataset.act === 'view') openStockCustomerDetail(c, module, dataKey);
+      else if (btn.dataset.act === 'edit') openStockCustomerForm(module, dataKey, c);
+      else if (btn.dataset.act === 'follow') {
+        openModal({
+          title: '新增跟进记录 - ' + c.name, size: 'sm',
+          bodyHTML: `<label class="label">跟进内容</label><textarea class="textarea" id="_follow_note" rows="4" maxlength="500"></textarea>`,
+          footer: (f) => {
+            const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+            const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '保存');
+            f.appendChild(cc); f.appendChild(ok);
+            cc.onclick = closeModal;
+            ok.onclick = async () => {
+              const t = document.getElementById('_follow_note').value.trim();
+              if (!t) { showToast('请输入跟进内容', 'error'); return; }
+              addChannelRemark(c, module, t);
+              c.updatedAt = Date.now();
+              await Store.saveWithLog('新增跟进记录', '客户：' + c.name);
+              showToast('已保存跟进记录', 'success');
+              closeModal();
+              renderStockCustomerPage(module, dataKey, module);
+            };
+          }
+        });
+      }
+      else if (btn.dataset.act === 'del') {
+        confirmDialog('删除客户', '确认删除客户 "' + c.name + '"？操作不可逆。', true, async () => {
+          Store.data[dataKey] = (Store.data[dataKey] || []).filter(x => x.id !== c.id);
+          await Store.saveWithLog('删除客户', '客户：' + c.name);
+          showToast('已删除', 'success');
+          renderStockCustomerPage(module, dataKey, module);
+        });
+      }
+    };
+  });
+}
+
+function renderStockListPage() { renderStockCustomerPage('stock-list', 'stockCustomers', '客户列表'); }
+function renderBrandProductPage() { renderStockCustomerPage('brand', 'brandProducts', '品牌产品管理'); }
+function renderServiceFeePage() { renderStockCustomerPage('service', 'serviceFees', '服务费管理'); }
+function renderQifuProductPage() { renderStockCustomerPage('qifu', 'qiFuProducts', '企服产品管理'); }
+
+function openStockCustomerDetail(c, module, dataKey) {
+  const moduleNames = { 'stock-list': '客户列表', brand: '品牌产品管理', service: '服务费管理', qifu: '企服产品管理' };
+  const moduleName = moduleNames[module] || module;
+  window.__lastDetailId = c.id;
+  
+  const tags = Store.data.tags || [];
+  const addressFull = [c.province, c.city, c.district, c.address].filter(Boolean).join(' ');
+  
+  // 使用 getChannelField 获取模块特定的标签
+  const moduleTags = getChannelField(c, module, 'tags') || [];
+  const tagHtml = moduleTags.map(tid => {
+    const t = tags.find(x => x.id === tid);
+    return t ? `<span class="tag-chip" style="background:${t.color};color:white;padding:4px 12px;border-radius:14px;font-size:12px;">${escapeHTML(t.name)}</span>` : '';
+  }).join('');
+  
+  // 获取模块特定的跟进记录
+  const moduleRemarkHistory = getChannelField(c, module, 'remarkHistory') || [];
+  
+  let html = `
+    <div class="detail-header">
+      <div class="detail-title">${escapeHTML(c.name)}</div>
+      <div class="detail-actions">
+        <button class="btn btn-sm btn-outline" id="editDetail">编辑</button>
+        <button class="btn btn-sm btn-outline" id="exportOne">导出</button>
+        <button class="btn btn-sm btn-danger" id="delDetail">删除</button>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">手机号</div><div class="detail-value">${escapeHTML(c.phone || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">公司名称</div><div class="detail-value">${escapeHTML(c.company || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">微信</div><div class="detail-value">${escapeHTML(c.wechat || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(c.email || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">性别 / 年龄</div><div class="detail-value">${escapeHTML((c.gender || '-') + ' / ' + (c.age || '-'))}</div></div>
+      <div class="detail-item"><div class="detail-label">客户等级</div><div class="detail-value">${escapeHTML(getChannelField(c, module, 'level') || c.level || (getLevels()[0] || {}).name || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">客户来源</div><div class="detail-value">${escapeHTML(c.source || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">成交状态</div><div class="detail-value">${escapeHTML(getChannelField(c, module, 'status') || c.status || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">意向产品</div><div class="detail-value">${escapeHTML(c.product || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">预算范围</div><div class="detail-value">${escapeHTML(c.budget || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">预计金额(元)</div><div class="detail-value">${escapeHTML(getChannelField(c, module, 'amount') || c.amount || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">下次跟进日期</div><div class="detail-value">${formatNextFollowDate(getChannelField(c, module, 'nextFollowDate') || c.nextFollowDate)}</div></div>
+      <div class="detail-item"><div class="detail-label">录入时间</div><div class="detail-value">${formatDate(c.createdAt)}</div></div>
+      <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">联系地址</div><div class="detail-value">${escapeHTML(addressFull || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">一级行业</div><div class="detail-value">${escapeHTML(c.industryLevel1 || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">二级行业</div><div class="detail-value">${escapeHTML(c.industryLevel2 || '-')}</div></div>
+      <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户网址</div><div class="detail-value">${c.website ? `<a href="${escapeHTML(c.website)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">${escapeHTML(c.website)}</a>` : '-'}</div></div>
+      <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户在投平台</div><div class="detail-value">${formatPlatforms(c.platforms)}</div></div>
+      <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户标签</div><div class="detail-value">${tagHtml || '<span style="color:var(--text-muted);">无</span>'}</div></div>
+      <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">备注</div><div class="detail-value">${escapeHTML(c.remark || '-')}</div></div>
+    </div>
+    <div style="margin-top:24px;">
+      <h3 style="font-size:16px;margin-bottom:12px;">跟进记录时间线（${moduleRemarkHistory.length}）</h3>
+      <div class="timeline">`;
+  if (moduleRemarkHistory.length === 0) {
+    html += `<div style="color:var(--text-muted);font-size:13px;">暂无跟进记录</div>`;
+  } else {
+    for (const r of moduleRemarkHistory) {
+      let imgHtml = '';
+      if (r.images && r.images.length) {
+        imgHtml = `<div class="timeline-images">${r.images.map((img, idx) => `<img class="timeline-thumb" src="${escapeHTML(img.dataUrl)}" alt="截图" data-img-src="${escapeHTML(img.dataUrl)}">`).join('')}</div>`;
+      }
+      html += `<div class="timeline-item">
+        <div class="timeline-time">${formatDate(r.time)}</div>
+        <div class="timeline-content">${escapeHTML(r.text)}</div>
+        ${imgHtml}
+      </div>`;
+    }
+  }
+  html += `</div></div>`;
+
+  openModal({
+    title: moduleName + ' - 客户详情', size: 'md', bodyHTML: html,
+    onOpen: () => {
+      document.querySelectorAll('.timeline-thumb').forEach(el => {
+        el.onclick = () => openImageViewer(el.dataset.imgSrc || el.src);
+      });
+    },
+    footer: (f) => {
+      const cl = document.createElement('button'); cl.className = 'btn btn-sm btn-outline'; safeText(cl, '关闭');
+      f.appendChild(cl); cl.onclick = closeModal;
+      document.getElementById('editDetail').onclick = () => {
+        closeModal();
+        setTimeout(() => openStockCustomerForm(module, dataKey, c), 10);
+      };
+      document.getElementById('exportOne').onclick = () => {
+        const rows = buildStockExcelData([c], module);
+        downloadExcel(`${c.name.replace(/[\\/:*?"<>|]/g, '_')}_${moduleName}客户资料.xlsx`, '客户资料', rows);
+        showToast('已导出单客户资料', 'success');
+      };
+      document.getElementById('delDetail').onclick = () => {
+        confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？操作不可恢复。', true, async () => {
+          promptPassword('二次验证', '请输入解锁密码以确认删除', async () => {
+            Store.data[dataKey] = (Store.data[dataKey] || []).filter(x => x.id !== c.id);
+            await Store.saveWithLog('删除客户', '客户：' + c.name);
+            showToast('已删除', 'success');
+            closeModal();
+            renderStockCustomerPage(module, dataKey, moduleName);
+          });
+        });
+      };
+    }
+  });
+}
+
+function buildStockExcelData(list, module) {
+  const moduleNames = { brand: '品牌产品', service: '服务费', qifu: '企服产品' };
+  const header = ['姓名','公司名称','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','预计金额','下次跟进日期','录入时间','标签','备注'];
+  const rows = [header];
+  list.forEach(c => {
+    const d = c;
+    const addr = d.address || '';
+    const moduleTags = getChannelField(c, module, 'tags') || [];
+    const row = [
+      d.name, d.company || '',
+      d.gender, d.age, d.phone, d.wechat, d.email,
+      d.province, d.city, d.district, addr,
+      d.source, 
+      getChannelField(c, module, 'level') || d.level || '',
+      getChannelField(c, module, 'status') || d.status || '',
+      d.industryLevel1 || '', d.industryLevel2 || '', d.website || '',
+      (d.platforms || []).map(p => platformDisplayNames[p] || p).join('|'),
+      d.product, d.budget, 
+      getChannelField(c, module, 'amount') || d.amount || '',
+      getChannelField(c, module, 'nextFollowDate') || d.nextFollowDate || '',
+      formatDate(d.createdAt),
+      moduleTags.map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|'),
+      d.remark || ''
+    ];
+    rows.push(row);
+  });
+  return rows;
+}
+
+function openStockCustomerForm(module, dataKey, customer) {
+  const isEdit = !!customer;
+  const c = customer || { id: uuid(), createdAt: Date.now() };
+  const moduleNames = { 'stock-list': '客户列表', brand: '品牌产品管理', service: '服务费管理', qifu: '企服产品管理' };
+  const moduleName = moduleNames[module] || module;
+  const title = isEdit ? '编辑客户' : '新增客户';
+  
+  // 使用模块特定的等级、状态、标签
+  const moduleLevel = getChannelField(c, module, 'level') || c.level || '';
+  const moduleStatus = getChannelField(c, module, 'status') || c.status || '';
+  const moduleTags = getChannelField(c, module, 'tags') || [];
+  const moduleAmount = getChannelField(c, module, 'amount');
+  const moduleNextFollowDate = getChannelField(c, module, 'nextFollowDate') || '';
+
+  const sections = [
+    {
+      key: 'basic', title: '基础信息（必填）', open: true,
+      fields: [
+        { key: 'name', label: '姓名', type: 'text', required: true, max: 50 },
+        { key: 'company', label: '公司名称', type: 'text', max: 100 },
+        { key: 'gender', label: '性别', type: 'select', options: ['', '男', '女', '其他'] },
+        { key: 'age', label: '年龄', type: 'number', max: 3 },
+        { key: 'phone', label: '手机号', type: 'text', max: 11 },
+        { key: 'wechat', label: '微信', type: 'text', max: 50 },
+        { key: 'email', label: '邮箱', type: 'email', max: 80 },
+        { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
+      ]
+    },
+    {
+      key: 'business', title: '业务信息', open: true,
+      fields: [
+        { key: 'product', label: '意向产品', type: 'text', max: 100 },
+        { key: 'budget', label: '预算范围', type: 'text', max: 50 },
+        { key: 'amount', label: '预计金额(元)', type: 'number', max: 10, val: moduleAmount },
+        { key: 'level', label: '客户等级', type: 'select', options: ['', ...getLevelOptions()], val: moduleLevel },
+        { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'], val: moduleStatus },
+        { key: 'nextFollowDate', label: '下次跟进日期', type: 'date', val: moduleNextFollowDate },
+        { key: 'website', label: '客户网址', type: 'text', max: 200 },
+        { key: 'industryLevel1', label: '一级行业', type: 'select-industry' },
+        { key: 'industryLevel2', label: '二级行业', type: 'select-industry2' },
+        { key: 'platforms', label: '客户在投平台（可多选）', type: 'checkbox-group-platform' },
+      ]
+    },
+    {
+      key: 'address', title: '联系地址', open: true,
+      fields: [
+        { key: 'province', label: '省/直辖市', type: 'text', max: 30 },
+        { key: 'city', label: '城市', type: 'text', max: 30 },
+        { key: 'district', label: '区/县', type: 'text', max: 30 },
+        { key: 'address', label: '详细住址', type: 'textarea', max: 200 },
+      ]
+    },
+    {
+      key: 'tags', title: '客户标签', open: true,
+      fields: [
+        { key: 'tagIds', label: '标签', type: 'tags', val: moduleTags }
+      ]
+    },
+    {
+      key: 'remark', title: '沟通备注 / 跟进记录', open: true,
+      fields: [
+        { key: 'remark', label: '新增跟进备注', type: 'textarea', max: 500 }
+      ]
+    }
+  ];
+
+  let html = `<div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
+                 录入时间：${formatDate(c.createdAt)} | 当前模块：<span style="color:var(--accent);">${moduleName}</span>
+               </div>`;
+  for (const sec of sections) {
+    html += `<div class="form-section ${sec.open ? 'open' : ''}" data-sec="${sec.key}">
+                <div class="form-section-header">
+                  <span>${escapeHTML(sec.title)}</span>
+                  <span class="form-section-toggle">▾</span>
+                </div>
+                <div class="form-section-body"><div class="form-grid">`;
+    for (const f of sec.fields) {
+      let val = f.val !== undefined ? f.val : (c[f.key] || '');
+      if (f.type === 'date') {
+        if (typeof val === 'number') val = dateOnly(val);
+        else if (!val) val = '';
+        else if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) val = '';
+      }
+      if (f.type === 'select-industry') {
+        const options = getIndustryLevel1Options();
+        html += `<div class="form-group">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <select class="select" data-key="${f.key}" id="industry-level1-select">
+            <option value="">请选择</option>
+            ${options.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}
+          </select></div>`;
+      } else if (f.type === 'select-industry2') {
+        const currentL1 = c.industryLevel1 || '';
+        const options2 = getIndustryLevel2Options(currentL1);
+        html += `<div class="form-group">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <select class="select" data-key="${f.key}" id="industry-level2-select">
+            <option value="">请选择</option>
+            ${options2.map(o => `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(o)}</option>`).join('')}
+          </select></div>`;
+      } else if (f.type === 'select') {
+        html += `<div class="form-group">
+          <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
+          <select class="select" data-key="${f.key}">
+            ${f.options.map(o => {
+              const display = o || '请选择';
+              return `<option value="${escapeHTML(o)}" ${o === val ? 'selected' : ''}>${escapeHTML(display)}</option>`;
+            }).join('')}
+          </select></div>`;
+      } else if (f.type === 'tags') {
+        const allTags = Store.data.tags || [];
+        html += `<div class="form-group" style="grid-column:1/-1;">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">`;
+        for (const t of allTags) {
+          const checked = val.includes(t.id);
+          html += `<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 10px;border-radius:6px;border:1.5px solid ${checked ? t.color : 'var(--border-color)'};background:${checked ? t.color + '22' : 'var(--bg-secondary)'};font-size:12px;" class="tag-checkbox-label" data-tag-id="${t.id}" data-checked="${checked}">
+            <input type="checkbox" data-tag-id="${t.id}" ${checked ? 'checked' : ''} style="accent-color:${t.color};width:14px;height:14px;cursor:pointer;">
+            <span>${escapeHTML(t.name)}</span>
+          </label>`;
+        }
+        html += `</div></div>`;
+      } else if (f.type === 'checkbox-group-platform') {
+        const platformLabels = { '360': '360', 'baidu': '百度', 'bing': '必应', 'geo': 'GEO', 'douyin': '抖音', 'xiaohongshu': '小红书', 'tencent': '腾讯', 'xianyu': '闲鱼' };
+        const currentPlatforms = c.platforms || [];
+        html += `<div class="form-group" style="grid-column:1/-1;">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">`;
+        for (const [key, label] of Object.entries(platformLabels)) {
+          const checked = currentPlatforms.indexOf(key) !== -1;
+          html += `<label style="display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:8px;border:1.5px solid ${checked ? 'var(--accent)' : 'var(--border-color)'};background:${checked ? 'rgba(99,102,241,0.08)' : 'var(--bg-secondary)'};font-size:13px;transition:all 0.15s;user-select:none;" class="platform-checkbox-label" data-opt="${key}" data-checked="${checked}">
+            <input type="checkbox" data-platform="${key}" ${checked ? 'checked' : ''} style="accent-color:var(--accent);width:16px;height:16px;cursor:pointer;">
+            <span>${label}</span>
+          </label>`;
+        }
+        html += `</div></div>`;
+      } else if (f.type === 'textarea') {
+        html += `<div class="form-group" style="grid-column:1/-1;">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <textarea class="textarea" data-key="${f.key}" maxlength="${f.max || 500}" rows="3">${escapeHTML(val)}</textarea></div>`;
+      } else {
+        html += `<div class="form-group">
+          <label class="label ${f.required ? 'required' : ''}">${escapeHTML(f.label)}</label>
+          <input type="${f.type || 'text'}" class="input" data-key="${f.key}" value="${escapeHTML(val)}" maxlength="${f.max || 200}" ${f.required ? 'required' : ''}></div>`;
+      }
+    }
+    html += `</div></div></div>`;
+  }
+  html += `<div class="form-actions" style="margin-top:16px;">
+    <button class="btn btn-primary" id="saveStockCustomerForm">保存</button>
+  </div>`;
+
+  openModal({ title: title + ' - ' + moduleName, size: 'lg', bodyHTML: html });
+
+  // 行业联动
+  const l1Select = document.getElementById('industry-level1-select');
+  if (l1Select) {
+    l1Select.onchange = () => {
+      const l2Select = document.getElementById('industry-level2-select');
+      if (l2Select) {
+        const options = getIndustryLevel2Options(l1Select.value);
+        l2Select.innerHTML = '<option value="">请选择</option>' + options.map(o => `<option value="${escapeHTML(o)}">${escapeHTML(o)}</option>`).join('');
+      }
+    };
+  }
+
+  // 保存按钮
+  document.getElementById('saveStockCustomerForm').onclick = async () => {
+    // 收集表单数据
+    const updates = {};
+    document.querySelectorAll('[data-key]').forEach(el => {
+      const key = el.dataset.key;
+      let val = el.value;
+      if (el.type === 'number') val = val ? Number(val) : '';
+      updates[key] = val;
+    });
+    
+    // 处理平台多选
+    const platforms = [];
+    document.querySelectorAll('.platform-checkbox-label input:checked').forEach(el => {
+      platforms.push(el.dataset.platform);
+    });
+    updates.platforms = platforms;
+    
+    // 处理标签多选
+    const selectedTags = [];
+    document.querySelectorAll('.tag-checkbox-label input:checked').forEach(el => {
+      selectedTags.push(el.dataset.tagId);
+    });
+    
+    // 更新客户对象
+    Object.assign(c, updates);
+    c.updatedAt = Date.now();
+    
+    // 设置模块特定的字段
+    if (updates.level !== undefined) setChannelField(c, module, 'level', updates.level);
+    if (updates.status !== undefined) setChannelField(c, module, 'status', updates.status);
+    if (updates.amount !== undefined) setChannelField(c, module, 'amount', Number(updates.amount) || 0);
+    if (updates.nextFollowDate !== undefined) setChannelField(c, module, 'nextFollowDate', updates.nextFollowDate);
+    setChannelField(c, module, 'tags', selectedTags);
+    
+    // 处理备注
+    if (updates.remark && updates.remark.trim()) {
+      addChannelRemark(c, module, updates.remark.trim());
+    }
+    
+    // 如果是新增客户
+    if (!isEdit) {
+      c.cid = generateCustomerId();
+      c.remarkHistory = [];
+      if (!Store.data[dataKey]) Store.data[dataKey] = [];
+      Store.data[dataKey].push(c);
+    }
+    
+    await Store.saveWithLog(isEdit ? '编辑客户' : '新增客户', '客户：' + c.name);
+    showToast('已保存', 'success');
+    closeModal();
+    renderStockCustomerPage(module, dataKey, moduleName);
+  };
+}
+
+function getLevelOptions() {
+  return (Store.data.customerLevels || []).map(l => l.name);
 }
 
 function levelColor(level) {
@@ -7246,7 +7811,11 @@ document.addEventListener('click', function(e) {
   const id = target.dataset.customerId;
   if (!id) return;
   const c = (Store.data.customers || []).find(x => x.id === id) ||
-            (Store.data.poolCustomers || []).find(x => x.id === id);
+            (Store.data.poolCustomers || []).find(x => x.id === id) ||
+            (Store.data.stockCustomers || []).find(x => x.id === id) ||
+            (Store.data.brandProducts || []).find(x => x.id === id) ||
+            (Store.data.serviceFees || []).find(x => x.id === id) ||
+            (Store.data.qiFuProducts || []).find(x => x.id === id);
   if (c) showCustomerFloat(c);
 });
 
@@ -9846,6 +10415,10 @@ function navigate(pageName) {
     douyin: ['抖音客户', '抖音渠道客户管理'],
     xianyu: ['闲鱼客户', '闲鱼渠道客户管理'],
     trash: ['作废客户', '已作废的客户列表'],
+    brand: ['品牌产品管理', '存量客户管理'],
+    'stock-list': ['客户列表', '存量客户管理'],
+    service: ['服务费管理', '存量客户管理'],
+    qifu: ['企服产品管理', '存量客户管理'],
     'data-download': ['数据下载与导入', '选择字段并下载或导入客户数据'],
     help: ['帮助', '使用指南与常见问题'],
     security: ['数据与安全', '备份、导入、修改密码、操作日志'],
@@ -9888,6 +10461,10 @@ function navigate(pageName) {
     else if (pageName === 'douyin') renderChannelPage('douyin');
     else if (pageName === 'xianyu') renderChannelPage('xianyu');
     else if (pageName === 'trash') renderTrashPage();
+    else if (pageName === 'brand') renderBrandProductPage();
+    else if (pageName === 'stock-list') renderStockListPage();
+    else if (pageName === 'service') renderServiceFeePage();
+    else if (pageName === 'qifu') renderQifuProductPage();
     else if (pageName === 'settings') renderSettingsPage();
     else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); }
     else if (pageName === 'data-download') renderDataDownloadPage();
@@ -10224,7 +10801,7 @@ function initAuthPage() {
             sessionStorage.removeItem('crm_session_pw');
             sessionStorage.removeItem('crm_session_pw_mask');
             localStorage.removeItem('crm_remembered_username');
-            Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] };
+            Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] };
             Store.unlocked = false;
             Store._dirty = false;
             showToast('数据已清空，请重新初始化', 'success');
@@ -10321,7 +10898,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       if (Store.data.username && Store.data.username !== username) {
-        Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] };
+        Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] };
         Store.password = null;
         unlockFailCount++;
         document.getElementById('unlock-error').style.display = 'block';
@@ -10383,7 +10960,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // 首次保存空数据以派生密钥
     Store.password = pw;
-    Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: username, avatar: '', securityQuestions: [], poolCustomers: [] };
+    Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: username, avatar: '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] };
     Store.addLog('初始化系统', '成功', '注册账户：' + username);
     await Store.save();
     enterApp(pw);
@@ -10920,7 +11497,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btn-reset-data').onclick = () => {
     confirmDialog('清空全部数据', '将清空所有客户、标签和操作日志，不可逆。是否继续？', true, () => {
       promptPassword('二次验证', '请输入解锁密码以清空全部数据', async () => {
-        Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: Store.data.username || '', avatar: Store.data.avatar || '', securityQuestions: [], poolCustomers: [] };
+        Store.data = { customers: [], tags: [], customerLevels: getDefaultLevels(), customerSources: getDefaultSources(), logs: [], versions: [], username: Store.data.username || '', avatar: Store.data.avatar || '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] };
         // 同时清除文件夹同步文件
         if (Store.folderHandle) {
           try {
@@ -11085,6 +11662,23 @@ function updateNavCounts() {
   if (trashEl) {
     trashEl.textContent = customers.filter(c => c.deleted === true).length;
   }
+  // 存量客户管理模块计数
+  const stockListEl = document.getElementById('nav-count-stock-list');
+  if (stockListEl) {
+    stockListEl.textContent = (Store.data.stockCustomers || []).filter(c => c.deleted !== true).length;
+  }
+  const brandEl = document.getElementById('nav-count-brand');
+  if (brandEl) {
+    brandEl.textContent = (Store.data.brandProducts || []).filter(c => c.deleted !== true).length;
+  }
+  const serviceEl = document.getElementById('nav-count-service');
+  if (serviceEl) {
+    serviceEl.textContent = (Store.data.serviceFees || []).filter(c => c.deleted !== true).length;
+  }
+  const qifuEl = document.getElementById('nav-count-qifu');
+  if (qifuEl) {
+    qifuEl.textContent = (Store.data.qiFuProducts || []).filter(c => c.deleted !== true).length;
+  }
 }
 
 function refreshUI() {
@@ -11102,6 +11696,10 @@ function refreshUI() {
   else if (active.id === 'page-douyin') renderChannelPage('douyin');
   else if (active.id === 'page-xianyu') renderChannelPage('xianyu');
   else if (active.id === 'page-trash') renderTrashPage();
+  else if (active.id === 'page-brand') renderBrandProductPage();
+  else if (active.id === 'page-stock-list') renderStockListPage();
+  else if (active.id === 'page-service') renderServiceFeePage();
+  else if (active.id === 'page-qifu') renderQifuProductPage();
   else if (active.id === 'page-settings') renderSettingsPage();
   else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); }
   else if (active.id === 'page-data-download') renderDataDownloadPage();
@@ -13309,7 +13907,7 @@ function refreshUI() {
               // 兜底：无法恢复旧数据，重置为空数据
               Store.password = newPw;
               Store._expectedHash = null;
-              Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [] };
+              Store.data = { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] };
               // 清除相关存储，避免旧密保/保险箱残留导致后续状态混乱
               localStorage.removeItem(SQ_PW_VAULT_KEY);
               localStorage.removeItem(SQ_STORAGE_KEY);
