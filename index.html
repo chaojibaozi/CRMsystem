@@ -2527,7 +2527,8 @@ html.scrolling {
       </ul>
       <span class="nav-group-label">数据管理</span>
       <ul class="nav-list">
-        <li class="nav-item" data-page="data-download"><span class="nav-icon">📥</span>数据下载与导入</li>
+        <li class="nav-item" data-page="data-download"><span class="nav-icon">📥</span>销售数据下载与导入</li>
+        <li class="nav-item" data-page="stock-data-download"><span class="nav-icon">📦</span>存量数据下载与导入</li>
         <li class="nav-item" data-page="help"><span class="nav-icon">❓</span>帮助</li>
       </ul>
       <span class="nav-group-label">系统管理</span>
@@ -3155,11 +3156,11 @@ html.scrolling {
         </div>
       </section>
 
-      <!-- 数据下载与导入 -->
+      <!-- 销售数据下载与导入 -->
       <section class="page" id="page-data-download">
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <h2 style="font-size:18px;">📥 数据下载与导入</h2>
+            <h2 style="font-size:18px;">📥 销售数据下载与导入</h2>
           </div>
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
             选择需要导出的客户渠道和字段，点击下载按钮即可导出 Excel 格式的客户数据。每个渠道的客户数据将单独生成一个工作表（Sheet）。也可下载下方模板按格式准备数据后导入。
@@ -3269,7 +3270,7 @@ html.scrolling {
           <div style="font-size:14px;line-height:1.8;color:var(--text-secondary);">
             <p><strong>客户管理</strong>：在客户列表中添加、编辑、删除客户信息，支持多渠道分类管理。</p>
             <p><strong>数据安全</strong>：前往"数据与安全"页面可进行备份、导入、导出等操作。</p>
-            <p><strong>数据下载与导入</strong>：在"数据下载与导入"页面可选择客户渠道和字段一键下载 Excel，也可使用模板导入客户数据。</p>
+            <p><strong>销售数据下载与导入</strong>：在"销售数据下载与导入"页面可选择客户渠道和字段一键下载 Excel，也可使用模板导入客户数据。</p>
           </div>
         </div>
         <div class="card">
@@ -3277,6 +3278,57 @@ html.scrolling {
           <div style="font-size:14px;line-height:1.8;color:var(--text-secondary);">
             <p><strong>Q：数据会丢失吗？</strong><br>A：数据存储在浏览器本地和您指定的文件夹中，建议定期导出备份。</p>
             <p><strong>Q：如何更换设备使用？</strong><br>A：在旧设备上导出加密备份，在新设备上导入即可。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 存量数据下载与导入 -->
+      <section class="page" id="page-stock-data-download">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h2 style="font-size:18px;">📦 存量数据下载与导入</h2>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            选择导出字段，下载存量客户管理模块的客户列表数据为 Excel 文件。也可下载模板按格式准备数据后导入到存量客户列表。
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:500;margin-bottom:8px;">选择导出字段</div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;padding:8px 12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:8px;">
+              <input type="checkbox" id="stock-check-all-headers" checked> 全选
+            </label>
+            <div id="stock-data-download-fields" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:20px;"></div>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-primary" id="btn-stock-download">⬇ 下载 Excel</button>
+            <span id="stock-download-info" style="font-size:13px;color:var(--text-muted);">请选择字段</span>
+          </div>
+        </div>
+
+        <!-- 存量客户列表导入 -->
+        <div class="card" style="margin-top:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h2 style="font-size:18px;">📋 存量客户列表导入</h2>
+            <button class="btn btn-sm btn-outline" id="btn-stock-download-template">📄 导入模板下载</button>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+            上传 Excel 文件导入客户数据到存量客户列表，系统将自动匹配表头。不匹配的列将被忽略。重复手机号或姓名为空的记录将自动跳过。
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;">
+              📁 选择 Excel 文件
+              <input type="file" accept=".xlsx,.xls" id="btn-stock-import-excel" style="display:none;">
+            </label>
+            <span id="stock-import-file-name" style="font-size:12px;color:var(--text-muted);"></span>
+            <button class="btn btn-sm btn-outline" id="btn-stock-import-clear" style="display:none;">清除</button>
+            <button class="btn btn-sm btn-primary" id="btn-stock-confirm-import">确认导入</button>
+          </div>
+          <div id="stock-import-preview-area" style="display:none;">
+            <div style="max-height:400px;overflow:auto;border:1px solid var(--border-color);border-radius:var(--radius-sm);margin-top:8px;">
+              <table class="data-table" id="stock-import-preview-table" style="width:100%;"></table>
+            </div>
+            <div id="stock-import-summary" style="margin-top:8px;font-size:13px;color:var(--text-secondary);"></div>
           </div>
         </div>
       </section>
@@ -4714,6 +4766,20 @@ const COLUMN_DEFS = [
   { key: 'createdAt', label: '录入时间', sortable: true }
 ];
 
+const STOCK_COLUMN_DEFS = [
+  { key: 'cid', label: '账户ID' },
+  { key: 'name', label: '联系人', sortable: true },
+  { key: 'phone', label: '联系电话', sortable: true },
+  { key: 'wechat', label: '微信号' },
+  { key: 'company', label: '公司名称', sortable: true },
+  { key: 'consultant', label: '对应顾问' },
+  { key: 'industryLevel1', label: '一级行业' },
+  { key: 'industryLevel2', label: '二级行业' },
+  { key: 'website', label: '网站URL' },
+  { key: 'accountOpenDate', label: '开户日期' },
+  { key: 'consumableDays', label: '可消费天数' },
+];
+
 function getColumnConfig() {
   let config;
   try {
@@ -4797,12 +4863,56 @@ function saveChannelColumnConfig(channel, config) {
   localStorage.setItem('crm_col_config_' + channel, JSON.stringify(config));
 }
 
-function renderColumnHeaders(config) {
+function getStockColumnConfig(module) {
+  const storageKey = 'crm_stock_col_config_' + module;
+  let config;
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (raw) config = JSON.parse(raw);
+  } catch (e) {}
+  if (!Array.isArray(config)) {
+    config = STOCK_COLUMN_DEFS.map(d => ({ key: d.key, visible: true }));
+  } else {
+    const validKeys = STOCK_COLUMN_DEFS.map(d => d.key);
+    config = config.filter(c => validKeys.includes(c.key));
+    STOCK_COLUMN_DEFS.forEach(def => {
+      if (!config.find(c => c.key === def.key)) {
+        config.push({ key: def.key, visible: true });
+      }
+    });
+  }
+  // 注入标签列（存量客户模块独立标签管理）
+  [{ key: 'tags', visible: true }].forEach(ec => {
+    if (!config.find(c => c.key === ec.key)) {
+      config.push(ec);
+    }
+  });
+  // name固定为首列
+  let nameIdx = config.findIndex(c => c.key === 'name');
+  if (nameIdx > 0) {
+    const item = config.splice(nameIdx, 1)[0];
+    item.visible = true;
+    config.unshift(item);
+  } else if (nameIdx === -1) {
+    config.unshift({ key: 'name', visible: true });
+  } else {
+    config[nameIdx].visible = true;
+  }
+  config.forEach(c => { if (c.visible === undefined) c.visible = true; });
+  return config;
+}
+
+function saveStockColumnConfig(module, config) {
+  localStorage.setItem('crm_stock_col_config_' + module, JSON.stringify(config));
+}
+
+function renderColumnHeaders(config, columnDefs) {
   let html = '';
+  const defs = columnDefs || COLUMN_DEFS;
   const labelMap = { level: '等级', status: '成交状态', tags: '标签' };
   config.forEach(c => {
     if (!c.visible) return;
-    const def = COLUMN_DEFS.find(d => d.key === c.key);
+    const def = defs.find(d => d.key === c.key);
     const label = def ? def.label : (labelMap[c.key] || c.key);
     if (!label) return;
     const sortAttr = def && def.sortable ? ` data-sort="${c.key}"` : '';
@@ -4864,18 +4974,24 @@ function renderColumnCells(c, config, start, i, masked, channel) {
         return t ? `<span class="badge" style="background:${t.color};color:#fff;font-size:10px;padding:2px 6px;margin:1px;">${escapeHTML(t.name)}</span>` : '';
       }).join('') || '-';
       html += `<td style="max-width:120px;">${tagHtml}</td>`;
+    } else if (key === 'consultant') {
+      html += `<td>${escapeHTML(c.consultant || '-')}</td>`;
+    } else if (key === 'accountOpenDate') {
+      html += `<td>${c.accountOpenDate ? dateOnly(c.accountOpenDate) : '-'}</td>`;
+    } else if (key === 'consumableDays') {
+      html += `<td style="font-weight:600;">${c.consumableDays != null ? c.consumableDays + '天' : '-'}</td>`;
     }
   });
   return html;
 }
 
-function openColumnCustomizer(channel) {
-  let config = channel ? getChannelColumnConfig(channel) : getColumnConfig();
+function openColumnCustomizer(channel, isStock) {
+  let config = isStock ? getStockColumnConfig(channel) : (channel ? getChannelColumnConfig(channel) : getColumnConfig());
   let itemsHtml = '';
   config.forEach((c, idx) => {
-    const def = COLUMN_DEFS.find(d => d.key === c.key);
+    const def = isStock ? STOCK_COLUMN_DEFS.find(d => d.key === c.key) : COLUMN_DEFS.find(d => d.key === c.key);
     const label = def ? def.label : ({ level: '等级', status: '成交状态', tags: '标签' })[c.key] || c.key;
-    if (!def && !channel) return;
+    if (!def && !channel && !isStock) return;
     const disabled = c.key === 'name' ? ' disabled' : '';
     const checked = c.visible ? 'checked' : '';
     const drag = c.key === 'name' ? ' style="opacity:0.5;cursor:default;"' : ' draggable="true"';
@@ -4942,11 +5058,14 @@ function openColumnCustomizer(channel) {
         });
         if (channel) {
           saveChannelColumnConfig(channel, newConfig);
+        } else if (isStock) {
+          saveStockColumnConfig(channel, newConfig);
         } else {
           saveColumnConfig(newConfig);
         }
         closeModal();
-        if (channel) renderChannelPage(channel); else renderCustomerTable();
+        if (isStock) renderStockCustomerPage(channel, _stockModuleToDataKey(channel), channel);
+        else if (channel) renderChannelPage(channel); else renderCustomerTable();
       };
     }
   });
@@ -5095,6 +5214,7 @@ function bindChannelCheckboxEvents(suffix) {
         if (allChk.checked) sel.add(el.dataset.id);
         else sel.delete(el.dataset.id);
       });
+      _updateAssignButtonState(suffix);
     };
   }
   // 单项勾选
@@ -5104,6 +5224,7 @@ function bindChannelCheckboxEvents(suffix) {
       if (el.checked) sel.add(el.dataset.id);
       else sel.delete(el.dataset.id);
       if (allChk) allChk.checked = container.querySelectorAll('.chk-item:checked').length === container.querySelectorAll('.chk-item').length;
+      _updateAssignButtonState(suffix);
     };
   });
   // 批量删除按钮
@@ -6153,15 +6274,20 @@ function renderStockCustomerPage(module, dataKey, moduleName) {
   if (!container) return;
 
   const filtered = applyChannelFilters(module, rawCustomers);
-  const colConfig = getChannelColumnConfig(module);
+  const colConfig = getStockColumnConfig(module);
 
   let html = getChannelFilterBarHTML(module);
 
-  // 新增客户按钮（放在筛选栏上方）
+  // 新增客户按钮 + 自定义列按钮（放在筛选栏上方）
+  let actionButtons = `<button class="btn btn-sm btn-primary" id="_${module}_add_btn">+ 新增客户</button>
+      <button class="btn btn-sm btn-outline" id="_${module}_col_custom_btn">🏷️ 自定义标签管理</button>`;
+  if (module === 'stock-list') {
+    actionButtons += `<button class="btn btn-sm btn-outline" id="_${module}_assign_btn" disabled>📤 添加到...</button>`;
+  }
   html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
     <div style="font-size:13px;color:var(--text-muted);">共 ${rawCustomers.length} 位客户${filtered.length !== rawCustomers.length ? '，筛选后 ' + filtered.length + ' 位' : ''}</div>
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-sm btn-primary" id="_${module}_add_btn">+ 新增客户</button>
+      ${actionButtons}
     </div>
   </div>` + html;
 
@@ -6177,7 +6303,7 @@ function renderStockCustomerPage(module, dataKey, moduleName) {
       <tr>
         <th style="width:40px;"><input type="checkbox" class="chk-all" data-suffix="${module}"></th>
         <th style="width:50px;">序号</th>
-        ${renderColumnHeaders(colConfig)}
+        ${renderColumnHeaders(colConfig, STOCK_COLUMN_DEFS)}
         <th style="width:120px;">操作</th>
       </tr>
     </thead>
@@ -6219,11 +6345,107 @@ function _isStockModule(module) {
   return module === 'stock-list' || module === 'brand' || module === 'service' || module === 'qifu';
 }
 
+function _updateAssignButtonState(module) {
+  const assignBtn = document.getElementById(`_${module}_assign_btn`);
+  if (!assignBtn) return;
+  const selected = channelFilters[module].selected;
+  assignBtn.disabled = selected.size === 0;
+}
+
+function openAssignModal(module) {
+  const selectedIds = channelFilters[module].selected;
+  if (selectedIds.size === 0) {
+    showToast('请先勾选客户', 'warning');
+    return;
+  }
+  
+  const targetModules = [
+    { key: 'brand', label: '品牌产品管理', icon: '🏷️' },
+    { key: 'service', label: '服务费管理', icon: '💰' },
+    { key: 'qifu', label: '企服产品管理', icon: '🤝' }
+  ];
+  
+  let bodyHTML = `<div style="max-height:300px;overflow-y:auto;">`;
+  targetModules.forEach(m => {
+    bodyHTML += `<label style="display:flex;align-items:center;gap:8px;padding:10px;border-radius:8px;border:1px solid var(--border-color);margin-bottom:8px;cursor:pointer;" id="assign-module-${m.key}">
+      <input type="checkbox" style="width:18px;height:18px;" data-module="${m.key}">
+      <span>${m.icon} ${m.label}</span>
+    </label>`;
+  });
+  bodyHTML += `</div>`;
+  bodyHTML += `<div style="margin-top:12px;font-size:12px;color:var(--text-muted);">已选择 ${selectedIds.size} 位客户，支持同时分配到多个模块</div>`;
+  
+  openModal({
+    title: '分配客户到模块',
+    size: 'md',
+    bodyHTML: bodyHTML,
+    footer: (f) => {
+      const cc = document.createElement('button'); cc.className = 'btn btn-sm btn-outline'; safeText(cc, '取消');
+      const ok = document.createElement('button'); ok.className = 'btn btn-sm btn-primary'; safeText(ok, '确认分配');
+      f.appendChild(cc); f.appendChild(ok);
+      cc.onclick = closeModal;
+      ok.onclick = async () => {
+        const targetModules = [];
+        document.querySelectorAll('input[data-module]:checked').forEach(el => {
+          targetModules.push(el.dataset.module);
+        });
+        
+        if (targetModules.length === 0) {
+          showToast('请选择目标模块', 'warning');
+          return;
+        }
+        
+        const customers = Store.data.stockCustomers || [];
+        const selectedCustomers = customers.filter(c => selectedIds.has(c.id));
+        
+        targetModules.forEach(targetModule => {
+          const targetDataKey = _stockModuleToDataKey(targetModule);
+          const existingCustomers = Store.data[targetDataKey] || [];
+          
+          selectedCustomers.forEach(c => {
+            const exists = existingCustomers.some(x => x.id === c.id);
+            if (!exists) {
+              const newCustomer = { ...c };
+              newCustomer.createdAt = Date.now();
+              existingCustomers.push(newCustomer);
+            }
+          });
+          
+          Store.data[targetDataKey] = existingCustomers;
+        });
+        
+        await Store.saveWithLog('批量分配客户', `将 ${selectedIds.size} 位客户分配到 ${targetModules.join('、')}`);
+        showToast(`已将 ${selectedIds.size} 位客户分配到 ${targetModules.length} 个模块`, 'success');
+        closeModal();
+        
+        targetModules.forEach(m => {
+          const pageEl = document.getElementById(`page-${m}`);
+          if (pageEl && pageEl.classList.contains('active')) {
+            renderStockCustomerPage(m, _stockModuleToDataKey(m), m);
+          }
+        });
+      };
+    }
+  });
+}
+
 function _bindStockPageEvents(module, dataKey) {
   // 新增按钮
   const addBtn = document.getElementById(`_${module}_add_btn`);
   if (addBtn) {
     addBtn.onclick = () => openStockCustomerForm(module, dataKey);
+  }
+
+  // 自定义列按钮
+  const colBtn = document.getElementById(`_${module}_col_custom_btn`);
+  if (colBtn) {
+    colBtn.onclick = () => openColumnCustomizer(module, true);
+  }
+
+  // 添加到按钮（仅客户列表模块）
+  const assignBtn = document.getElementById(`_${module}_assign_btn`);
+  if (assignBtn) {
+    assignBtn.onclick = () => openAssignModal(module);
   }
 
   const container = document.getElementById(`customer-form-container-${module}`);
@@ -6305,11 +6527,17 @@ function openStockCustomerDetail(c, module, dataKey) {
       </div>
     </div>
     <div class="detail-grid">
-      <div class="detail-item"><div class="detail-label">手机号</div><div class="detail-value">${escapeHTML(c.phone || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">账户ID</div><div class="detail-value" style="font-family:monospace;">${escapeHTML(c.cid || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">联系人</div><div class="detail-value">${escapeHTML(c.name || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">联系电话</div><div class="detail-value">${escapeHTML(c.phone || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">微信号</div><div class="detail-value">${escapeHTML(c.wechat || '-')}</div></div>
       <div class="detail-item"><div class="detail-label">公司名称</div><div class="detail-value">${escapeHTML(c.company || '-')}</div></div>
-      <div class="detail-item"><div class="detail-label">微信</div><div class="detail-value">${escapeHTML(c.wechat || '-')}</div></div>
-      <div class="detail-item"><div class="detail-label">邮箱</div><div class="detail-value">${escapeHTML(c.email || '-')}</div></div>
-      <div class="detail-item"><div class="detail-label">性别 / 年龄</div><div class="detail-value">${escapeHTML((c.gender || '-') + ' / ' + (c.age || '-'))}</div></div>
+      <div class="detail-item"><div class="detail-label">对应顾问</div><div class="detail-value">${escapeHTML(c.consultant || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">一级行业</div><div class="detail-value">${escapeHTML(c.industryLevel1 || '-')}</div></div>
+      <div class="detail-item"><div class="detail-label">二级行业</div><div class="detail-value">${escapeHTML(c.industryLevel2 || '-')}</div></div>
+      <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">网站URL</div><div class="detail-value">${c.website ? `<a href="${escapeHTML(c.website)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">${escapeHTML(c.website)}</a>` : '-'}</div></div>
+      <div class="detail-item"><div class="detail-label">开户日期</div><div class="detail-value">${c.accountOpenDate ? dateOnly(c.accountOpenDate) : '-'}</div></div>
+      <div class="detail-item"><div class="detail-label">可消费天数</div><div class="detail-value" style="font-weight:600;">${c.consumableDays != null ? c.consumableDays + '天' : '-'}</div></div>
       <div class="detail-item"><div class="detail-label">客户等级</div><div class="detail-value">${escapeHTML(getChannelField(c, module, 'level') || c.level || (getLevels()[0] || {}).name || '-')}</div></div>
       <div class="detail-item"><div class="detail-label">客户来源</div><div class="detail-value">${escapeHTML(c.source || '-')}</div></div>
       <div class="detail-item"><div class="detail-label">成交状态</div><div class="detail-value">${escapeHTML(getChannelField(c, module, 'status') || c.status || '-')}</div></div>
@@ -6319,9 +6547,6 @@ function openStockCustomerDetail(c, module, dataKey) {
       <div class="detail-item"><div class="detail-label">下次跟进日期</div><div class="detail-value">${formatNextFollowDate(getChannelField(c, module, 'nextFollowDate') || c.nextFollowDate)}</div></div>
       <div class="detail-item"><div class="detail-label">录入时间</div><div class="detail-value">${formatDate(c.createdAt)}</div></div>
       <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">联系地址</div><div class="detail-value">${escapeHTML(addressFull || '-')}</div></div>
-      <div class="detail-item"><div class="detail-label">一级行业</div><div class="detail-value">${escapeHTML(c.industryLevel1 || '-')}</div></div>
-      <div class="detail-item"><div class="detail-label">二级行业</div><div class="detail-value">${escapeHTML(c.industryLevel2 || '-')}</div></div>
-      <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户网址</div><div class="detail-value">${c.website ? `<a href="${escapeHTML(c.website)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">${escapeHTML(c.website)}</a>` : '-'}</div></div>
       <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户在投平台</div><div class="detail-value">${formatPlatforms(c.platforms)}</div></div>
       <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">客户标签</div><div class="detail-value">${tagHtml || '<span style="color:var(--text-muted);">无</span>'}</div></div>
       <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">备注</div><div class="detail-value">${escapeHTML(c.remark || '-')}</div></div>
@@ -6381,25 +6606,24 @@ function openStockCustomerDetail(c, module, dataKey) {
 }
 
 function buildStockExcelData(list, module) {
-  const moduleNames = { brand: '品牌产品', service: '服务费', qifu: '企服产品' };
-  const header = ['姓名','公司名称','性别','年龄','手机号','微信','邮箱','省','市','区','详细地址','来源','等级','成交状态','一级行业','二级行业','客户网址','客户在投平台','意向产品','预算','预计金额','下次跟进日期','录入时间','标签','备注'];
+  const moduleNames = { 'stock-list': '客户列表', brand: '品牌产品', service: '服务费', qifu: '企服产品' };
+  const header = ['账户ID','联系人','联系电话','微信号','公司名称','对应顾问','一级行业','二级行业','网站URL','开户日期','可消费天数','来源','等级','成交状态','意向产品','预算','预计金额','下次跟进日期','客户在投平台','录入时间','标签','备注'];
   const rows = [header];
   list.forEach(c => {
     const d = c;
-    const addr = d.address || '';
     const moduleTags = getChannelField(c, module, 'tags') || [];
     const row = [
-      d.name, d.company || '',
-      d.gender, d.age, d.phone, d.wechat, d.email,
-      d.province, d.city, d.district, addr,
+      d.cid || '', d.name, d.phone, d.wechat, d.company || '', d.consultant || '',
+      d.industryLevel1 || '', d.industryLevel2 || '', d.website || '',
+      d.accountOpenDate ? dateOnly(d.accountOpenDate) : '',
+      d.consumableDays != null ? String(d.consumableDays) : '',
       d.source, 
       getChannelField(c, module, 'level') || d.level || '',
       getChannelField(c, module, 'status') || d.status || '',
-      d.industryLevel1 || '', d.industryLevel2 || '', d.website || '',
-      (d.platforms || []).map(p => platformDisplayNames[p] || p).join('|'),
       d.product, d.budget, 
       getChannelField(c, module, 'amount') || d.amount || '',
       getChannelField(c, module, 'nextFollowDate') || d.nextFollowDate || '',
+      (d.platforms || []).map(p => platformDisplayNames[p] || p).join('|'),
       formatDate(d.createdAt),
       moduleTags.map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|'),
       d.remark || ''
@@ -6427,28 +6651,29 @@ function openStockCustomerForm(module, dataKey, customer) {
     {
       key: 'basic', title: '基础信息（必填）', open: true,
       fields: [
-        { key: 'name', label: '姓名', type: 'text', required: true, max: 50 },
+        { key: 'cid', label: '账户ID', type: 'text', max: 50 },
+        { key: 'name', label: '联系人', type: 'text', required: true, max: 50 },
+        { key: 'phone', label: '联系电话', type: 'text', max: 11 },
+        { key: 'wechat', label: '微信号', type: 'text', max: 50 },
         { key: 'company', label: '公司名称', type: 'text', max: 100 },
-        { key: 'gender', label: '性别', type: 'select', options: ['', '男', '女', '其他'] },
-        { key: 'age', label: '年龄', type: 'number', max: 3 },
-        { key: 'phone', label: '手机号', type: 'text', max: 11 },
-        { key: 'wechat', label: '微信', type: 'text', max: 50 },
-        { key: 'email', label: '邮箱', type: 'email', max: 80 },
-        { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
+        { key: 'consultant', label: '对应顾问', type: 'text', max: 50 },
       ]
     },
     {
       key: 'business', title: '业务信息', open: true,
       fields: [
+        { key: 'industryLevel1', label: '一级行业', type: 'select-industry' },
+        { key: 'industryLevel2', label: '二级行业', type: 'select-industry2' },
+        { key: 'website', label: '网站URL', type: 'text', max: 200 },
+        { key: 'accountOpenDate', label: '开户日期', type: 'date' },
+        { key: 'consumableDays', label: '可消费天数', type: 'number', max: 6 },
+        { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
+        { key: 'level', label: '客户等级', type: 'select', options: ['', ...getLevelOptions()], val: moduleLevel },
+        { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'], val: moduleStatus },
         { key: 'product', label: '意向产品', type: 'text', max: 100 },
         { key: 'budget', label: '预算范围', type: 'text', max: 50 },
         { key: 'amount', label: '预计金额(元)', type: 'number', max: 10, val: moduleAmount },
-        { key: 'level', label: '客户等级', type: 'select', options: ['', ...getLevelOptions()], val: moduleLevel },
-        { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'], val: moduleStatus },
         { key: 'nextFollowDate', label: '下次跟进日期', type: 'date', val: moduleNextFollowDate },
-        { key: 'website', label: '客户网址', type: 'text', max: 200 },
-        { key: 'industryLevel1', label: '一级行业', type: 'select-industry' },
-        { key: 'industryLevel2', label: '二级行业', type: 'select-industry2' },
         { key: 'platforms', label: '客户在投平台（可多选）', type: 'checkbox-group-platform' },
       ]
     },
@@ -6617,7 +6842,7 @@ function openStockCustomerForm(module, dataKey, customer) {
     
     // 如果是新增客户
     if (!isEdit) {
-      c.cid = generateCustomerId();
+      if (!c.cid) c.cid = generateCustomerId();
       c.remarkHistory = [];
       if (!Store.data[dataKey]) Store.data[dataKey] = [];
       Store.data[dataKey].push(c);
@@ -7189,6 +7414,119 @@ function stopChannelAIRefresh() {
   if (_channelAITimer) {
     clearInterval(_channelAITimer);
     _channelAITimer = null;
+  }
+}
+
+// ── 存量客户页面 AI 摘要 ──
+const _stockNames = { brand: '品牌产品管理', service: '服务费管理', qifu: '企服产品管理' };
+const _stockDataKeys = { brand: 'brandProducts', service: 'serviceFees', qifu: 'qiFuProducts' };
+let _stockAITimer = null;
+let _lastStockAIHash = '';
+let _activeStockModule = '';
+
+function renderStockAISummary(module) {
+  const label = _stockNames[module] || module;
+  const dataKey = _stockDataKeys[module] || '';
+  const list = (Store.data[dataKey] || []).filter(c => c.deleted !== true);
+
+  const total = list.length;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+
+  const todayNew = list.filter(c => c.createdAt >= todayStart.getTime()).length;
+  const monthNew = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+
+  const statusDist = {};
+  list.forEach(c => {
+    const s = c.status || '未沟通';
+    statusDist[s] = (statusDist[s] || 0) + 1;
+  });
+  const statusOrder = ['未沟通', '跟进中', '已成交', '流失'];
+  const statusHtml = statusOrder.filter(s => statusDist[s]).map(s => {
+    const cls = s === '已成交' ? 'color:#059669;' : s === '流失' ? 'color:#dc2626;' : s === '跟进中' ? 'color:#2563eb;' : '';
+    return `<span style="${cls}font-size:12px;font-weight:500;">${s}<strong>${statusDist[s]}</strong></span>`;
+  }).join(' ');
+
+  const followCount = list.filter(c => {
+    if (c.status === '跟进中') return true;
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft >= todayStart.getTime();
+  }).length;
+  
+  const overdueCount = list.filter(c => {
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    return ft !== null && ft < todayStart.getTime();
+  }).length;
+
+  const followupDays = (Store.settings && Store.settings.followupDays) || 3;
+  const severeOverdue = list.filter(c => {
+    if (!c.nextFollowDate) return false;
+    const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
+    if (ft === null || ft >= todayStart.getTime()) return false;
+    return (todayStart.getTime() - ft) / 86400000 > followupDays;
+  }).length;
+
+  const consumableDaysWarning = list.filter(c => {
+    if (!c.consumableDays) return false;
+    return parseInt(c.consumableDays) <= 7;
+  }).length;
+
+  const timeStr = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+  let html = `<div class="channel-ai-summary">`;
+  html += `<div class="channel-ai-main">${label} 共 <strong>${total}</strong> 位`;
+  if (todayNew > 0) html += `，今日 <span class="ai-badge ai-badge-up">+${todayNew}</span>`;
+  if (monthNew > 0) html += `，本月 <span class="ai-badge ai-badge-up">+${monthNew}</span>`;
+  html += '</div>';
+  
+  if (statusHtml) html += `<div class="channel-ai-row"><span class="channel-ai-label">状态</span>${statusHtml}</div>`;
+  
+  let followHtml = `待跟进<strong>${followCount}</strong>`;
+  if (overdueCount > 0) {
+    const cls = severeOverdue > 0 ? 'color:#dc2626;font-weight:600;' : 'color:#d97706;font-weight:600;';
+    followHtml += ` <span style="${cls}">逾期 ${overdueCount}</span>`;
+  }
+  if (severeOverdue > 0) followHtml += ` <span style="color:#dc2626;font-weight:600;">严重 ${severeOverdue}</span>`;
+  html += `<div class="channel-ai-row"><span class="channel-ai-label">跟进</span>${followHtml}</div>`;
+
+  if (consumableDaysWarning > 0) {
+    html += `<div class="channel-ai-row"><span class="channel-ai-label">临期提醒</span><span style="color:#dc2626;font-weight:600;">即将到期 ${consumableDaysWarning} 位</span></div>`;
+  }
+  
+  html += `<div class="channel-ai-time">${timeStr}</div>`;
+  html += `</div>`;
+
+  let container = document.getElementById('channel-ai-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'channel-ai-container';
+    const tl = document.querySelector('.topbar-left');
+    if (tl) tl.appendChild(container);
+  }
+  container.style.display = '';
+  container.innerHTML = html;
+}
+
+function startStockAIRefresh(module) {
+  stopStockAIRefresh();
+  _activeStockModule = module;
+  const dataKey = _stockDataKeys[module] || '';
+  _lastStockAIHash = JSON.stringify(Store.data[dataKey] || []);
+  _stockAITimer = setInterval(function() {
+    const curHash = JSON.stringify(Store.data[dataKey] || []);
+    if (curHash !== _lastStockAIHash) {
+      _lastStockAIHash = curHash;
+      renderStockAISummary(_activeStockModule);
+    }
+  }, 5000);
+}
+
+function stopStockAIRefresh() {
+  if (_stockAITimer) {
+    clearInterval(_stockAITimer);
+    _stockAITimer = null;
   }
 }
 
@@ -9811,7 +10149,7 @@ function openSourceEditor(source) {
 }
 
 /* ================================================================
-   数据下载与导入页面
+   销售数据下载与导入页面
    ================================================================ */
 const DOWNLOAD_CHANNELS = [
   { key: 'all', label: '客户列表' },
@@ -9993,7 +10331,7 @@ function renderDataDownloadPage() {
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-    Store.addLog('数据下载与导入', '成功', `导出 Excel（${selectedChannels.length} 个渠道${includePool && poolCustomers.length > 0 ? ' + 客户池' : ''}，${totalExported} 条记录，${selectedFields.length} 个字段）`);
+    Store.addLog('销售数据下载与导入', '成功', `导出 Excel（${selectedChannels.length} 个渠道${includePool && poolCustomers.length > 0 ? ' + 客户池' : ''}，${totalExported} 条记录，${selectedFields.length} 个字段）`);
     Store.save();
     showToast('Excel 下载成功', 'success');
   };
@@ -10371,6 +10709,289 @@ function initCustomerPoolImport() {
 function renderHelpPage() {
 }
 
+function renderStockDataDownloadPage() {
+  const container = document.getElementById('stock-data-download-fields');
+  if (!container) return;
+  if (container.dataset.initialized) return;
+  container.dataset.initialized = '1';
+
+  const STOCK_DOWNLOAD_FIELDS = [
+    { label: '账户ID', key: 'cid', get: c => c.cid || '' },
+    { label: '联系人', key: 'name', get: c => c.name },
+    { label: '联系电话', key: 'phone', get: c => c.phone },
+    { label: '微信号', key: 'wechat', get: c => c.wechat },
+    { label: '公司名称', key: 'company', get: c => c.company },
+    { label: '对应顾问', key: 'consultant', get: c => c.consultant || '' },
+    { label: '一级行业', key: 'industryLevel1', get: c => c.industryLevel1 || '' },
+    { label: '二级行业', key: 'industryLevel2', get: c => c.industryLevel2 || '' },
+    { label: '网站URL', key: 'website', get: c => c.website || '' },
+    { label: '开户日期', key: 'accountOpenDate', get: c => c.accountOpenDate || '' },
+    { label: '可消费天数', key: 'consumableDays', get: c => c.consumableDays != null ? String(c.consumableDays) : '' },
+    { label: '来源', key: 'source', get: c => c.source },
+    { label: '等级', key: 'level', get: c => c.level },
+    { label: '成交状态', key: 'status', get: c => c.status },
+    { label: '意向产品', key: 'product', get: c => c.product },
+    { label: '预算', key: 'budget', get: c => c.budget },
+    { label: '预计金额', key: 'amount', get: c => c.amount },
+    { label: '下次跟进日期', key: 'nextFollowDate', get: c => c.nextFollowDate },
+    { label: '客户在投平台', key: 'platforms', get: c => (c.platforms || []).map(p => platformDisplayNames[p] || p).join('|') },
+    { label: '录入时间', key: 'createdAt', get: c => formatDate(c.createdAt) },
+    { label: '标签', key: 'tags', get: c => (c.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|') },
+    { label: '备注', key: 'remark', get: c => c.remark || '' }
+  ];
+
+  const checkAll = document.getElementById('stock-check-all-headers');
+  const info = document.getElementById('stock-download-info');
+  const btnDownload = document.getElementById('btn-stock-download');
+
+  container.innerHTML = STOCK_DOWNLOAD_FIELDS.map((f, i) =>
+    `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);transition:background 0.15s;">
+      <input type="checkbox" class="stock-download-field-cb" data-index="${i}" checked>
+      <span style="font-size:13px;">${escapeHTML(f.label)}</span>
+    </label>`
+  ).join('');
+
+  const fieldCbs = container.querySelectorAll('.stock-download-field-cb');
+
+  function updateStockDownloadInfo() {
+    const fc = Array.from(fieldCbs).filter(cb => cb.checked).length;
+    const total = (Store.data.stockCustomers || []).filter(c => c.deleted !== true).length;
+    info.textContent = `已选择 ${fc} 个字段 · 共 ${total} 条存量客户记录`;
+  }
+  updateStockDownloadInfo();
+
+  checkAll.onclick = () => {
+    fieldCbs.forEach(cb => cb.checked = checkAll.checked);
+    updateStockDownloadInfo();
+  };
+
+  container.addEventListener('change', (e) => {
+    if (e.target.classList.contains('stock-download-field-cb')) {
+      const allChecked = Array.from(fieldCbs).every(cb => cb.checked);
+      const noneChecked = Array.from(fieldCbs).every(cb => !cb.checked);
+      checkAll.checked = allChecked;
+      checkAll.indeterminate = !allChecked && !noneChecked;
+      updateStockDownloadInfo();
+    }
+  });
+
+  btnDownload.onclick = () => {
+    const selectedFields = Array.from(fieldCbs).filter(cb => cb.checked).map(cb => parseInt(cb.dataset.index));
+    if (selectedFields.length === 0) { showToast('请至少选择一个字段', 'error'); return; }
+
+    const allCustomers = (Store.data.stockCustomers || []).filter(c => c.deleted !== true);
+    if (allCustomers.length === 0) { showToast('没有存量客户数据可下载', 'warning'); return; }
+
+    const headerRow = selectedFields.map(i => STOCK_DOWNLOAD_FIELDS[i].label);
+    const wb = XLSX.utils.book_new();
+    const dataRows = [headerRow];
+    allCustomers.forEach(c => {
+      dataRows.push(selectedFields.map(i => STOCK_DOWNLOAD_FIELDS[i].get(c)));
+    });
+    const ws = XLSX.utils.aoa_to_sheet(dataRows);
+    const colWidths = headerRow.map((h, i) => {
+      const maxLen = dataRows.reduce((max, row) => {
+        const val = String(row[i] || '');
+        return Math.max(max, val.length);
+      }, h.length);
+      return { wch: Math.min(Math.max(maxLen * 1.2, 8), 40) };
+    });
+    ws['!cols'] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, '存量客户列表');
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '存量客户数据导出.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    Store.addLog('存量数据下载与导入', '成功', `导出 Excel（${allCustomers.length} 条记录，${selectedFields.length} 个字段）`);
+    Store.save();
+    showToast('Excel 下载成功', 'success');
+  };
+
+  // 导入模板下载
+  const btnTemplate = document.getElementById('btn-stock-download-template');
+  if (btnTemplate) {
+    btnTemplate.onclick = () => {
+      const headerRow = ['序号', '姓名', '公司名称', '手机号', '预算范围', '预计金额', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
+      const dataRows = [headerRow];
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(dataRows);
+      const colWidths = headerRow.map(h => ({ wch: Math.max(h.length * 1.5, 12) }));
+      ws['!cols'] = colWidths;
+      XLSX.utils.book_append_sheet(wb, ws, '存量客户导入模板');
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '存量客户导入模板.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('存量客户导入模板下载成功', 'success');
+    };
+  }
+
+  // 导入功能
+  const fileInput = document.getElementById('btn-stock-import-excel');
+  const fileNameEl = document.getElementById('stock-import-file-name');
+  const clearBtn = document.getElementById('btn-stock-import-clear');
+  const previewArea = document.getElementById('stock-import-preview-area');
+  const previewTable = document.getElementById('stock-import-preview-table');
+  const summaryEl = document.getElementById('stock-import-summary');
+  const confirmBtn = document.getElementById('btn-stock-confirm-import');
+
+  if (!fileInput) return;
+  if (fileInput.dataset.initialized) return;
+  fileInput.dataset.initialized = '1';
+
+  const reversePlatformMap = {};
+  for (const [key, name] of Object.entries(platformDisplayNames)) {
+    reversePlatformMap[name] = key;
+  }
+
+  const IMPORT_FIELD_MAP = [
+    { label: '姓名', key: 'name', parse: v => v },
+    { label: '公司名称', key: 'company', parse: v => v },
+    { label: '性别', key: 'gender', parse: v => v },
+    { label: '年龄', key: 'age', parse: v => v },
+    { label: '手机号', key: 'phone', parse: v => v },
+    { label: '微信', key: 'wechat', parse: v => v },
+    { label: '邮箱', key: 'email', parse: v => v },
+    { label: '省', key: 'province', parse: v => v },
+    { label: '市', key: 'city', parse: v => v },
+    { label: '区', key: 'district', parse: v => v },
+    { label: '详细地址', key: 'address', parse: v => v },
+    { label: '来源', key: 'source', parse: v => v },
+    { label: '等级', key: 'level', parse: v => v },
+    { label: '成交状态', key: 'status', parse: v => v },
+    { label: '一级行业', key: 'industryLevel1', parse: v => v },
+    { label: '二级行业', key: 'industryLevel2', parse: v => v },
+    { label: '客户网址', key: 'website', parse: v => v },
+    { label: '网址', key: 'website', parse: v => v },
+    { label: '客户在投平台', key: 'platforms', parse: v => { if (!v) return []; return v.split('|').map(s => reversePlatformMap[s.trim()] || s.trim()).filter(Boolean); } },
+    { label: '意向产品', key: 'product', parse: v => v },
+    { label: '预算', key: 'budget', parse: v => v },
+    { label: '预算范围', key: 'budget', parse: v => v },
+    { label: '预计金额', key: 'amount', parse: v => v },
+    { label: '行业', key: 'industryLevel1', parse: v => v },
+    { label: '下次跟进日期', key: 'nextFollowDate', parse: v => v || '' },
+    { label: '录入时间', key: 'createdAt', parse: v => { if (!v) return Date.now(); const t = parseDateStr(v); return t !== null ? t : Date.now(); } },
+    { label: '标签', key: 'tags', parse: v => { if (!v) return []; return v.split('|').map(name => { const t = (Store.data.tags || []).find(x => x.name === name.trim()); return t ? t.id : null; }).filter(Boolean); } },
+    { label: '客户标签', key: 'tags', parse: v => { if (!v) return []; return v.split('|').map(name => { const t = (Store.data.tags || []).find(x => x.name === name.trim()); return t ? t.id : null; }).filter(Boolean); } },
+    { label: '备注', key: 'remark', parse: v => v || '' }
+  ];
+
+  let parsedData = null;
+
+  fileInput.onchange = () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    fileNameEl.textContent = file.name;
+    clearBtn.style.display = '';
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+        if (json.length < 2) { showToast('Excel 文件缺少数据行', 'error'); return; }
+
+        const headerRow = json[0].map(h => String(h).trim());
+        const matchedFields = [];
+        const matchedCols = [];
+        headerRow.forEach((h, idx) => {
+          const field = IMPORT_FIELD_MAP.find(f => f.label === h);
+          if (field) {
+            matchedFields.push({ idx, ...field });
+            matchedCols.push(field.label);
+          }
+        });
+        if (matchedFields.length === 0) { showToast('未匹配到任何已知列，请使用模板下载生成的格式', 'error'); return; }
+
+        parsedData = { matchedFields, rows: json.slice(1) };
+
+        const dataRows = json.slice(1).filter(r => r.some(v => String(v).trim() !== ''));
+        let previewHtml = '<thead><tr>';
+        matchedCols.forEach(label => { previewHtml += `<th>${escapeHTML(label)}</th>`; });
+        previewHtml += '</tr></thead><tbody>';
+        const showCount = Math.min(dataRows.length, 10);
+        for (let i = 0; i < showCount; i++) {
+          previewHtml += '<tr>';
+          matchedFields.forEach(f => { previewHtml += `<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(String(dataRows[i][f.idx] || ''))}</td>`; });
+          previewHtml += '</tr>';
+        }
+        if (dataRows.length > showCount) {
+          previewHtml += `<tr><td colspan="${matchedFields.length}" style="text-align:center;color:var(--text-muted);">... 共 ${dataRows.length} 行数据，仅显示前 ${showCount} 行</td></tr>`;
+        }
+        previewHtml += '</tbody>';
+        previewTable.innerHTML = previewHtml;
+        summaryEl.textContent = `识别到 ${matchedFields.length} 个匹配字段，${dataRows.length} 条客户数据`;
+        previewArea.style.display = '';
+      } catch (err) {
+        showToast('文件解析失败：' + err.message, 'error');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  clearBtn.onclick = () => {
+    fileInput.value = '';
+    fileNameEl.textContent = '';
+    clearBtn.style.display = 'none';
+    previewArea.style.display = 'none';
+    parsedData = null;
+  };
+
+  confirmBtn.onclick = async () => {
+    if (!parsedData) { showToast('请先选择导入文件', 'error'); return; }
+    const { matchedFields, rows } = parsedData;
+    const dataRows = rows.filter(r => r.some(v => String(v).trim() !== ''));
+    if (dataRows.length === 0) { showToast('没有有效数据可导入', 'warning'); return; }
+
+    const stockCustomers = Store.data.stockCustomers || [];
+    const existingPhones = new Set(stockCustomers.map(c => (c.phone || '').trim()).filter(Boolean));
+    let imported = 0, skipped = 0;
+
+    for (const row of dataRows) {
+      const customer = { id: uuid(), cid: generateCustomerId(), createdAt: Date.now(), remarkHistory: [], platforms: [] };
+      matchedFields.forEach(f => {
+        const raw = String(row[f.idx] || '').trim();
+        if (raw !== '') {
+          customer[f.key] = f.parse(raw);
+        }
+      });
+      if (customer.tags === undefined) customer.tags = [];
+
+      const phone = (customer.phone || '').trim();
+      if (phone && existingPhones.has(phone)) { skipped++; continue; }
+      if (phone) existingPhones.add(phone);
+
+      if (!customer.name || !customer.name.trim()) { skipped++; continue; }
+
+      customer.updatedAt = Date.now();
+      stockCustomers.unshift(customer);
+      imported++;
+    }
+
+    if (imported === 0) { showToast('没有新客户可导入（可能手机号已存在或姓名为空）', 'warning'); return; }
+    Store.data.stockCustomers = stockCustomers;
+    await Store.saveWithLog('存量客户导入', '成功', `导入 ${imported} 条客户数据，跳过 ${skipped} 条（手机号重复或无姓名）`);
+    showToast(`导入成功：${imported} 条客户（跳过 ${skipped} 条）`, 'success');
+    clearBtn.onclick();
+    refreshUI();
+  };
+}
+
 function renderLogsPage() {
   const el = document.getElementById('log-list');
   if (!el) return;
@@ -10419,7 +11040,8 @@ function navigate(pageName) {
     'stock-list': ['客户列表', '存量客户管理'],
     service: ['服务费管理', '存量客户管理'],
     qifu: ['企服产品管理', '存量客户管理'],
-    'data-download': ['数据下载与导入', '选择字段并下载或导入客户数据'],
+    'data-download': ['销售数据下载与导入', '选择字段并下载或导入客户数据'],
+    'stock-data-download': ['存量数据下载与导入', '下载与导入存量客户列表数据'],
     help: ['帮助', '使用指南与常见问题'],
     security: ['数据与安全', '备份、导入、修改密码、操作日志'],
     settings: ['设置', '系统设置与标签管理']
@@ -10430,17 +11052,29 @@ function navigate(pageName) {
 
   // 渠道/作废页面：标题改为 AI摘要，内容从左边开始
   const channelPages = ['geo', '360', 'bing', 'baidu', 'douyin', 'xianyu', 'trash'];
+  const stockPages = ['brand', 'service', 'qifu'];
   const isChannelPage = channelPages.includes(pageName);
+  const isStockPage = stockPages.includes(pageName);
 
   if (isChannelPage) {
     stopAIRefresh();
+    stopStockAIRefresh();
     document.getElementById('page-title').textContent = 'AI摘要';
     document.getElementById('page-subtitle') && (document.getElementById('page-subtitle').style.display = 'none');
     document.querySelector('.topbar') && document.querySelector('.topbar').classList.add('channel-ai-mode');
     startChannelAIRefresh(pageName);
     renderChannelAISummary(pageName);
+  } else if (isStockPage) {
+    stopAIRefresh();
+    stopChannelAIRefresh();
+    document.getElementById('page-title').textContent = 'AI摘要';
+    document.getElementById('page-subtitle') && (document.getElementById('page-subtitle').style.display = 'none');
+    document.querySelector('.topbar') && document.querySelector('.topbar').classList.add('channel-ai-mode');
+    startStockAIRefresh(pageName);
+    renderStockAISummary(pageName);
   } else {
     stopChannelAIRefresh();
+    stopStockAIRefresh();
     restoreTopbar();
     const origTitle = titleMap[pageName] ? titleMap[pageName][0] : '系统';
     document.getElementById('page-title').textContent = origTitle;
@@ -10468,6 +11102,7 @@ function navigate(pageName) {
     else if (pageName === 'settings') renderSettingsPage();
     else if (pageName === 'security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); }
     else if (pageName === 'data-download') renderDataDownloadPage();
+    else if (pageName === 'stock-data-download') renderStockDataDownloadPage();
     else if (pageName === 'help') renderHelpPage();
   }
   // 进入列表页面自动隐藏移动端侧边栏
@@ -11703,6 +12338,7 @@ function refreshUI() {
   else if (active.id === 'page-settings') renderSettingsPage();
   else if (active.id === 'page-security') { renderLogsPage(); Store.updateSyncUI(); if(window.initSecurityQuestionsUI) window.initSecurityQuestionsUI(); }
   else if (active.id === 'page-data-download') renderDataDownloadPage();
+  else if (active.id === 'page-stock-data-download') renderStockDataDownloadPage();
   else if (active.id === 'page-help') renderHelpPage();
   updateNavCounts();
 }
@@ -11939,8 +12575,20 @@ function refreshUI() {
     }
     .topbar.channel-ai-mode .topbar-left {
       padding-top: 2px;
+      width: 100%;
+    }
+    .topbar.channel-ai-mode .topbar-right {
+      display: none !important;
     }
     .topbar.channel-ai-mode #channel-ai-container {
+      margin-top: 6px;
+    }
+    .topbar.channel-ai-mode .channel-ai-summary {
+      display: flex;
+      flex-flow: row wrap;
+      gap: 4px 20px;
+      padding: 8px 0;
+      border-top: 1px solid var(--border-color);
       margin-top: 4px;
     }
 
