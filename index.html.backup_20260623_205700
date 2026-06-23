@@ -2984,6 +2984,12 @@ html.scrolling {
         </div>
       </section>
 
+      <!-- 客户详情页 -->
+      <section class="page" id="page-detail">
+        <div class="card" id="detail-container">
+          <div class="empty-state">请从客户列表选择客户查看详情</div>
+        </div>
+      </section>
 
       <!-- 账户设置 -->
       <section class="page" id="page-settings">
@@ -3880,10 +3886,6 @@ const Store = {
       tags: this.data.tags,
       customerLevels: this.data.customerLevels,
       customerSources: this.data.customerSources,
-      stockCustomers: this.data.stockCustomers,
-      brandProducts: this.data.brandProducts,
-      serviceFees: this.data.serviceFees,
-      qiFuProducts: this.data.qiFuProducts,
       createdAt: Date.now()
     }));
     if (this.data.versions.length === 0 ||
@@ -5845,7 +5847,6 @@ function openPoolCustomerForm(customer) {
       key: 'basic', title: '基础信息（必填）', open: true,
       fields: [
         { key: 'name', label: '姓名', type: 'text', required: true, max: 50 },
-        { key: 'company', label: '公司名称', type: 'text', max: 100 },
         { key: 'gender', label: '性别', type: 'select', options: ['', '男', '女', '其他'] },
         { key: 'age', label: '年龄', type: 'number', max: 3 },
         { key: 'phone', label: '手机号', type: 'text', max: 11 },
@@ -13003,30 +13004,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
                 Store.data.customers = [...imported, ...Store.data.customers];
                 if (obj.tags && obj.tags.length) {
-                  const tagIds = new Set((Store.data.tags || []).map(x => x.id));
-                  for (const t of obj.tags) { if (!tagIds.has(t.id)) Store.data.tags.push(t); }
+                  const existingIds = new Set((Store.data.tags || []).map(x => x.id));
+                  for (const t of obj.tags) { if (!existingIds.has(t.id)) Store.data.tags.push(t); }
                 }
-                // 合并客户池数据（按 phone 去重）
-                if (obj.poolCustomers && obj.poolCustomers.length) {
-                  const importedPool = obj.poolCustomers.filter(c =>
-                    !(Store.data.poolCustomers || []).some(ex => ex.phone === c.phone)
-                  );
-                  Store.data.poolCustomers = [...importedPool, ...(Store.data.poolCustomers || [])];
-                }
-                // 合并存量模块及配置数据（按 id 去重）
-                const mergeById = (arr, key) => {
-                  if (!arr || !arr.length) return;
-                  const existing = Store.data[key] || (Store.data[key] = []);
-                  const ids = new Set(existing.map(x => x.id));
-                  for (const item of arr) { if (!ids.has(item.id)) existing.push(item); }
-                };
-                mergeById(obj.stockCustomers, 'stockCustomers');
-                mergeById(obj.brandProducts, 'brandProducts');
-                mergeById(obj.serviceFees, 'serviceFees');
-                mergeById(obj.qiFuProducts, 'qiFuProducts');
-                mergeById(obj.customerLevels, 'customerLevels');
-                mergeById(obj.customerSources, 'customerSources');
-                await Store.saveWithLog('导入加密备份', `从备份导入 ${imported.length} 条新客户及关联数据`);
+                await Store.saveWithLog('导入加密备份', `从备份导入 ${imported.length} 条新客户`);
                 closeModal(); refreshUI(); showToast(`导入成功，新增 ${imported.length} 条客户`, 'success');
               } catch (err) { showToast('密码错误或文件已损坏', 'error'); }
             };
@@ -13062,16 +13043,10 @@ document.addEventListener('DOMContentLoaded', function () {
     confirmDialog('回滚数据', `将恢复到最近一份备份（共 ${Store.data.versions.length} 个版本），当前最新变更将移到下一版本，是否继续？`, true, async () => {
       promptPassword('二次验证', '请输入解锁密码以执行回滚', async () => {
         // 当前数据作为一个新版本，再将 customers/poolCustomers 替换为历史数据
-        const currentSnapshot = JSON.parse(JSON.stringify({ customers: Store.data.customers, poolCustomers: Store.data.poolCustomers, tags: Store.data.tags, customerLevels: Store.data.customerLevels, customerSources: Store.data.customerSources, stockCustomers: Store.data.stockCustomers, brandProducts: Store.data.brandProducts, serviceFees: Store.data.serviceFees, qiFuProducts: Store.data.qiFuProducts, createdAt: Date.now() }));
+        const currentSnapshot = JSON.parse(JSON.stringify({ customers: Store.data.customers, poolCustomers: Store.data.poolCustomers, tags: Store.data.tags, createdAt: Date.now() }));
         Store.data.customers = JSON.parse(JSON.stringify(latest.customers || []));
         Store.data.poolCustomers = JSON.parse(JSON.stringify(latest.poolCustomers || []));
         if (latest.tags) Store.data.tags = JSON.parse(JSON.stringify(latest.tags || []));
-        if (latest.customerLevels) Store.data.customerLevels = JSON.parse(JSON.stringify(latest.customerLevels || []));
-        if (latest.customerSources) Store.data.customerSources = JSON.parse(JSON.stringify(latest.customerSources || []));
-        if (latest.stockCustomers) Store.data.stockCustomers = JSON.parse(JSON.stringify(latest.stockCustomers || []));
-        if (latest.brandProducts) Store.data.brandProducts = JSON.parse(JSON.stringify(latest.brandProducts || []));
-        if (latest.serviceFees) Store.data.serviceFees = JSON.parse(JSON.stringify(latest.serviceFees || []));
-        if (latest.qiFuProducts) Store.data.qiFuProducts = JSON.parse(JSON.stringify(latest.qiFuProducts || []));
         Store.data.versions.unshift(currentSnapshot);
         if (Store.data.versions.length > 3) Store.data.versions.length = 3;
         await Store.saveWithLog('回滚到历史版本', '恢复到最近一份备份');
@@ -13270,36 +13245,8 @@ function refreshUI() {
   // 根据当前所在页面刷新
   const active = document.querySelector('.page.active');
   if (!active) { navigate('dashboard'); return; }
-
-  // AI 定时器生命周期管理（与 navigate() 保持一致，防止定时器泄漏/残留）
-  var _channelPageMap = { 'page-geo':'geo','page-360':'360','page-bing':'bing','page-baidu':'baidu','page-douyin':'douyin','page-xianyu':'xianyu','page-trash':'trash' };
-  var _stockPageMap = { 'page-brand':'brand','page-service':'service','page-qifu':'qifu' };
-  var _curChannel = _channelPageMap[active.id];
-  var _curStock = _stockPageMap[active.id];
-  var _curIsDashboard = active.id === 'page-dashboard';
-  if (_curChannel) {
-    stopAIRefresh(); stopStockAIRefresh();
-    if (!_channelAITimer) startChannelAIRefresh(_curChannel);
-  } else if (_curStock) {
-    stopAIRefresh(); stopChannelAIRefresh();
-    if (!_stockAITimer) startStockAIRefresh(_curStock);
-  } else {
-    stopChannelAIRefresh(); stopStockAIRefresh();
-    if (!_curIsDashboard) stopAIRefresh();
-    restoreTopbar();
-    var _tb = document.querySelector('.topbar');
-    if (_tb) _tb.classList.remove('channel-ai-mode');
-  }
-  if (_curIsDashboard && !_aiRefreshTimer) startAIRefresh();
-
-  if (active.id === 'page-dashboard') {
-    if (window._dashboardMode === 'stock') renderStockDashboard();
-    else renderDashboard();
-  }
-  else if (active.id === 'page-bi') {
-    if (window._biMode === 'stock') renderStockBIPage();
-    else renderBIPage();
-  }
+  if (active.id === 'page-dashboard') renderDashboard();
+  else if (active.id === 'page-bi') renderBIPage();
   else if (active.id === 'page-pool') { renderPoolFilterSources(); renderPoolTable(); }
   else if (active.id === 'page-list') { renderFilterSources(); renderCustomerTable(); }
   else if (active.id === 'page-geo') renderChannelPage('geo');
