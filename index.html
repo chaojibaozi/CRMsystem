@@ -783,6 +783,11 @@ input[type="checkbox"]:checked {
   background: var(--color-primary-200);
   color: var(--color-primary-700);
 }
+.nav-sub-item {
+  padding-left: 32px !important;
+  font-size: 12.5px;
+  font-weight: 400;
+}
 
 /* 侧边栏底部用户区 */
 .sidebar-user {
@@ -2504,7 +2509,11 @@ html.scrolling {
       <span class="nav-group-label">概览</span>
       <ul class="nav-list">
         <li class="nav-item active" data-page="dashboard"><span class="nav-icon">■</span>仪表盘</li>
+        <li class="nav-item nav-sub-item active" data-page="dashboard" data-mode="sales">👥 销售仪表</li>
+        <li class="nav-item nav-sub-item" data-page="dashboard" data-mode="stock">📦 存量仪表</li>
         <li class="nav-item" data-page="bi"><span class="nav-icon">📊</span>BI看板</li>
+        <li class="nav-item nav-sub-item" data-page="bi" data-mode="sales">👥 销售看板</li>
+        <li class="nav-item nav-sub-item" data-page="bi" data-mode="stock">📦 存量看板</li>
       </ul>
       <span class="nav-group-label">销售开发管理</span>
       <ul class="nav-list">
@@ -2565,10 +2574,6 @@ html.scrolling {
 
       <!-- 仪表盘 -->
       <section class="page active" id="page-dashboard">
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;">
-          <button class="btn btn-sm btn-primary" id="dashboard-sales-btn" data-type="sales">👥 销售仪表</button>
-          <button class="btn btn-sm btn-outline" id="dashboard-stock-btn" data-type="stock">📦 存量仪表</button>
-        </div>
         <div class="dashboard-top-row">
           <div class="dashboard-left-col">
             <div class="stats-grid" id="stats-grid"></div>
@@ -2603,10 +2608,6 @@ html.scrolling {
 
       <!-- BI 看板 -->
       <section class="page" id="page-bi">
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;">
-          <button class="btn btn-sm btn-primary" id="bi-sales-btn" data-type="sales">👥 销售看板</button>
-          <button class="btn btn-sm btn-outline" id="bi-stock-btn" data-type="stock">📦 存量看板</button>
-        </div>
         <!-- 客户数据分析 -->
         <div class="bi-section bi-analysis-section">
           <div class="bi-section-title">
@@ -11859,8 +11860,17 @@ function navigate(pageName) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const el = document.getElementById('page-' + pageName);
   if (el) el.classList.add('active');
-  const nav = document.querySelector('.nav-item[data-page="' + pageName + '"]');
+  const nav = document.querySelector('.nav-item[data-page="' + pageName + '"]:not([data-mode])');
   if (nav) nav.classList.add('active');
+  if (pageName === 'dashboard') {
+    document.querySelectorAll('.nav-item[data-page="dashboard"][data-mode]').forEach(function(i) {
+      i.classList.toggle('active', i.dataset.mode === _dashboardMode);
+    });
+  } else if (pageName === 'bi') {
+    document.querySelectorAll('.nav-item[data-page="bi"][data-mode]').forEach(function(i) {
+      i.classList.toggle('active', i.dataset.mode === _biMode);
+    });
+  }
   const titleMap = {
     dashboard: ['仪表盘', '系统总览'],
     bi: ['BI看板', '商业智能数据分析'],
@@ -11922,16 +11932,8 @@ function navigate(pageName) {
   if (pageName === 'dashboard') { 
     if (_dashboardMode === 'sales') {
       renderDashboard(); 
-      document.getElementById('dashboard-sales-btn')?.classList.add('btn-primary');
-      document.getElementById('dashboard-sales-btn')?.classList.remove('btn-outline');
-      document.getElementById('dashboard-stock-btn')?.classList.remove('btn-primary');
-      document.getElementById('dashboard-stock-btn')?.classList.add('btn-outline');
     } else {
       renderStockDashboard();
-      document.getElementById('dashboard-stock-btn')?.classList.add('btn-primary');
-      document.getElementById('dashboard-stock-btn')?.classList.remove('btn-outline');
-      document.getElementById('dashboard-sales-btn')?.classList.remove('btn-primary');
-      document.getElementById('dashboard-sales-btn')?.classList.add('btn-outline');
     }
     startAIRefresh(); 
   }
@@ -11940,16 +11942,8 @@ function navigate(pageName) {
     if (pageName === 'bi') {
       if (_biMode === 'sales') {
         renderBIPage();
-        document.getElementById('bi-sales-btn')?.classList.add('btn-primary');
-        document.getElementById('bi-sales-btn')?.classList.remove('btn-outline');
-        document.getElementById('bi-stock-btn')?.classList.remove('btn-primary');
-        document.getElementById('bi-stock-btn')?.classList.add('btn-outline');
       } else {
         renderStockBIPage();
-        document.getElementById('bi-stock-btn')?.classList.add('btn-primary');
-        document.getElementById('bi-stock-btn')?.classList.remove('btn-outline');
-        document.getElementById('bi-sales-btn')?.classList.remove('btn-primary');
-        document.getElementById('bi-sales-btn')?.classList.add('btn-outline');
       }
     }
     else if (pageName === 'pool') { renderPoolFilterSources(); renderPoolTable(); }
@@ -12500,49 +12494,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 导航
   document.querySelectorAll('.nav-item').forEach(el => {
-    el.onclick = () => navigate(el.dataset.page);
+    el.onclick = () => {
+      const mode = el.dataset.mode;
+      const page = el.dataset.page;
+      if (mode) {
+        if (page === 'dashboard') {
+          _dashboardMode = mode;
+        } else if (page === 'bi') {
+          _biMode = mode;
+        }
+      }
+      navigate(page);
+    };
   });
   document.getElementById('menu-toggle').onclick = () => {
     document.getElementById('sidebar').classList.toggle('show');
   };
-
-  // 仪表盘切换按钮
-  document.addEventListener('click', (e) => {
-    const target = e.target.closest('button[data-type]');
-    if (!target) return;
-    
-    const btnType = target.dataset.type;
-    const isDashboardBtn = target.id === 'dashboard-sales-btn' || target.id === 'dashboard-stock-btn';
-    const isBiBtn = target.id === 'bi-sales-btn' || target.id === 'bi-stock-btn';
-    
-    if (isDashboardBtn) {
-      _dashboardMode = btnType;
-      document.getElementById('dashboard-sales-btn').classList.toggle('btn-primary', btnType === 'sales');
-      document.getElementById('dashboard-sales-btn').classList.toggle('btn-outline', btnType !== 'sales');
-      document.getElementById('dashboard-stock-btn').classList.toggle('btn-primary', btnType === 'stock');
-      document.getElementById('dashboard-stock-btn').classList.toggle('btn-outline', btnType !== 'stock');
-      
-      if (btnType === 'sales') {
-        renderDashboard();
-      } else {
-        renderStockDashboard();
-      }
-    }
-    
-    if (isBiBtn) {
-      _biMode = btnType;
-      document.getElementById('bi-sales-btn').classList.toggle('btn-primary', btnType === 'sales');
-      document.getElementById('bi-sales-btn').classList.toggle('btn-outline', btnType !== 'sales');
-      document.getElementById('bi-stock-btn').classList.toggle('btn-primary', btnType === 'stock');
-      document.getElementById('bi-stock-btn').classList.toggle('btn-outline', btnType !== 'stock');
-      
-      if (btnType === 'sales') {
-        renderBIPage();
-      } else {
-        renderStockBIPage();
-      }
-    }
-  });
 
   // ── 账户设置页面按钮事件（一次性绑定，与渲染函数分离确保可靠性）───
   // 销售开发管理系统跟进提醒频率选择
