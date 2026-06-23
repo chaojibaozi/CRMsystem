@@ -3056,17 +3056,36 @@ html.scrolling {
 
         <div class="card" style="margin-bottom:12px;">
           <h2 style="font-size:18px;margin-bottom:10px;">📋 跟进提醒设置</h2>
-          <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
-            设置新增客户未跟进的提醒频率，系统将在指定天数后提醒您跟进新客户。
+          <div style="margin-bottom:16px;font-size:13px;color:var(--text-secondary);">
+            设置客户未跟进的提醒频率，系统将在指定天数后提醒您跟进客户。
           </div>
-          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-            <label style="font-weight:500;">提醒频率：</label>
-            <div class="btn-group" id="followup-frequency-group">
-              <button class="btn btn-sm frequency-option" data-value="2">2天</button>
-              <button class="btn btn-sm frequency-option" data-value="3">3天</button>
-              <button class="btn btn-sm frequency-option" data-value="5">5天</button>
+
+          <!-- 销售开发管理系统提醒 -->
+          <div style="margin-bottom:20px;padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);">
+            <div style="font-weight:500;margin-bottom:8px;color:var(--text-primary);">📊 销售开发管理系统提醒</div>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+              <label style="font-size:13px;">提醒频率：</label>
+              <div class="btn-group" id="followup-frequency-group">
+                <button class="btn btn-sm frequency-option" data-value="2">2天</button>
+                <button class="btn btn-sm frequency-option" data-value="3">3天</button>
+                <button class="btn btn-sm frequency-option" data-value="5">5天</button>
+              </div>
+              <span id="followup-frequency-desc" style="font-size:13px;color:var(--text-muted);">新增客户超过3天未跟进时提醒</span>
             </div>
-            <span id="followup-frequency-desc" style="font-size:13px;color:var(--text-muted);">新增客户超过3天未跟进时提醒</span>
+          </div>
+
+          <!-- 存量客户管理提醒 -->
+          <div style="padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);">
+            <div style="font-weight:500;margin-bottom:8px;color:var(--text-primary);">📦 存量客户管理提醒</div>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+              <label style="font-size:13px;">提醒频率：</label>
+              <div class="btn-group" id="stock-followup-frequency-group">
+                <button class="btn btn-sm stock-frequency-option" data-value="15">提前15天</button>
+                <button class="btn btn-sm stock-frequency-option" data-value="30">提前30天</button>
+                <button class="btn btn-sm stock-frequency-option" data-value="60">提前60天</button>
+              </div>
+              <span id="stock-followup-frequency-desc" style="font-size:13px;color:var(--text-muted);">提前30天提醒跟进</span>
+            </div>
           </div>
         </div>
 
@@ -3750,7 +3769,7 @@ const Store = {
   unlocked: false,
   password: null,          // 当前会话的密码（用于后台加密同步）
   data: { customers: [], tags: [], customerLevels: [], customerSources: [], logs: [], versions: [], username: '', avatar: '', securityQuestions: [], poolCustomers: [], stockCustomers: [], brandProducts: [], serviceFees: [], qiFuProducts: [] }, // 明文内存
-  settings: { folderHandleKey: null, theme: 'light', followupDays: 3 },
+  settings: { folderHandleKey: null, theme: 'light', followupDays: 3, stockFollowupDays: 30 },
   // 文件夹授权句柄（无法持久化，仅运行态保存）
   folderHandle: null,
   folderName: '',
@@ -4776,8 +4795,7 @@ const STOCK_COLUMN_DEFS = [
   { key: 'industryLevel1', label: '一级行业' },
   { key: 'industryLevel2', label: '二级行业' },
   { key: 'website', label: '网站URL' },
-  { key: 'accountOpenDate', label: '开户日期' },
-  { key: 'consumableDays', label: '可消费天数' },
+  { key: 'accountOpenDate', label: '开户日期' }
 ];
 
 function getColumnConfig() {
@@ -4978,8 +4996,6 @@ function renderColumnCells(c, config, start, i, masked, channel) {
       html += `<td>${escapeHTML(c.consultant || '-')}</td>`;
     } else if (key === 'accountOpenDate') {
       html += `<td>${c.accountOpenDate ? dateOnly(c.accountOpenDate) : '-'}</td>`;
-    } else if (key === 'consumableDays') {
-      html += `<td style="font-weight:600;">${c.consumableDays != null ? c.consumableDays + '天' : '-'}</td>`;
     }
   });
   return html;
@@ -6537,7 +6553,6 @@ function openStockCustomerDetail(c, module, dataKey) {
       <div class="detail-item"><div class="detail-label">二级行业</div><div class="detail-value">${escapeHTML(c.industryLevel2 || '-')}</div></div>
       <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">网站URL</div><div class="detail-value">${c.website ? `<a href="${escapeHTML(c.website)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">${escapeHTML(c.website)}</a>` : '-'}</div></div>
       <div class="detail-item"><div class="detail-label">开户日期</div><div class="detail-value">${c.accountOpenDate ? dateOnly(c.accountOpenDate) : '-'}</div></div>
-      <div class="detail-item"><div class="detail-label">可消费天数</div><div class="detail-value" style="font-weight:600;">${c.consumableDays != null ? c.consumableDays + '天' : '-'}</div></div>
       <div class="detail-item"><div class="detail-label">客户等级</div><div class="detail-value">${escapeHTML(getChannelField(c, module, 'level') || c.level || (getLevels()[0] || {}).name || '-')}</div></div>
       <div class="detail-item"><div class="detail-label">客户来源</div><div class="detail-value">${escapeHTML(c.source || '-')}</div></div>
       <div class="detail-item"><div class="detail-label">成交状态</div><div class="detail-value">${escapeHTML(getChannelField(c, module, 'status') || c.status || '-')}</div></div>
@@ -6607,7 +6622,7 @@ function openStockCustomerDetail(c, module, dataKey) {
 
 function buildStockExcelData(list, module) {
   const moduleNames = { 'stock-list': '客户列表', brand: '品牌产品', service: '服务费', qifu: '企服产品' };
-  const header = ['账户ID','联系人','联系电话','微信号','公司名称','对应顾问','一级行业','二级行业','网站URL','开户日期','可消费天数','来源','等级','成交状态','意向产品','预算','预计金额','下次跟进日期','客户在投平台','录入时间','标签','备注'];
+  const header = ['账户ID','联系人','联系电话','微信号','公司名称','对应顾问','一级行业','二级行业','网站URL','开户日期','来源','等级','成交状态','意向产品','预算','预计金额','下次跟进日期','客户在投平台','录入时间','标签','备注'];
   const rows = [header];
   list.forEach(c => {
     const d = c;
@@ -6616,7 +6631,6 @@ function buildStockExcelData(list, module) {
       d.cid || '', d.name, d.phone, d.wechat, d.company || '', d.consultant || '',
       d.industryLevel1 || '', d.industryLevel2 || '', d.website || '',
       d.accountOpenDate ? dateOnly(d.accountOpenDate) : '',
-      d.consumableDays != null ? String(d.consumableDays) : '',
       d.source, 
       getChannelField(c, module, 'level') || d.level || '',
       getChannelField(c, module, 'status') || d.status || '',
@@ -6666,7 +6680,6 @@ function openStockCustomerForm(module, dataKey, customer) {
         { key: 'industryLevel2', label: '二级行业', type: 'select-industry2' },
         { key: 'website', label: '网站URL', type: 'text', max: 200 },
         { key: 'accountOpenDate', label: '开户日期', type: 'date' },
-        { key: 'consumableDays', label: '可消费天数', type: 'number', max: 6 },
         { key: 'source', label: '客户来源', type: 'select', options: ['', ...getSourceOptions()] },
         { key: 'level', label: '客户等级', type: 'select', options: ['', ...getLevelOptions()], val: moduleLevel },
         { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'], val: moduleStatus },
@@ -7488,11 +7501,6 @@ function renderStockAISummary(module) {
     return (todayStart.getTime() - ft) / 86400000 > followupDays;
   }).length;
 
-  const consumableDaysWarning = list.filter(c => {
-    if (!c.consumableDays) return false;
-    return parseInt(c.consumableDays) <= 7;
-  }).length;
-
   const timeStr = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
 
   let html = `<div class="channel-ai-summary">`;
@@ -7511,10 +7519,6 @@ function renderStockAISummary(module) {
   if (severeOverdue > 0) followHtml += ` <span style="color:#dc2626;font-weight:600;">严重 ${severeOverdue}</span>`;
   html += `<div class="channel-ai-row"><span class="channel-ai-label">跟进</span>${followHtml}</div>`;
 
-  if (consumableDaysWarning > 0) {
-    html += `<div class="channel-ai-row"><span class="channel-ai-label">临期提醒</span><span style="color:#dc2626;font-weight:600;">即将到期 ${consumableDaysWarning} 位</span></div>`;
-  }
-  
   html += `<div class="channel-ai-time">${timeStr}</div>`;
   html += `</div>`;
 
@@ -9895,8 +9899,8 @@ function renderSettingsPage() {
     const followupDays = Store.settings.followupDays || 3;
     const desc = document.getElementById('followup-frequency-desc');
     if (desc) desc.textContent = `新增客户超过${followupDays}天未跟进时提醒`;
-    
-    // 更新按钮选中状态
+
+    // 更新销售开发管理系统按钮选中状态
     document.querySelectorAll('.frequency-option').forEach(btn => {
       btn.classList.remove('btn-primary');
       btn.classList.add('btn-outline');
@@ -9905,7 +9909,22 @@ function renderSettingsPage() {
         btn.classList.add('btn-primary');
       }
     });
-    
+
+    // 渲染存量客户提醒频率设置
+    const stockFollowupDays = Store.settings.stockFollowupDays || 30;
+    const stockDesc = document.getElementById('stock-followup-frequency-desc');
+    if (stockDesc) stockDesc.textContent = `提前${stockFollowupDays}天提醒跟进`;
+
+    // 更新存量客户管理按钮选中状态
+    document.querySelectorAll('.stock-frequency-option').forEach(btn => {
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-outline');
+      if (parseInt(btn.dataset.value) === stockFollowupDays) {
+        btn.classList.remove('btn-outline');
+        btn.classList.add('btn-primary');
+      }
+    });
+
     // 渲染标签列表
     renderTagsList();
     
@@ -10745,19 +10764,7 @@ function renderStockDataDownloadPage() {
     { label: '一级行业', key: 'industryLevel1', get: c => c.industryLevel1 || '' },
     { label: '二级行业', key: 'industryLevel2', get: c => c.industryLevel2 || '' },
     { label: '网站URL', key: 'website', get: c => c.website || '' },
-    { label: '开户日期', key: 'accountOpenDate', get: c => c.accountOpenDate || '' },
-    { label: '可消费天数', key: 'consumableDays', get: c => c.consumableDays != null ? String(c.consumableDays) : '' },
-    { label: '来源', key: 'source', get: c => c.source },
-    { label: '等级', key: 'level', get: c => c.level },
-    { label: '成交状态', key: 'status', get: c => c.status },
-    { label: '意向产品', key: 'product', get: c => c.product },
-    { label: '预算', key: 'budget', get: c => c.budget },
-    { label: '预计金额', key: 'amount', get: c => c.amount },
-    { label: '下次跟进日期', key: 'nextFollowDate', get: c => c.nextFollowDate },
-    { label: '客户在投平台', key: 'platforms', get: c => (c.platforms || []).map(p => platformDisplayNames[p] || p).join('|') },
-    { label: '录入时间', key: 'createdAt', get: c => formatDate(c.createdAt) },
-    { label: '标签', key: 'tags', get: c => (c.tags || []).map(id => { const t = (Store.data.tags || []).find(x => x.id === id); return t ? t.name : id; }).join('|') },
-    { label: '备注', key: 'remark', get: c => c.remark || '' }
+    { label: '开户日期', key: 'accountOpenDate', get: c => c.accountOpenDate || '' }
   ];
 
   const checkAll = document.getElementById('stock-check-all-headers');
@@ -10838,7 +10845,7 @@ function renderStockDataDownloadPage() {
   const btnTemplate = document.getElementById('btn-stock-download-template');
   if (btnTemplate) {
     btnTemplate.onclick = () => {
-      const headerRow = ['序号', '姓名', '公司名称', '手机号', '预算范围', '预计金额', '来源', '意向产品', '微信', '行业', '网址', '客户标签', '备注'];
+      const headerRow = ['账户ID', '联系人', '联系电话', '微信号', '公司名称', '对应顾问', '一级行业', '二级行业', '网站URL', '开户日期'];
       const dataRows = [headerRow];
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(dataRows);
@@ -11661,7 +11668,7 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // ── 账户设置页面按钮事件（一次性绑定，与渲染函数分离确保可靠性）───
-  // 跟进提醒频率选择
+  // 销售开发管理系统跟进提醒频率选择
   document.querySelectorAll('.frequency-option').forEach(btn => {
     btn.addEventListener('click', async function() {
       const days = parseInt(this.dataset.value);
@@ -11676,9 +11683,29 @@ document.addEventListener('DOMContentLoaded', function () {
       this.classList.add('btn-primary');
       const desc = document.getElementById('followup-frequency-desc');
       if (desc) desc.textContent = `新增客户超过${days}天未跟进时提醒`;
-      showToast(`跟进提醒频率已设置为 ${days} 天`, 'success');
+      showToast(`销售开发管理系统跟进提醒频率已设置为 ${days} 天`, 'success');
     });
   });
+
+  // 存量客户管理提醒频率选择
+  document.querySelectorAll('.stock-frequency-option').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const days = parseInt(this.dataset.value);
+      Store.settings.stockFollowupDays = days;
+      Store.saveSettings();
+      // 更新UI
+      document.querySelectorAll('.stock-frequency-option').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-outline');
+      });
+      this.classList.remove('btn-outline');
+      this.classList.add('btn-primary');
+      const desc = document.getElementById('stock-followup-frequency-desc');
+      if (desc) desc.textContent = `提前${days}天提醒跟进`;
+      showToast(`存量客户管理提醒频率已设置为提前${days}天`, 'success');
+    });
+  });
+
   // 新增标签
   document.getElementById('btn-new-tag')?.addEventListener('click', () => openTagEditor(null));
   // 新增等级
