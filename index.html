@@ -1081,7 +1081,7 @@ input[type="checkbox"]:checked {
 
 .alert-section {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
@@ -1351,7 +1351,7 @@ input[type="checkbox"]:checked {
 
 .charts-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
@@ -1629,7 +1629,7 @@ input[type="checkbox"]:checked {
 /* 图表卡片 */
 .bi-chart-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: var(--space-4);
 }
 .bi-card {
@@ -1637,7 +1637,6 @@ input[type="checkbox"]:checked {
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   border: 1px solid var(--color-neutral-200);
-  grid-column: span 2;
   transition: box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
   animation: biCardIn 0.45s ease both;
   position: relative;
@@ -1648,7 +1647,7 @@ input[type="checkbox"]:checked {
   border-color: var(--color-primary-200);
   transform: translateY(-2px);
 }
-.bi-card-wide { grid-column: span 4; }
+.bi-card-wide { grid-column: 1 / -1; }
 .bi-card-title {
   font-size: 14px;
   font-weight: 700;
@@ -1688,8 +1687,6 @@ input[type="checkbox"]:checked {
   .bi-kpi-row { grid-template-columns: repeat(3, 1fr); }
   .bi-analysis-grid { grid-template-columns: repeat(2, 1fr); }
   .bi-chart-grid { grid-template-columns: 1fr; }
-  .bi-card { grid-column: span 1; }
-  .bi-card-wide { grid-column: span 1; }
 }
 @media (max-width: 640px) {
   .bi-kpi-row { grid-template-columns: repeat(2, 1fr); }
@@ -7258,22 +7255,30 @@ function renderStockDashboardAISummary() {
   const qifuList = (Store.data.qiFuProducts || []).filter(c => c.deleted !== true);
   
   const total = stockList.length + brandList.length + serviceList.length + qifuList.length;
+
+  // ── 注册可点击列表 ──
+  _aiListIdCounter = 0;
+  Object.keys(_aiListStore).forEach(k => delete _aiListStore[k]);
+  const kTotal = _storeAIList([...stockList, ...brandList, ...serviceList, ...qifuList], 'stock');
+  const kStockList = _storeAIList(stockList, 'stock');
+  const kBrand = _storeAIList(brandList, 'brand');
+  const kService = _storeAIList(serviceList, 'service');
+  const kQifu = _storeAIList(qifuList, 'qifu');
   
   const summaryEl = document.getElementById('ai-summary-body');
   if (summaryEl) {
     let summary = `<div style="font-size:14px;line-height:1.7;">`;
-    summary += `<p>📦 <strong>存量客户总览</strong>：当前共有 <strong style="color:var(--accent);">${total}</strong> 位存量客户。</p>`;
-    summary += `<p>📋 <strong>模块分布</strong>：客户列表 <strong>${stockList.length}</strong> 位，品牌产品 <strong>${brandList.length}</strong> 位，服务费 <strong>${serviceList.length}</strong> 位，企服产品 <strong>${qifuList.length}</strong> 位。</p>`;
+    summary += `<p>📦 <strong>存量客户总览</strong>：当前共有 <strong class="ai-clickable" onclick="_openAIList('${kTotal}','存量客户总数')" style="color:var(--accent);cursor:pointer;">${total}</strong> 位存量客户。</p>`;
+    summary += `<p>📋 <strong>模块分布</strong>：客户列表 <strong class="ai-clickable" onclick="_openAIList('${kStockList}','客户列表')">${stockList.length}</strong> 位，品牌产品 <strong class="ai-clickable" onclick="_openAIList('${kBrand}','品牌产品')">${brandList.length}</strong> 位，服务费 <strong class="ai-clickable" onclick="_openAIList('${kService}','服务费')">${serviceList.length}</strong> 位，企服产品 <strong class="ai-clickable" onclick="_openAIList('${kQifu}','企服产品')">${qifuList.length}</strong> 位。</p>`;
     
     const avgConsultant = total ? ((stockList.length + brandList.length + serviceList.length + qifuList.length) / Math.max(1, (new Set([...stockList, ...brandList, ...serviceList, ...qifuList].map(c => c.consultant)).size))).toFixed(1) : 0;
     summary += `<p>👤 <strong>顾问分配</strong>：平均每位顾问负责 <strong>${avgConsultant}</strong> 位存量客户。</p>`;
     
     const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-    const todayNew = stockList.filter(c => c.createdAt >= todayStart.getTime()).length +
-                     brandList.filter(c => c.createdAt >= todayStart.getTime()).length +
-                     serviceList.filter(c => c.createdAt >= todayStart.getTime()).length +
-                     qifuList.filter(c => c.createdAt >= todayStart.getTime()).length;
-    summary += `<p>✨ <strong>今日新增</strong>：今日新增 <strong>${todayNew}</strong> 位存量客户。</p>`;
+    const todayNewList = [...stockList, ...brandList, ...serviceList, ...qifuList].filter(c => c.createdAt >= todayStart.getTime());
+    const todayNew = todayNewList.length;
+    const kToday = _storeAIList(todayNewList, 'stock');
+    summary += `<p>✨ <strong>今日新增</strong>：今日新增 <strong class="ai-clickable" onclick="_openAIList('${kToday}','今日新增存量客户')">${todayNew}</strong> 位存量客户。</p>`;
     summary += `</div>`;
     summaryEl.innerHTML = summary;
   }
@@ -7429,97 +7434,134 @@ function renderAISummary() {
   const followupDays = (Store.settings && Store.settings.followupDays) || 3;
 
   // 今日 / 本月 新增
-  const todayCount = list.filter(c => c.createdAt && c.createdAt >= todayStart.getTime()).length;
-  const monthCount = list.filter(c => c.createdAt && c.createdAt >= monthStart.getTime()).length;
+  const todayNewList = list.filter(c => c.createdAt && c.createdAt >= todayStart.getTime());
+  const todayCount = todayNewList.length;
+  const monthNewList = list.filter(c => c.createdAt && c.createdAt >= monthStart.getTime());
+  const monthCount = monthNewList.length;
 
   // 等级分布
   const levels = getLevels();
   const levelDist = {};
-  list.forEach(c => { const l = c.level || '未分级'; levelDist[l] = (levelDist[l] || 0) + 1; });
-  const levelRows = levels.filter(l => levelDist[l.name]).map(l => ({ name: l.name, count: levelDist[l.name] }));
+  const levelLists = {};
+  list.forEach(c => { const l = c.level || '未分级'; levelDist[l] = (levelDist[l] || 0) + 1; if (!levelLists[l]) levelLists[l] = []; levelLists[l].push(c); });
+  const levelRows = levels.filter(l => levelDist[l.name]).map(l => ({ name: l.name, count: levelDist[l.name], list: levelLists[l.name] }));
   const ungraded = levelDist['未分级'] || 0;
+  const ungradedList = levelLists['未分级'] || [];
 
   // 成交状态分布
   const statusDist = {};
-  list.forEach(c => { const s = c.status || '未沟通'; statusDist[s] = (statusDist[s] || 0) + 1; });
+  const statusLists = {};
+  list.forEach(c => { const s = c.status || '未沟通'; statusDist[s] = (statusDist[s] || 0) + 1; if (!statusLists[s]) statusLists[s] = []; statusLists[s].push(c); });
 
   // 跟进动态
-  const followCount = list.filter(c => {
+  const followList = list.filter(c => {
     if (c.status === '跟进中') return true;
     if (!c.nextFollowDate) return false;
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
     return ft !== null && ft >= todayStart.getTime();
-  }).length;
-  const todayFollow = list.filter(c => {
+  });
+  const followCount = followList.length;
+  const todayFollowList = list.filter(c => {
     if (!c.nextFollowDate) return false;
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
     return ft !== null && ft >= todayStart.getTime() && ft < todayEnd;
-  }).length;
-  const overdueCount = list.filter(c => {
+  });
+  const todayFollow = todayFollowList.length;
+  const overdueList = list.filter(c => {
     if (!c.nextFollowDate) return false;
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
     return ft !== null && ft < todayStart.getTime();
-  }).length;
+  });
+  const overdueCount = overdueList.length;
 
   // 来源分布 top 5
   const sourceDist = {};
-  list.forEach(c => { const s = c.source || '未填写'; sourceDist[s] = (sourceDist[s] || 0) + 1; });
+  const sourceLists = {};
+  list.forEach(c => { const s = c.source || '未填写'; sourceDist[s] = (sourceDist[s] || 0) + 1; if (!sourceLists[s]) sourceLists[s] = []; sourceLists[s].push(c); });
   const topSources = Object.entries(sourceDist).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   // 渠道分布
   const channelLabels = { geo: 'GEO', bing: '必应', baidu: '百度', douyin: '抖音', xianyu: '闲鱼', xiaohongshu: '小红书', qq: '腾讯', '360': '360' };
   const channelDist = {};
+  const channelLists = {};
   list.forEach(c => {
     if (c.channels) {
       const chs = Array.isArray(c.channels) ? c.channels : [c.channels];
-      chs.forEach(ch => { channelDist[ch] = (channelDist[ch] || 0) + 1; });
+      chs.forEach(ch => {
+        channelDist[ch] = (channelDist[ch] || 0) + 1;
+        if (!channelLists[ch]) channelLists[ch] = [];
+        channelLists[ch].push(c);
+      });
     }
   });
   const topChannels = Object.entries(channelDist).sort((a, b) => b[1] - a[1]);
 
   // 近 7 天新增
   const weekAgo = todayStart.getTime() - 7 * 86400000;
-  const weekCount = list.filter(c => c.createdAt && c.createdAt >= weekAgo).length;
+  const weekNewList = list.filter(c => c.createdAt && c.createdAt >= weekAgo);
+  const weekCount = weekNewList.length;
 
   // 标签分布 top 5
   const tagDist = {};
+  const tagLists = {};
   list.forEach(c => {
     if (c.tags) {
       const ts = Array.isArray(c.tags) ? c.tags : [c.tags];
-      ts.forEach(t => { tagDist[t] = (tagDist[t] || 0) + 1; });
+      ts.forEach(t => { tagDist[t] = (tagDist[t] || 0) + 1; if (!tagLists[t]) tagLists[t] = []; tagLists[t].push(c); });
     }
   });
   const topTags = Object.entries(tagDist).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   // 严重逾期（超期 > followupDays 天）
-  const severeOverdue = list.filter(c => {
+  const severeOverdueList = list.filter(c => {
     if (!c.nextFollowDate) return false;
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
     if (ft === null || ft >= todayStart.getTime()) return false;
     return (todayStart.getTime() - ft) / 86400000 > followupDays;
-  }).length;
+  });
+  const severeOverdue = severeOverdueList.length;
 
   // 已成交客户
-  const dealCount = statusDist['已成交'] || 0;
+  const dealList = statusLists['已成交'] || [];
+  const dealCount = dealList.length;
+
+  // ── 注册可点击列表 ──
+  _aiListIdCounter = 0;
+  Object.keys(_aiListStore).forEach(k => delete _aiListStore[k]);
+  const SRC = 'main';
+
+  const kTotal = _storeAIList(list, SRC);
+  const kToday = _storeAIList(todayNewList, SRC);
+  const kWeek = _storeAIList(weekNewList, SRC);
+  const kMonth = _storeAIList(monthNewList, SRC);
+  const kDeal = _storeAIList(dealList, SRC);
+  const kUngraded = _storeAIList(ungradedList, SRC);
+  const kFollow = _storeAIList(followList, SRC);
+  const kTodayFollow = _storeAIList(todayFollowList, SRC);
+  const kOverdue = _storeAIList(overdueList, SRC);
+  const kSevere = _storeAIList(severeOverdueList, SRC);
 
   // ── 构建 HTML ──
   let html = '';
 
   // 概览行
   html += '<div class="ai-summary-main">';
-  html += `共 <strong>${total}</strong> 位客户`;
-  if (todayCount > 0) html += `，今日 <span class="ai-badge ai-badge-up">+${todayCount}</span>`;
-  if (weekCount > 0 && weekCount !== todayCount) html += `，近 7 天 <span class="ai-badge ai-badge-up">+${weekCount}</span>`;
-  if (monthCount > 0) html += `，本月 <span class="ai-badge ai-badge-up">+${monthCount}</span>`;
-  if (dealCount > 0) html += `，已成交 <strong>${dealCount}</strong> 位`;
+  html += `共 <strong class="ai-clickable" onclick="_openAIList('${kTotal}','全部客户')">${total}</strong> 位客户`;
+  if (todayCount > 0) html += `，今日 <span class="ai-badge ai-badge-up ai-clickable" onclick="_openAIList('${kToday}','今日新增')">+${todayCount}</span>`;
+  if (weekCount > 0 && weekCount !== todayCount) html += `，近 7 天 <span class="ai-badge ai-badge-up ai-clickable" onclick="_openAIList('${kWeek}','近7天新增')">+${weekCount}</span>`;
+  if (monthCount > 0) html += `，本月 <span class="ai-badge ai-badge-up ai-clickable" onclick="_openAIList('${kMonth}','本月新增')">+${monthCount}</span>`;
+  if (dealCount > 0) html += `，已成交 <strong class="ai-clickable" onclick="_openAIList('${kDeal}','已成交客户')">${dealCount}</strong> 位`;
   html += '</div>';
 
   // 等级分布
   if (levelRows.length > 0) {
     html += '<div class="ai-summary-row">';
     html += '<span class="ai-summary-label">等级</span>';
-    html += levelRows.map(l => `${l.name}<strong>${l.count}</strong>`).join('');
-    if (ungraded > 0) html += `未分级<strong>${ungraded}</strong>`;
+    levelRows.forEach(l => {
+      const key = _storeAIList(l.list, SRC);
+      html += `${l.name}<strong class="ai-clickable" onclick="_openAIList('${key}','${l.name}级客户')">${l.count}</strong>`;
+    });
+    if (ungraded > 0) html += `未分级<strong class="ai-clickable" onclick="_openAIList('${kUngraded}','未分级客户')">${ungraded}</strong>`;
     html += '</div>';
   }
 
@@ -7527,29 +7569,33 @@ function renderAISummary() {
   const statusOrder = ['未沟通', '跟进中', '已成交', '流失'];
   html += '<div class="ai-summary-row">';
   html += '<span class="ai-summary-label">状态</span>';
-  html += statusOrder.filter(s => statusDist[s]).map(s => {
+  statusOrder.filter(s => statusDist[s]).forEach(s => {
+    const key = _storeAIList(statusLists[s], SRC);
     const cls = s === '已成交' ? 'ai-status-deal' : s === '流失' ? 'ai-status-lost' : s === '跟进中' ? 'ai-status-follow' : '';
-    return `<span class="${cls}">${s}<strong>${statusDist[s]}</strong></span>`;
-  }).join('');
+    html += `<span class="${cls} ai-clickable" onclick="_openAIList('${key}','${s}客户')">${s}<strong>${statusDist[s]}</strong></span>`;
+  });
   html += '</div>';
 
   // 跟进动态
   html += '<div class="ai-summary-row">';
   html += '<span class="ai-summary-label">跟进</span>';
-  html += `待跟进<strong>${followCount}</strong>`;
-  if (todayFollow > 0) html += `<span class="ai-urgent">今日需跟进 ${todayFollow}</span>`;
+  html += `待跟进<strong class="ai-clickable" onclick="_openAIList('${kFollow}','待跟进客户')">${followCount}</strong>`;
+  if (todayFollow > 0) html += `<span class="ai-urgent ai-clickable" onclick="_openAIList('${kTodayFollow}','今日需跟进')">今日需跟进 ${todayFollow}</span>`;
   if (overdueCount > 0) {
     const cls = severeOverdue > 0 ? 'ai-danger' : 'ai-warn';
-    html += `<span class="${cls}">逾期 ${overdueCount}</span>`;
+    html += `<span class="${cls} ai-clickable" onclick="_openAIList('${kOverdue}','逾期客户')">逾期 ${overdueCount}</span>`;
   }
-  if (severeOverdue > 0) html += `<span class="ai-danger">严重逾期 ${severeOverdue}</span>`;
+  if (severeOverdue > 0) html += `<span class="ai-danger ai-clickable" onclick="_openAIList('${kSevere}','严重逾期客户')">严重逾期 ${severeOverdue}</span>`;
   html += '</div>';
 
   // 来源 TOP
   if (topSources.length > 0) {
     html += '<div class="ai-summary-row">';
     html += '<span class="ai-summary-label">来源 TOP</span>';
-    html += topSources.map(([s, c]) => `${s}<strong>${c}</strong>`).join('');
+    topSources.forEach(([s, c]) => {
+      const key = _storeAIList(sourceLists[s], SRC);
+      html += `${s}<strong class="ai-clickable" onclick="_openAIList('${key}','${s}来源')">${c}</strong>`;
+    });
     if (Object.keys(sourceDist).length > 5) html += `其他<strong>${Object.keys(sourceDist).length - 5}</strong>`;
     html += '</div>';
   }
@@ -7558,7 +7604,10 @@ function renderAISummary() {
   if (topChannels.length > 0) {
     html += '<div class="ai-summary-row">';
     html += '<span class="ai-summary-label">渠道</span>';
-    html += topChannels.map(([ch, c]) => `${channelLabels[ch] || ch}<strong>${c}</strong>`).join('');
+    topChannels.forEach(([ch, c]) => {
+      const key = _storeAIList(channelLists[ch], SRC);
+      html += `${channelLabels[ch] || ch}<strong class="ai-clickable" onclick="_openAIList('${key}','${channelLabels[ch] || ch}渠道')">${c}</strong>`;
+    });
     html += '</div>';
   }
 
@@ -7566,7 +7615,10 @@ function renderAISummary() {
   if (topTags.length > 0) {
     html += '<div class="ai-summary-row">';
     html += '<span class="ai-summary-label">热门标签</span>';
-    html += topTags.map(([t, c]) => `${t}<strong>${c}</strong>`).join('');
+    topTags.forEach(([t, c]) => {
+      const key = _storeAIList(tagLists[t], SRC);
+      html += `${t}<strong class="ai-clickable" onclick="_openAIList('${key}','${t}标签')">${c}</strong>`;
+    });
     html += '</div>';
   }
 
@@ -7620,29 +7672,34 @@ function renderChannelAISummary(suffix) {
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
 
-  const todayNew = list.filter(c => c.createdAt >= todayStart.getTime()).length;
-  const monthNew = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+  const todayNewList = list.filter(c => c.createdAt >= todayStart.getTime());
+  const todayNew = todayNewList.length;
+  const monthNewList = list.filter(c => c.createdAt >= monthStart.getTime());
+  const monthNew = monthNewList.length;
 
   // 等级分布（渠道页用 getChannelField）
   const levelDist = {};
+  const levelLists = {};
   list.forEach(c => {
     const l = isTrash ? (c.level || '未分级') : (getChannelField(c, suffix, 'level') || '未分级');
     levelDist[l] = (levelDist[l] || 0) + 1;
+    if (!levelLists[l]) levelLists[l] = [];
+    levelLists[l].push(c);
   });
-  const levelRows = getLevels().filter(l => levelDist[l.name]).map(l => `${l.name}<strong>${levelDist[l.name]}</strong>`);
+  const levelRows = getLevels().filter(l => levelDist[l.name]).map(l => ({ name: l.name, count: levelDist[l.name], list: levelLists[l.name] }));
   const ungraded = levelDist['未分级'] || 0;
+  const ungradedList = levelLists['未分级'] || [];
 
   // 状态分布
   const statusDist = {};
+  const statusLists = {};
   list.forEach(c => {
     const s = isTrash ? (c.status || '未沟通') : (getChannelField(c, suffix, 'status') || '未沟通');
     statusDist[s] = (statusDist[s] || 0) + 1;
+    if (!statusLists[s]) statusLists[s] = [];
+    statusLists[s].push(c);
   });
   const statusOrder = ['未沟通', '跟进中', '已成交', '流失'];
-  const statusHtml = statusOrder.filter(s => statusDist[s]).map(s => {
-    const cls = s === '已成交' ? 'color:#059669;' : s === '流失' ? 'color:#dc2626;' : s === '跟进中' ? 'color:#2563eb;' : '';
-    return `<span style="${cls}font-size:12px;font-weight:500;">${s}<strong>${statusDist[s]}</strong></span>`;
-  }).join(' ');
 
   // 金额统计（频道页）
   let totalAmount = 0, followAmount = 0, dealAmount = 0;
@@ -7657,55 +7714,91 @@ function renderChannelAISummary(suffix) {
   }
 
   // 跟进动态
-  const followCount = list.filter(c => {
+  const followList = list.filter(c => {
     if (!isTrash && getChannelField(c, suffix, 'status') === '跟进中') return true;
     const fd = isTrash ? c.nextFollowDate : getChannelField(c, suffix, 'nextFollowDate');
     if (!fd) return false;
     const ft = typeof fd === 'number' ? fd : parseDateStr(fd);
     return ft !== null && ft >= todayStart.getTime();
-  }).length;
-  const overdueCount = list.filter(c => {
+  });
+  const followCount = followList.length;
+  const overdueList = list.filter(c => {
     const fd = isTrash ? c.nextFollowDate : getChannelField(c, suffix, 'nextFollowDate');
     if (!fd) return false;
     const ft = typeof fd === 'number' ? fd : parseDateStr(fd);
     return ft !== null && ft < todayStart.getTime();
-  }).length;
+  });
+  const overdueCount = overdueList.length;
 
   const followupDays = (Store.settings && Store.settings.followupDays) || 3;
-  const severeOverdue = list.filter(c => {
+  const severeOverdueList = list.filter(c => {
     const fd = isTrash ? c.nextFollowDate : getChannelField(c, suffix, 'nextFollowDate');
     if (!fd) return false;
     const ft = typeof fd === 'number' ? fd : parseDateStr(fd);
     if (ft === null || ft >= todayStart.getTime()) return false;
     return (todayStart.getTime() - ft) / 86400000 > followupDays;
-  }).length;
+  });
+  const severeOverdue = severeOverdueList.length;
 
   const timeStr = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
 
+  // ── 注册可点击列表 ──
+  _aiListIdCounter = 0;
+  Object.keys(_aiListStore).forEach(k => delete _aiListStore[k]);
+  const SRC = 'main';
+
+  const kTotal = _storeAIList(list, SRC);
+  const kToday = _storeAIList(todayNewList, SRC);
+  const kMonth = _storeAIList(monthNewList, SRC);
+  const kUngraded = _storeAIList(ungradedList, SRC);
+  const kFollow = _storeAIList(followList, SRC);
+  const kOverdue = _storeAIList(overdueList, SRC);
+  const kSevere = _storeAIList(severeOverdueList, SRC);
+
   let html = `<div class="channel-ai-summary">`;
-  html += `<div class="channel-ai-main">${label} 共 <strong>${total}</strong> 位`;
-  if (todayNew > 0) html += `，今日 <span class="ai-badge ai-badge-up">+${todayNew}</span>`;
-  if (monthNew > 0) html += `，本月 <span class="ai-badge ai-badge-up">+${monthNew}</span>`;
+  html += `<div class="channel-ai-main">${label} 共 <strong class="ai-clickable" onclick="_openAIList('${kTotal}','${label}全部客户')">${total}</strong> 位`;
+  if (todayNew > 0) html += `，今日 <span class="ai-badge ai-badge-up ai-clickable" onclick="_openAIList('${kToday}','${label}今日新增')">+${todayNew}</span>`;
+  if (monthNew > 0) html += `，本月 <span class="ai-badge ai-badge-up ai-clickable" onclick="_openAIList('${kMonth}','${label}本月新增')">+${monthNew}</span>`;
   html += '</div>';
-  if (statusHtml) html += `<div class="channel-ai-row"><span class="channel-ai-label">状态</span>${statusHtml}</div>`;
-  if (levelRows.length > 0) {
-    let lvHtml = levelRows.join('');
-    if (ungraded > 0) lvHtml += `未分级<strong>${ungraded}</strong>`;
-    html += `<div class="channel-ai-row"><span class="channel-ai-label">等级</span>${lvHtml}</div>`;
+
+  // 状态
+  if (Object.keys(statusDist).length > 0) {
+    html += `<div class="channel-ai-row"><span class="channel-ai-label">状态</span>`;
+    statusOrder.filter(s => statusDist[s]).forEach(s => {
+      const key = _storeAIList(statusLists[s], SRC);
+      const cls = s === '已成交' ? 'color:#059669;' : s === '流失' ? 'color:#dc2626;' : s === '跟进中' ? 'color:#2563eb;' : '';
+      html += `<span class="ai-clickable" style="${cls}font-size:12px;font-weight:500;" onclick="_openAIList('${key}','${label}${s}客户')">${s}<strong>${statusDist[s]}</strong></span>`;
+    });
+    html += '</div>';
   }
+
+  // 等级
+  if (levelRows.length > 0 || ungraded > 0) {
+    html += `<div class="channel-ai-row"><span class="channel-ai-label">等级</span>`;
+    levelRows.forEach(l => {
+      const key = _storeAIList(l.list, SRC);
+      html += `${l.name}<strong class="ai-clickable" onclick="_openAIList('${key}','${label}${l.name}级客户')">${l.count}</strong>`;
+    });
+    if (ungraded > 0) html += `未分级<strong class="ai-clickable" onclick="_openAIList('${kUngraded}','${label}未分级客户')">${ungraded}</strong>`;
+    html += '</div>';
+  }
+
+  // 金额
   if (!isTrash && totalAmount > 0) {
     let amtHtml = `预估总额<strong>¥${totalAmount.toLocaleString('zh-CN')}</strong>`;
     if (followAmount > 0) amtHtml += `跟进中<strong>¥${followAmount.toLocaleString('zh-CN')}</strong>`;
     if (dealAmount > 0) amtHtml += `已成交<strong>¥${dealAmount.toLocaleString('zh-CN')}</strong>`;
     html += `<div class="channel-ai-row"><span class="channel-ai-label">金额</span>${amtHtml}</div>`;
   }
+
+  // 跟进
   if (!isTrash) {
-    let followHtml = `待跟进<strong>${followCount}</strong>`;
+    let followHtml = `待跟进<strong class="ai-clickable" onclick="_openAIList('${kFollow}','${label}待跟进客户')">${followCount}</strong>`;
     if (overdueCount > 0) {
       const cls = severeOverdue > 0 ? 'color:#dc2626;font-weight:600;' : 'color:#d97706;font-weight:600;';
-      followHtml += ` <span style="${cls}">逾期 ${overdueCount}</span>`;
+      followHtml += ` <span class="ai-clickable" style="${cls}" onclick="_openAIList('${kOverdue}','${label}逾期客户')">逾期 ${overdueCount}</span>`;
     }
-    if (severeOverdue > 0) followHtml += ` <span style="color:#dc2626;font-weight:600;">严重 ${severeOverdue}</span>`;
+    if (severeOverdue > 0) followHtml += ` <span class="ai-clickable" style="color:#dc2626;font-weight:600;" onclick="_openAIList('${kSevere}','${label}严重逾期客户')">严重 ${severeOverdue}</span>`;
     html += `<div class="channel-ai-row"><span class="channel-ai-label">跟进</span>${followHtml}</div>`;
   }
   html += `<div class="channel-ai-time">${timeStr}</div>`;
@@ -7762,57 +7855,82 @@ function renderStockAISummary(module) {
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
 
-  const todayNew = list.filter(c => c.createdAt >= todayStart.getTime()).length;
-  const monthNew = list.filter(c => c.createdAt >= monthStart.getTime()).length;
+  const todayNewList = list.filter(c => c.createdAt >= todayStart.getTime());
+  const todayNew = todayNewList.length;
+  const monthNewList = list.filter(c => c.createdAt >= monthStart.getTime());
+  const monthNew = monthNewList.length;
 
   const statusDist = {};
+  const statusLists = {};
   list.forEach(c => {
     const s = c.status || '未沟通';
     statusDist[s] = (statusDist[s] || 0) + 1;
+    if (!statusLists[s]) statusLists[s] = [];
+    statusLists[s].push(c);
   });
   const statusOrder = ['未沟通', '跟进中', '已成交', '流失'];
-  const statusHtml = statusOrder.filter(s => statusDist[s]).map(s => {
-    const cls = s === '已成交' ? 'color:#059669;' : s === '流失' ? 'color:#dc2626;' : s === '跟进中' ? 'color:#2563eb;' : '';
-    return `<span style="${cls}font-size:12px;font-weight:500;">${s}<strong>${statusDist[s]}</strong></span>`;
-  }).join(' ');
 
-  const followCount = list.filter(c => {
+  const followList = list.filter(c => {
     if (c.status === '跟进中') return true;
     if (!c.nextFollowDate) return false;
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
     return ft !== null && ft >= todayStart.getTime();
-  }).length;
-  
-  const overdueCount = list.filter(c => {
+  });
+  const followCount = followList.length;
+
+  const overdueList = list.filter(c => {
     if (!c.nextFollowDate) return false;
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
     return ft !== null && ft < todayStart.getTime();
-  }).length;
+  });
+  const overdueCount = overdueList.length;
 
   const followupDays = (Store.settings && Store.settings.followupDays) || 3;
-  const severeOverdue = list.filter(c => {
+  const severeOverdueList = list.filter(c => {
     if (!c.nextFollowDate) return false;
     const ft = typeof c.nextFollowDate === 'number' ? c.nextFollowDate : parseDateStr(c.nextFollowDate);
     if (ft === null || ft >= todayStart.getTime()) return false;
     return (todayStart.getTime() - ft) / 86400000 > followupDays;
-  }).length;
+  });
+  const severeOverdue = severeOverdueList.length;
 
   const timeStr = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
 
+  // ── 注册可点击列表 ──
+  _aiListIdCounter = 0;
+  Object.keys(_aiListStore).forEach(k => delete _aiListStore[k]);
+  const srcMap = { brand: 'brand', service: 'service', qifu: 'qifu' };
+  const SRC = srcMap[module] || 'stock';
+
+  const kTotal = _storeAIList(list, SRC);
+  const kToday = _storeAIList(todayNewList, SRC);
+  const kMonth = _storeAIList(monthNewList, SRC);
+  const kFollow = _storeAIList(followList, SRC);
+  const kOverdue = _storeAIList(overdueList, SRC);
+  const kSevere = _storeAIList(severeOverdueList, SRC);
+
   let html = `<div class="channel-ai-summary">`;
-  html += `<div class="channel-ai-main">${label} 共 <strong>${total}</strong> 位`;
-  if (todayNew > 0) html += `，今日 <span class="ai-badge ai-badge-up">+${todayNew}</span>`;
-  if (monthNew > 0) html += `，本月 <span class="ai-badge ai-badge-up">+${monthNew}</span>`;
+  html += `<div class="channel-ai-main">${label} 共 <strong class="ai-clickable" onclick="_openAIList('${kTotal}','${label}全部客户')">${total}</strong> 位`;
+  if (todayNew > 0) html += `，今日 <span class="ai-badge ai-badge-up ai-clickable" onclick="_openAIList('${kToday}','${label}今日新增')">+${todayNew}</span>`;
+  if (monthNew > 0) html += `，本月 <span class="ai-badge ai-badge-up ai-clickable" onclick="_openAIList('${kMonth}','${label}本月新增')">+${monthNew}</span>`;
   html += '</div>';
-  
-  if (statusHtml) html += `<div class="channel-ai-row"><span class="channel-ai-label">状态</span>${statusHtml}</div>`;
-  
-  let followHtml = `待跟进<strong>${followCount}</strong>`;
+
+  if (Object.keys(statusDist).length > 0) {
+    html += `<div class="channel-ai-row"><span class="channel-ai-label">状态</span>`;
+    statusOrder.filter(s => statusDist[s]).forEach(s => {
+      const key = _storeAIList(statusLists[s], SRC);
+      const cls = s === '已成交' ? 'color:#059669;' : s === '流失' ? 'color:#dc2626;' : s === '跟进中' ? 'color:#2563eb;' : '';
+      html += `<span class="ai-clickable" style="${cls}font-size:12px;font-weight:500;" onclick="_openAIList('${key}','${label}${s}客户')">${s}<strong>${statusDist[s]}</strong></span>`;
+    });
+    html += '</div>';
+  }
+
+  let followHtml = `待跟进<strong class="ai-clickable" onclick="_openAIList('${kFollow}','${label}待跟进客户')">${followCount}</strong>`;
   if (overdueCount > 0) {
     const cls = severeOverdue > 0 ? 'color:#dc2626;font-weight:600;' : 'color:#d97706;font-weight:600;';
-    followHtml += ` <span style="${cls}">逾期 ${overdueCount}</span>`;
+    followHtml += ` <span class="ai-clickable" style="${cls}" onclick="_openAIList('${kOverdue}','${label}逾期客户')">逾期 ${overdueCount}</span>`;
   }
-  if (severeOverdue > 0) followHtml += ` <span style="color:#dc2626;font-weight:600;">严重 ${severeOverdue}</span>`;
+  if (severeOverdue > 0) followHtml += ` <span class="ai-clickable" style="color:#dc2626;font-weight:600;" onclick="_openAIList('${kSevere}','${label}严重逾期客户')">严重 ${severeOverdue}</span>`;
   html += `<div class="channel-ai-row"><span class="channel-ai-label">跟进</span>${followHtml}</div>`;
 
   html += `<div class="channel-ai-time">${timeStr}</div>`;
@@ -7970,6 +8088,66 @@ function showStatPopup(type) {
 function closeStatPopup() {
   document.getElementById('stat-popup-overlay').classList.remove('active');
   document.getElementById('stat-popup').classList.remove('active');
+}
+
+// ── AI摘要数字可点击 ──
+let _aiListIdCounter = 0;
+const _aiListStore = {};
+
+function _storeAIList(list, source) {
+  const key = '_k' + (++_aiListIdCounter);
+  _aiListStore[key] = { list: list || [], source: source || 'main' };
+  return key;
+}
+
+function _openAIList(key, title) {
+  const data = _aiListStore[key];
+  if (data) showFilteredPopup(title || '客户列表', data.list, data.source);
+}
+
+function showFilteredPopup(title, customers, dataSource) {
+  const popupTitle = document.getElementById('stat-popup-title');
+  const popupBody = document.getElementById('stat-popup-body');
+  const popupOverlay = document.getElementById('stat-popup-overlay');
+  const popup = document.getElementById('stat-popup');
+  popupTitle.textContent = title;
+  if (!customers || customers.length === 0) {
+    popupBody.innerHTML = '<div class="stat-popup-empty">暂无数据</div>';
+  } else {
+    popupBody.innerHTML = customers.map(c => {
+      const lvl = c.level || '';
+      return `<div class="stat-popup-item" data-customer-id="${c.id}" data-source="${dataSource}">
+        <div class="stat-popup-item-name">${escapeHTML(c.name || '未命名')} ${lvl ? '<span style="margin-left:8px;padding:2px 8px;border-radius:4px;background:' + levelColor(lvl) + ';color:#fff;font-size:11px;">' + lvl + '</span>' : ''}</div>
+        <div class="stat-popup-item-info">${c.phone ? '📱 ' + escapeHTML(c.phone) + ' &nbsp;' : ''}${c.wechat ? '💬 ' + escapeHTML(c.wechat) + ' &nbsp;' : ''}${c.source ? '来源: ' + escapeHTML(c.source) + ' &nbsp;' : ''}${c.status ? '状态: ' + escapeHTML(c.status) : ''}</div>
+      </div>`;
+    }).join('');
+    popupBody.querySelectorAll('.stat-popup-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const customerId = this.dataset.customerId;
+        const source = this.dataset.source || 'main';
+        let customer = null;
+        if (source === 'main') {
+          customer = Store.data.customers.find(c => c.id === customerId);
+        } else {
+          const dataKeyMap = { stock: 'stockCustomers', brand: 'brandProducts', service: 'serviceFees', qifu: 'qiFuProducts' };
+          const dk = dataKeyMap[source] || '';
+          if (dk) customer = (Store.data[dk] || []).find(c => c.id === customerId);
+        }
+        if (customer) {
+          closeStatPopup();
+          if (source === 'main') {
+            openCustomerDetail(customer, true);
+          } else {
+            const moduleMap = { stock: ['stock-list', 'stockCustomers'], brand: ['brand', 'brandProducts'], service: ['service', 'serviceFees'], qifu: ['qifu', 'qiFuProducts'] };
+            const pair = moduleMap[source] || [];
+            if (pair.length === 2) setTimeout(function() { openStockCustomerForm(pair[0], pair[1], customer); }, 50);
+          }
+        }
+      });
+    });
+  }
+  popupOverlay.classList.add('active');
+  popup.classList.add('active');
 }
 
 // 保存浮层状态，用于详情弹窗关闭后返回
@@ -13363,7 +13541,9 @@ function refreshUI() {
       margin-bottom: 0 !important;
     }
     .alert-summary-card {
-      flex: 0 0 190px;
+      flex: 0 1 200px;
+      max-width: 240px;
+      min-width: 120px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: 10px;
@@ -13470,6 +13650,16 @@ function refreshUI() {
     .ai-summary-body strong {
       font-weight: 700;
       color: var(--text-primary);
+    }
+    .ai-clickable {
+      cursor: pointer;
+      transition: color 0.15s, opacity 0.15s;
+      border-bottom: 1px dashed transparent;
+    }
+    .ai-clickable:hover {
+      color: var(--accent) !important;
+      border-bottom-color: var(--accent);
+      opacity: 0.85;
     }
     .ai-summary-main {
       font-size: 14px;
@@ -13592,7 +13782,7 @@ function refreshUI() {
 
     @media (max-width: 900px) {
       .dashboard-top-row { flex-direction: column; }
-      .alert-summary-card { flex: none; }
+      .alert-summary-card { flex: none; max-width: none; }
     }
 
     /* ═══ 统计摘要条（保留旧样式，已不直接使用但兼容老代码引用） ═══ */
