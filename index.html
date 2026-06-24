@@ -1326,6 +1326,19 @@ input[type="checkbox"]:checked {
 .customer-float-body::-webkit-scrollbar-thumb:hover {
   background: var(--color-neutral-400);
 }
+.customer-float-value::-webkit-scrollbar {
+  width: 5px;
+}
+.customer-float-value::-webkit-scrollbar-track {
+  background: transparent;
+}
+.customer-float-value::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 3px;
+}
+.customer-float-value::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
 .customer-float-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2847,6 +2860,7 @@ html.scrolling {
             <button class="btn btn-sm" id="btn-new-customer">➕ 新增客户</button>
             <button class="btn btn-sm btn-outline" id="btn-add-to-channel">📤 添加到</button>
             <button class="btn btn-sm btn-outline" id="btn-customize-columns">🏷️ 自定义标签</button>
+            <button class="btn btn-sm btn-outline" id="btn-batch-edit">✏️ 批量编辑</button>
             <button class="btn btn-sm btn-outline" id="btn-batch-delete">🗑️ 批量移至作废</button>
           </div>
         </div>
@@ -4313,6 +4327,7 @@ function openCustomerForm(customer) {
         { key: 'budget', label: '预算范围', type: 'text', max: 50 },
         { key: 'amount', label: '预计金额(元)', type: 'number', max: 10 },
         { key: 'status', label: '成交状态', type: 'select', options: ['未沟通', '跟进中', '已成交', '流失'] },
+        { key: 'level', label: '客户等级', type: 'select', options: ['', ...getLevelOptions()] },
         { key: 'nextFollowDate', label: '下次跟进日期', type: 'date' },
         { key: 'website', label: '客户网址', type: 'text', max: 200 },
         { key: 'industryLevel1', label: '一级行业', type: 'select-industry' },
@@ -4639,7 +4654,7 @@ function openCustomerForm(customer) {
         });
         document.querySelectorAll('#modal-box .select').forEach(el => {
           let v = c[el.dataset.key] || '';
-          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'nextFollowDate')) {
+          if (_currentChannel && (el.dataset.key === 'status' || el.dataset.key === 'level' || el.dataset.key === 'nextFollowDate')) {
             v = getChannelField(c, _currentChannel, el.dataset.key) || '';
           }
           el.value = v;
@@ -4707,6 +4722,7 @@ function openCustomerForm(customer) {
           const old = Store.data.customers.find(x => x.id === c.id);
           if (!old) { showToast('客户数据不存在', 'error'); return; }
           if (_currentChannel) {
+            if (safe.level !== undefined) setChannelField(old, _currentChannel, 'level', safe.level);
             if (safe.status !== undefined) setChannelField(old, _currentChannel, 'status', safe.status);
             if (safe.nextFollowDate !== undefined) setChannelField(old, _currentChannel, 'nextFollowDate', safe.nextFollowDate);
             if (safe.tags !== undefined) setChannelField(old, _currentChannel, 'tags', safe.tags);
@@ -4862,7 +4878,7 @@ function getColumnConfig() {
     });
   }
   // 注入标签列（客户可能有多个待合作业务，等级只在渠道内使用）
-  [{ key: 'tags', visible: true }].forEach(ec => {
+  [{ key: 'status', visible: true }, { key: 'tags', visible: true }].forEach(ec => {
     if (!config.find(c => c.key === ec.key)) {
       config.push(ec);
     }
@@ -5175,6 +5191,8 @@ function getChannelFilterBarHTML(suffix) {
     <div class="filter-actions">
       <button class="btn btn-primary btn-sm" id="btn-filter-${suffix}">筛选</button>
       <button class="btn btn-sm btn-outline" id="btn-reset-${suffix}">重置</button>
+      <button class="btn btn-sm btn-outline" id="btn-batch-edit-${suffix}" style="${['stock-list','brand','service','qifu'].includes(suffix) ? '' : 'display:none;'}">✏️ 批量编辑</button>
+      <button class="btn btn-sm btn-outline" id="btn-channel-batch-edit-${suffix}" style="${['geo','360','bing','baidu','douyin','xianyu'].includes(suffix) ? '' : 'display:none;'}">✏️ 批量编辑</button>
       <button class="btn btn-sm btn-success" id="btn-batch-restore-${suffix}" style="${suffix === 'trash' || suffix === 'stock-trash' ? '' : 'display:none;'}">♻️ 批量恢复</button>
       <button class="btn btn-sm btn-danger" id="btn-batch-del-${suffix}">🗑 批量删除</button>
     </div>
@@ -6143,18 +6161,19 @@ function openPoolCustomerDetail(c) {
         <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">备注</div><div class="detail-value">${escapeHTML(c.remark || '-')}</div></div>
       </div>
       <div style="margin-top:24px;">
-        <h3 style="font-size:16px;margin-bottom:12px;">跟进记录时间线（${(c.remarkHistory || []).length}）</h3>
+        <h3 style="font-size:16px;margin-bottom:12px;">跟进记录时间线${(() => { const all = getAllRemarks(c); return '（' + all.length + '）'; })()}</h3>
         <div class="timeline">`;
-    if (!c.remarkHistory || c.remarkHistory.length === 0) {
+    const allRemarks = getAllRemarks(c);
+    if (allRemarks.length === 0) {
       html += `<div style="color:var(--text-muted);font-size:13px;">暂无跟进记录</div>`;
     } else {
-      for (const r of c.remarkHistory) {
+      for (const r of allRemarks) {
         let imgHtml = '';
         if (r.images && r.images.length) {
           imgHtml = `<div class="timeline-images">${r.images.map((img, idx) => `<img class="timeline-thumb" src="${escapeHTML(img.dataUrl)}" alt="截图" data-img-src="${escapeHTML(img.dataUrl)}">`).join('')}</div>`;
         }
         html += `<div class="timeline-item">
-          <div class="timeline-time">${formatDate(r.time)}</div>
+          <div class="timeline-time">${formatDate(r.time)}${r.source ? '<span style="color:var(--text-muted);margin-left:6px;font-size:11px;">[' + r.source + ']</span>' : ''}</div>
           <div class="timeline-content">${escapeHTML(r.text)}</div>
           ${imgHtml}
         </div>`;
@@ -6261,6 +6280,91 @@ function renderChannelPage(channel) {
   renderChannelFilterSources(channel);
   bindChannelFilterEvents(channel);
   bindChannelCheckboxEvents(channel);
+
+  // 渠道批量编辑
+  const chEditBtn = document.getElementById(`btn-channel-batch-edit-${channel}`);
+  if (chEditBtn) {
+    chEditBtn.onclick = () => {
+      const ids = Array.from(channelFilters[channel].selected);
+      if (ids.length === 0) { showToast('请先勾选要编辑的客户', 'warning'); return; }
+
+      const customers = (Store.data.customers || []).filter(c => ids.includes(c.id));
+      let html = `<div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">已选择 ${ids.length} 位客户</div>`;
+
+      html += `<div class="form-section open" style="margin-bottom:12px;">
+        <div class="form-section-header"><span>成交状态</span><span class="form-section-toggle">▾</span></div>
+        <div class="form-section-body">
+          <select class="select" id="ch-batch-status">
+            <option value="">保持不变</option>
+            <option value="未沟通">未沟通</option>
+            <option value="跟进中">跟进中</option>
+            <option value="已成交">已成交</option>
+            <option value="流失">流失</option>
+          </select>
+        </div>
+      </div>`;
+
+      html += `<div class="form-section open" style="margin-bottom:12px;">
+        <div class="form-section-header"><span>预算范围</span><span class="form-section-toggle">▾</span></div>
+        <div class="form-section-body">
+          <input type="text" class="input" id="ch-batch-budget" placeholder="输入新预算范围，留空不修改">
+        </div>
+      </div>`;
+
+      html += `<div class="form-section open" style="margin-bottom:12px;">
+        <div class="form-section-header"><span>预计金额(元)</span><span class="form-section-toggle">▾</span></div>
+        <div class="form-section-body">
+          <input type="number" class="input" id="ch-batch-amount" placeholder="输入新金额，留空不修改">
+        </div>
+      </div>`;
+
+      html += `<div class="form-section open" style="margin-bottom:12px;">
+        <div class="form-section-header"><span>跟进记录</span><span class="form-section-toggle">▾</span></div>
+        <div class="form-section-body">
+          <textarea class="textarea" id="ch-batch-remark" rows="3" maxlength="500" placeholder="输入跟进内容，留空不添加"></textarea>
+        </div>
+      </div>`;
+
+      openModal({
+        title: '批量编辑 - ' + ids.length + ' 位客户', size: 'sm', bodyHTML: html,
+        footer: (f) => {
+          const cancel = document.createElement('button');
+          cancel.className = 'btn btn-sm btn-outline';
+          safeText(cancel, '取消');
+          f.appendChild(cancel);
+          cancel.onclick = closeModal;
+          const save = document.createElement('button');
+          save.className = 'btn btn-sm btn-primary';
+          safeText(save, '保存');
+          f.appendChild(save);
+          save.onclick = async () => {
+            const statusVal = document.getElementById('ch-batch-status').value;
+            const budgetVal = document.getElementById('ch-batch-budget').value.trim();
+            const amountVal = document.getElementById('ch-batch-amount').value.trim();
+            const remarkVal = document.getElementById('ch-batch-remark').value.trim();
+
+            customers.forEach(c => {
+              if (statusVal) setChannelField(c, channel, 'status', statusVal);
+              if (budgetVal) c.budget = budgetVal;
+              if (amountVal) setChannelField(c, channel, 'amount', Number(amountVal) || 0);
+              if (remarkVal) addChannelRemark(c, channel, remarkVal);
+              c.updatedAt = Date.now();
+            });
+
+            await Store.saveWithLog('批量编辑', `编辑 ${customers.length} 位客户的渠道数据`);
+            channelFilters[channel].selected.clear();
+            showToast('批量编辑成功', 'success');
+            closeModal();
+            renderChannelPage(channel);
+          };
+        }
+      });
+
+      document.querySelectorAll('#modal-body .form-section-header').forEach(h => {
+        h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+      });
+    };
+  }
   
   container.querySelectorAll('button[data-act]').forEach(btn => {
     btn.onclick = () => {
@@ -6724,6 +6828,102 @@ function _bindStockPageEvents(module, dataKey) {
     assignBtn.onclick = () => openAssignModal(module);
   }
 
+  // 编辑按钮（批量编辑勾选的客户）
+  const editBtn = document.getElementById(`btn-batch-edit-${module}`);
+  if (editBtn) {
+    editBtn.onclick = () => {
+      const ids = Array.from(channelFilters[module].selected);
+      if (ids.length === 0) { showToast('请先勾选要编辑的客户', 'warning'); return; }
+
+      const customers = (Store.data[dataKey] || []).filter(c => ids.includes(c.id));
+      const allTags = Store.data.tags || [];
+
+      const commonTags = new Set();
+      let first = true;
+      customers.forEach(c => {
+        const t = getChannelField(c, module, 'tags') || [];
+        if (first) { t.forEach(id => commonTags.add(id)); first = false; }
+        else { commonTags.forEach(id => { if (!t.includes(id)) commonTags.delete(id); }); }
+      });
+
+      let html = `<div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">已选择 ${ids.length} 位客户</div>`;
+
+      html += `<div class="form-section open" style="margin-bottom:12px;">
+        <div class="form-section-header"><span>客户标签</span><span class="form-section-toggle">▾</span></div>
+        <div class="form-section-body"><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">`;
+      for (const t of allTags) {
+        const checked = commonTags.has(t.id);
+        html += `<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 10px;border-radius:6px;border:1.5px solid ${checked ? t.color : 'var(--border-color)'};background:${checked ? t.color + '22' : 'var(--bg-secondary)'};font-size:12px;" class="batch-tag-label" data-tag-id="${t.id}">
+          <input type="checkbox" class="batch-tag-cb" data-tag-id="${t.id}" ${checked ? 'checked' : ''} style="accent-color:${t.color};width:14px;height:14px;cursor:pointer;">
+          <span>${escapeHTML(t.name)}</span>
+        </label>`;
+      }
+      html += `</div></div></div>`;
+
+      html += `<div class="form-section open" style="margin-bottom:12px;">
+        <div class="form-section-header"><span>预算范围</span><span class="form-section-toggle">▾</span></div>
+        <div class="form-section-body">
+          <label class="label">预算范围</label>
+          <input type="text" class="input" id="stock-batch-budget" placeholder="输入新预算范围，留空不修改">
+        </div>
+      </div>`;
+
+      html += `<div class="form-section open" style="margin-bottom:12px;">
+        <div class="form-section-header"><span>预计金额(元)</span><span class="form-section-toggle">▾</span></div>
+        <div class="form-section-body">
+          <input type="number" class="input" id="stock-batch-amount" placeholder="输入新金额，留空不修改">
+        </div>
+      </div>`;
+
+      html += `<div class="form-section open" style="margin-bottom:12px;">
+        <div class="form-section-header"><span>跟进记录</span><span class="form-section-toggle">▾</span></div>
+        <div class="form-section-body">
+          <textarea class="textarea" id="stock-batch-remark" rows="3" maxlength="500" placeholder="输入跟进内容，留空不添加"></textarea>
+        </div>
+      </div>`;
+
+      openModal({
+        title: '批量编辑 - ' + ids.length + ' 位客户', size: 'sm', bodyHTML: html,
+        footer: (f) => {
+          const cancel = document.createElement('button');
+          cancel.className = 'btn btn-sm btn-outline';
+          safeText(cancel, '取消');
+          f.appendChild(cancel);
+          cancel.onclick = closeModal;
+          const save = document.createElement('button');
+          save.className = 'btn btn-sm btn-primary';
+          safeText(save, '保存');
+          f.appendChild(save);
+          save.onclick = async () => {
+            const selectedTags = [];
+            document.querySelectorAll('.batch-tag-cb:checked').forEach(el => selectedTags.push(el.dataset.tagId));
+            const budgetVal = document.getElementById('stock-batch-budget').value.trim();
+            const amountVal = document.getElementById('stock-batch-amount').value.trim();
+            const remarkVal = document.getElementById('stock-batch-remark').value.trim();
+
+            customers.forEach(c => {
+              setChannelField(c, module, 'tags', [...selectedTags]);
+              if (budgetVal) c.budget = budgetVal;
+              if (amountVal) setChannelField(c, module, 'amount', Number(amountVal) || 0);
+              if (remarkVal) addChannelRemark(c, module, remarkVal);
+              c.updatedAt = Date.now();
+            });
+
+            await Store.saveWithLog('批量编辑', `编辑 ${customers.length} 位存量客户数据`);
+            channelFilters[module].selected.clear();
+            showToast('批量编辑成功', 'success');
+            closeModal();
+            renderStockCustomerPage(module, dataKey, module);
+          };
+        }
+      });
+
+      document.querySelectorAll('#modal-body .form-section-header').forEach(h => {
+        h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+      });
+    };
+  }
+
   container.querySelectorAll('button[data-act]').forEach(btn => {
     btn.onclick = () => {
       const id = btn.dataset.id;
@@ -6801,10 +7001,7 @@ function openStockCustomerDetail(c, module, dataKey) {
     const t = tags.find(x => x.id === tid);
     return t ? `<span class="tag-chip" style="background:${t.color};color:white;padding:4px 12px;border-radius:14px;font-size:12px;">${escapeHTML(t.name)}</span>` : '';
   }).join('');
-  
-  // 获取模块特定的跟进记录
-  const moduleRemarkHistory = getChannelField(c, module, 'remarkHistory') || [];
-  
+
   let html = `
     <div class="detail-header">
       <div class="detail-title">${escapeHTML(c.name)}</div>
@@ -6840,18 +7037,19 @@ function openStockCustomerDetail(c, module, dataKey) {
       <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">备注</div><div class="detail-value">${escapeHTML(c.remark || '-')}</div></div>
     </div>
     <div style="margin-top:24px;">
-      <h3 style="font-size:16px;margin-bottom:12px;">跟进记录时间线（${moduleRemarkHistory.length}）</h3>
+      <h3 style="font-size:16px;margin-bottom:12px;">跟进记录时间线${(() => { const all = getAllRemarks(c); return '（' + all.length + '）'; })()}</h3>
       <div class="timeline">`;
-  if (moduleRemarkHistory.length === 0) {
+  const allStockRemarks = getAllRemarks(c);
+  if (allStockRemarks.length === 0) {
     html += `<div style="color:var(--text-muted);font-size:13px;">暂无跟进记录</div>`;
   } else {
-    for (const r of moduleRemarkHistory) {
+    for (const r of allStockRemarks) {
       let imgHtml = '';
       if (r.images && r.images.length) {
         imgHtml = `<div class="timeline-images">${r.images.map((img, idx) => `<img class="timeline-thumb" src="${escapeHTML(img.dataUrl)}" alt="截图" data-img-src="${escapeHTML(img.dataUrl)}">`).join('')}</div>`;
       }
       html += `<div class="timeline-item">
-        <div class="timeline-time">${formatDate(r.time)}</div>
+        <div class="timeline-time">${formatDate(r.time)}${r.source ? '<span style="color:var(--text-muted);margin-left:6px;font-size:11px;">[' + r.source + ']</span>' : ''}</div>
         <div class="timeline-content">${escapeHTML(r.text)}</div>
         ${imgHtml}
       </div>`;
@@ -6934,9 +7132,11 @@ function openStockCustomerForm(module, dataKey, customer) {
   const moduleAmount = getChannelField(c, module, 'amount');
   const moduleNextFollowDate = getChannelField(c, module, 'nextFollowDate') || '';
 
+  const isReadonlySub = module !== 'stock-list' && isEdit;
+
   const sections = [
     {
-      key: 'basic', title: '基础信息（必填）', open: true,
+      key: 'basic', title: '基础信息（必填）', open: !isReadonlySub, readonly: isReadonlySub,
       fields: [
         { key: 'cid', label: '账户ID', type: 'text', max: 50 },
         { key: 'accountName', label: '账户名称', type: 'text', max: 100 },
@@ -6961,11 +7161,11 @@ function openStockCustomerForm(module, dataKey, customer) {
         { key: 'budget', label: '预算范围', type: 'text', max: 50 },
         { key: 'amount', label: '预计金额(元)', type: 'number', max: 10, val: moduleAmount },
         { key: 'nextFollowDate', label: '下次跟进日期', type: 'date', val: moduleNextFollowDate },
-        { key: 'platforms', label: '客户在投平台（可多选）', type: 'checkbox-group-platform' },
+        { key: 'platforms', label: '客户在投平台', type: 'checkbox-group-platform', readonly: isReadonlySub },
       ]
     },
     {
-      key: 'address', title: '联系地址', open: true,
+      key: 'address', title: '联系地址', open: !isReadonlySub, readonly: isReadonlySub,
       fields: [
         { key: 'province', label: '省/直辖市', type: 'text', max: 30 },
         { key: 'city', label: '城市', type: 'text', max: 30 },
@@ -6976,7 +7176,7 @@ function openStockCustomerForm(module, dataKey, customer) {
     {
       key: 'tags', title: '客户标签', open: true,
       fields: [
-        { key: 'tagIds', label: '标签', type: 'tags', val: moduleTags }
+        { key: 'tagIds', label: '标签', type: 'tags', val: moduleTags, readonly: isReadonlySub }
       ]
     },
     {
@@ -7004,7 +7204,11 @@ function openStockCustomerForm(module, dataKey, customer) {
         else if (!val) val = '';
         else if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) val = '';
       }
-      if (f.type === 'select-industry') {
+      if (sec.readonly && f.type !== 'tags' && f.type !== 'checkbox-group-platform') {
+        html += `<div class="form-group">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <div style="font-size:13px;color:var(--text-secondary);padding:6px 0;">${escapeHTML(String(val)) || '-'}</div></div>`;
+      } else if (f.type === 'select-industry') {
         const options = getIndustryLevel1Options();
         html += `<div class="form-group">
           <label class="label">${escapeHTML(f.label)}</label>
@@ -7043,6 +7247,12 @@ function openStockCustomerForm(module, dataKey, customer) {
           </select></div>`;
       } else if (f.type === 'tags') {
         const allTags = Store.data.tags || [];
+        if (f.readonly) {
+          const tagNames = allTags.filter(t => val.includes(t.id)).map(t => t.name);
+          html += `<div class="form-group" style="grid-column:1/-1;">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <div style="font-size:13px;color:var(--text-secondary);padding:6px 0;">${tagNames.length ? tagNames.join('、') : '无'}</div></div>`;
+        } else {
         html += `<div class="form-group" style="grid-column:1/-1;">
           <label class="label">${escapeHTML(f.label)}</label>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">`;
@@ -7054,9 +7264,15 @@ function openStockCustomerForm(module, dataKey, customer) {
           </label>`;
         }
         html += `</div></div>`;
+        }
       } else if (f.type === 'checkbox-group-platform') {
         const platformLabels = { '360': '360', 'baidu': '百度', 'bing': '必应', 'geo': 'GEO', 'douyin': '抖音', 'xiaohongshu': '小红书', 'tencent': '腾讯', 'xianyu': '闲鱼' };
         const currentPlatforms = c.platforms || [];
+        if (f.readonly) {
+          html += `<div class="form-group" style="grid-column:1/-1;">
+          <label class="label">${escapeHTML(f.label)}</label>
+          <div style="font-size:13px;color:var(--text-secondary);padding:6px 0;">${currentPlatforms.length ? currentPlatforms.map(k => platformLabels[k] || k).join('、') : '无'}</div></div>`;
+        } else {
         html += `<div class="form-group" style="grid-column:1/-1;">
           <label class="label">${escapeHTML(f.label)}</label>
           <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">`;
@@ -7068,6 +7284,7 @@ function openStockCustomerForm(module, dataKey, customer) {
           </label>`;
         }
         html += `</div></div>`;
+        }
       } else if (f.type === 'textarea') {
         html += `<div class="form-group" style="grid-column:1/-1;">
           <label class="label">${escapeHTML(f.label)}</label>
@@ -7085,6 +7302,11 @@ function openStockCustomerForm(module, dataKey, customer) {
   </div>`;
 
   openModal({ title: title + ' - ' + moduleName, size: 'lg', bodyHTML: html });
+
+  // 切换分组展开
+  document.querySelectorAll('.form-section-header').forEach(h => {
+    h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+  });
 
   // 行业联动
   const l1Select = document.getElementById('industry-level1-select');
@@ -7110,22 +7332,29 @@ function openStockCustomerForm(module, dataKey, customer) {
     });
     
     // 表单字段验证
+    if (!isReadonlySub) {
     if (!updates.name || !String(updates.name).trim()) { showToast('联系人姓名不能为空', 'error'); return; }
     if (updates.phone && !validatePhone(updates.phone)) { showToast('手机号格式不正确（11位数字）', 'error'); return; }
     if (updates.email && !validateEmail(updates.email)) { showToast('邮箱格式不正确', 'error'); return; }
+    }
     
     // 处理平台多选
+    if (!isReadonlySub) {
     const platforms = [];
     document.querySelectorAll('.platform-checkbox-label input:checked').forEach(el => {
       platforms.push(el.dataset.platform);
     });
     updates.platforms = platforms;
+    }
     
     // 处理标签多选
-    const selectedTags = [];
+    let selectedTags = isReadonlySub ? moduleTags : [];
+    if (!isReadonlySub) {
+    selectedTags = [];
     document.querySelectorAll('.tag-checkbox-label input:checked').forEach(el => {
       selectedTags.push(el.dataset.tagId);
     });
+    }
     
     // HTML 转义处理（备注字段保持原始值，其他字符串字段转义）
     const noEscapeKeys = ['remark'];
@@ -8791,6 +9020,40 @@ function exportAlertList() {
   showToast('逾期列表已导出 📥', 'success');
 }
 
+function getAllRemarks(customer) {
+  const all = [];
+  if (customer.remarkHistory && customer.remarkHistory.length) {
+    customer.remarkHistory.forEach(r => all.push({ ...r, source: '' }));
+  }
+  if (customer.channelData) {
+    Object.keys(customer.channelData).forEach(ch => {
+      const cd = customer.channelData[ch];
+      if (cd.remarkHistory && cd.remarkHistory.length) {
+        cd.remarkHistory.forEach(r => all.push({ ...r, source: ch }));
+      }
+    });
+  }
+  all.sort((a, b) => b.time - a.time);
+  return all;
+}
+
+function getLatestRemark(customer) {
+  const all = [];
+  if (customer.remarkHistory && customer.remarkHistory.length) {
+    customer.remarkHistory.forEach(r => all.push({ ...r, source: 'customer' }));
+  }
+  if (customer.channelData) {
+    Object.keys(customer.channelData).forEach(ch => {
+      const cd = customer.channelData[ch];
+      if (cd.remarkHistory && cd.remarkHistory.length) {
+        cd.remarkHistory.forEach(r => all.push({ ...r, source: ch }));
+      }
+    });
+  }
+  all.sort((a, b) => b.time - a.time);
+  return all[0] || null;
+}
+
 function showCustomerFloat(customer, source) {
   const overlay = document.getElementById('customer-float-overlay');
   const panel = document.getElementById('customer-float-panel');
@@ -8807,15 +9070,12 @@ function showCustomerFloat(customer, source) {
     return t ? '<span style="background:' + t.color + ';padding:2px 8px;border-radius:4px;font-size:10px;">' + escapeHTML(t.name) + '</span>' : '';
   }).join('');
 
-  const daysSinceLast = customer.remarkHistory && customer.remarkHistory.length > 0
-    ? Math.floor((now - customer.remarkHistory[0].time) / 86400000)
+  const latestRemark = getLatestRemark(customer);
+  const daysSinceLast = latestRemark
+    ? Math.floor((now - latestRemark.time) / 86400000)
     : Math.floor((now - customer.createdAt) / 86400000);
-  const lastFollowText = customer.remarkHistory && customer.remarkHistory.length > 0
-    ? customer.remarkHistory[0].text
-    : '暂无跟进记录';
-  const lastFollowDate = customer.remarkHistory && customer.remarkHistory.length > 0
-    ? formatDate(customer.remarkHistory[0].time)
-    : formatDate(customer.createdAt);
+  const lastFollowText = latestRemark ? latestRemark.text : '暂无跟进记录';
+  const lastFollowDate = latestRemark ? formatDate(latestRemark.time) : formatDate(customer.createdAt);
 
   const followupDays = (Store.settings && Store.settings.followupDays) || 3;
   let riskHtml = '';
@@ -8847,7 +9107,17 @@ function showCustomerFloat(customer, source) {
     '<div class="customer-float-item"><div class="customer-float-label">最后跟进</div><div class="customer-float-value">' + escapeHTML(lastFollowDate) + '</div></div>' +
     '<div class="customer-float-item"><div class="customer-float-label">下次跟进</div><div class="customer-float-value">' + formatNextFollowDate(customer.nextFollowDate) + '</div></div>' +
     (riskHtml || '') +
-    '<div class="customer-float-item full"><div class="customer-float-label">最近跟进记录</div><div class="customer-float-value" style="font-weight:400;font-size:12px;">' + escapeHTML(lastFollowText) + '</div></div>' +
+    '<div class="customer-float-item full"><div class="customer-float-label">最近跟进记录</div>' +
+    (() => {
+      const all = getAllRemarks(customer);
+      if (!all.length) return '<div class="customer-float-value" style="font-weight:400;font-size:12px;">暂无跟进记录</div>';
+      const maxH = all.length <= 1 ? 'auto' : '120px';
+      const overFlow = all.length > 3 ? 'scroll' : 'auto';
+      return '<div class="customer-float-value" style="max-height:' + maxH + ';overflow-y:' + overFlow + ';font-size:12px;line-height:1.6;scrollbar-color:#bbb transparent;scrollbar-width:thin;">' +
+        all.map(r => '<div style="border-bottom:1px dashed var(--border-color);padding:4px 0;"><span style="color:var(--text-muted);font-size:11px;">' + formatDate(r.time) + '</span>' + (r.source ? '<span style="color:var(--text-muted);margin-left:4px;font-size:11px;">[' + r.source + ']</span>' : '') + '<br>' + escapeHTML(r.text.length > 100 ? r.text.slice(0, 100) + '…' : r.text) + '</div>').join('') +
+        '</div>';
+    })() +
+    '</div>' +
     '</div>' +
     '<div class="customer-float-agenda">' +
       '<div class="customer-float-agenda-title">📋 下次沟通事项</div>' +
@@ -8898,7 +9168,7 @@ function buildAgendaContent(customer, lastFollowText) {
   if (lastFollowText && lastFollowText !== '暂无跟进记录') {
     items.push('🔹 上次沟通要点：' + escapeHTML(lastFollowText.length > 60 ? lastFollowText.slice(0, 60) + '…' : lastFollowText));
   }
-  if (customer.remark && customer.remark !== (customer.remarkHistory && customer.remarkHistory.length > 0 ? customer.remarkHistory[0].text : '')) {
+  if (customer.remark && customer.remark !== lastFollowText) {
     items.push('🔹 跟进备注：' + escapeHTML(customer.remark.length > 60 ? customer.remark.slice(0, 60) + '…' : customer.remark));
   }
   if (items.length === 1) {
@@ -13290,6 +13560,81 @@ document.addEventListener('DOMContentLoaded', function () {
       listState.selected.clear();
       showToast('已移至作废', 'success');
       refreshUI();
+    });
+  };
+
+  // 批量编辑
+  document.getElementById('btn-batch-edit').onclick = () => {
+    const ids = Array.from(listState.selected);
+    if (ids.length === 0) { showToast('请先勾选要编辑的客户', 'warning'); return; }
+
+    const customers = (Store.data.customers || []).filter(c => ids.includes(c.id));
+    const allTags = Store.data.tags || [];
+
+    const commonTags = new Set();
+    let first = true;
+    customers.forEach(c => {
+      const t = c.tags || [];
+      if (first) { t.forEach(id => commonTags.add(id)); first = false; }
+      else { commonTags.forEach(id => { if (!t.includes(id)) commonTags.delete(id); }); }
+    });
+
+    let html = `<div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">已选择 ${ids.length} 位客户</div>`;
+
+    html += `<div class="form-section open" style="margin-bottom:12px;">
+      <div class="form-section-header"><span>客户标签</span><span class="form-section-toggle">▾</span></div>
+      <div class="form-section-body"><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">`;
+    for (const t of allTags) {
+      const checked = commonTags.has(t.id);
+      html += `<label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 10px;border-radius:6px;border:1.5px solid ${checked ? t.color : 'var(--border-color)'};background:${checked ? t.color + '22' : 'var(--bg-secondary)'};font-size:12px;" class="batch-tag-label" data-tag-id="${t.id}">
+        <input type="checkbox" class="batch-tag-cb" data-tag-id="${t.id}" ${checked ? 'checked' : ''} style="accent-color:${t.color};width:14px;height:14px;cursor:pointer;">
+        <span>${escapeHTML(t.name)}</span>
+      </label>`;
+    }
+    html += `</div></div></div>`;
+
+    html += `<div class="form-section open" style="margin-bottom:12px;">
+      <div class="form-section-header"><span>预算范围</span><span class="form-section-toggle">▾</span></div>
+      <div class="form-section-body">
+        <label class="label">预算范围</label>
+        <input type="text" class="input" id="batch-budget" placeholder="输入新预算范围，留空不修改">
+      </div>
+    </div>`;
+
+    openModal({
+      title: '批量编辑 - ' + ids.length + ' 位客户', size: 'sm', bodyHTML: html,
+      footer: (f) => {
+        const cancel = document.createElement('button');
+        cancel.className = 'btn btn-sm btn-outline';
+        safeText(cancel, '取消');
+        f.appendChild(cancel);
+        cancel.onclick = closeModal;
+        const save = document.createElement('button');
+        save.className = 'btn btn-sm btn-primary';
+        safeText(save, '保存');
+        f.appendChild(save);
+        save.onclick = async () => {
+          const selectedTags = [];
+          document.querySelectorAll('.batch-tag-cb:checked').forEach(el => selectedTags.push(el.dataset.tagId));
+          const budgetVal = document.getElementById('batch-budget').value.trim();
+
+          customers.forEach(c => {
+            c.tags = [...selectedTags];
+            if (budgetVal) c.budget = budgetVal;
+            c.updatedAt = Date.now();
+          });
+
+          await Store.saveWithLog('批量编辑', `编辑 ${customers.length} 位客户的标签、预算`);
+          listState.selected.clear();
+          showToast('批量编辑成功', 'success');
+          closeModal();
+          refreshUI();
+        };
+      }
+    });
+
+    document.querySelectorAll('#modal-body .form-section-header').forEach(h => {
+      h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
     });
   };
 
