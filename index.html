@@ -7840,7 +7840,7 @@ function renderStockAlertSection() {
   
   const total = stockList.length + brandList.length + serviceList.length + qifuList.length;
   if (total === 0) {
-    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);">暂无存量客户数据</div>`;
+    el.innerHTML = `<div class="alert-panel" style="grid-column:1/-1;"><div class="alert-panel-header"><span class="alert-panel-icon">💡</span><span>存量客户提醒</span></div><div class="alert-panel-body"><div class="alert-panel-empty">暂无存量客户数据</div></div></div>`;
     return;
   }
   
@@ -7862,8 +7862,10 @@ function renderStockAlertSection() {
   const avgConsultant = total ? ((stockList.length + brandList.length + serviceList.length + qifuList.length) / Math.max(1, (new Set([...stockList, ...brandList, ...serviceList, ...qifuList].map(c => c.consultant)).size))).toFixed(1) : 0;
   alerts.push(`👤 平均每位顾问负责 <strong>${avgConsultant}</strong> 位存量客户`);
   
-  el.innerHTML = `<div style="margin-bottom:10px;font-weight:500;color:var(--text-primary);">💡 存量客户提醒</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;">${alerts.map(a => `<span class="alert-tag">${a}</span>`).join('')}</div>`;
+  el.innerHTML = `<div class="alert-panel" style="grid-column:1/-1;">
+    <div class="alert-panel-header"><span class="alert-panel-icon">💡</span><span>存量客户提醒</span></div>
+    <div class="alert-panel-body"><div style="display:flex;flex-direction:column;gap:8px;padding:6px 8px;">${alerts.map(a => `<div style="font-size:13px;line-height:1.6;">${a}</div>`).join('')}</div></div>
+  </div>`;
 }
 
 // ── 智能 AI 摘要 ──
