@@ -5972,8 +5972,7 @@ function openPoolCustomerForm(customer) {
             old.lastRemark = safe.remark;
           }
           old.updatedAt = Date.now();
-          await Store.save();
-          Store.markDirty();
+          await Store.saveWithLog('编辑客户池客户', '客户：' + (old.name || ''));
           showToast('客户池客户信息已更新', 'success');
           closeModal();
           renderPoolTable();
@@ -5982,8 +5981,7 @@ function openPoolCustomerForm(customer) {
           const newC = { ...safe, id: c.id, cid: generateCustomerId(), createdAt: Date.now(), remarkHistory: [] };
           if (safe.remark) newC.remarkHistory.push({ time: Date.now(), text: safe.remark });
           Store.data.poolCustomers.unshift(newC);
-          await Store.save();
-          Store.markDirty();
+          await Store.saveWithLog('新增客户池客户', '客户：' + (newC.name || ''));
           showToast('客户池客户已新增', 'success');
         }
         closeModal();
@@ -6044,9 +6042,14 @@ function openPoolCustomerDetail(c) {
       html += `<div style="color:var(--text-muted);font-size:13px;">暂无跟进记录</div>`;
     } else {
       for (const r of c.remarkHistory) {
+        let imgHtml = '';
+        if (r.images && r.images.length) {
+          imgHtml = `<div class="timeline-images">${r.images.map((img, idx) => `<img class="timeline-thumb" src="${escapeHTML(img.dataUrl)}" alt="截图" data-img-src="${escapeHTML(img.dataUrl)}">`).join('')}</div>`;
+        }
         html += `<div class="timeline-item">
           <div class="timeline-time">${formatDate(r.time)}</div>
           <div class="timeline-content">${escapeHTML(r.text)}</div>
+          ${imgHtml}
         </div>`;
       }
     }
@@ -6054,6 +6057,11 @@ function openPoolCustomerDetail(c) {
 
     openModal({
       title: '客户池客户详情', size: 'md', bodyHTML: html,
+      onOpen: () => {
+        document.querySelectorAll('.timeline-thumb').forEach(el => {
+          el.onclick = () => openImageViewer(el.dataset.imgSrc || el.src);
+        });
+      },
       footer: (f) => {
         const cl = document.createElement('button'); cl.className = 'btn btn-sm btn-outline'; safeText(cl, '关闭');
         f.appendChild(cl); cl.onclick = closeModal;
@@ -6068,12 +6076,13 @@ function openPoolCustomerDetail(c) {
         };
         document.getElementById('poolDelDetail').onclick = () => {
           confirmDialog('删除客户', '确认删除客户 "' + c.name + '" ？操作不可恢复。', true, async () => {
-            Store.data.poolCustomers = Store.data.poolCustomers.filter(x => x.id !== c.id);
-            await Store.save();
-            Store.markDirty();
-            showToast('已删除', 'success');
-            closeModal();
-            renderPoolTable();
+            promptPassword('二次验证', '请输入解锁密码以确认删除', async () => {
+              Store.data.poolCustomers = Store.data.poolCustomers.filter(x => x.id !== c.id);
+              await Store.saveWithLog('删除客户池客户', '客户：' + c.name);
+              showToast('已删除', 'success');
+              closeModal();
+              renderPoolTable();
+            });
           });
         };
       }
@@ -6890,6 +6899,11 @@ function openStockCustomerForm(module, dataKey, customer) {
       updates[key] = val;
     });
     
+    // 表单字段验证
+    if (!updates.name || !String(updates.name).trim()) { showToast('联系人姓名不能为空', 'error'); return; }
+    if (updates.phone && !validatePhone(updates.phone)) { showToast('手机号格式不正确（11位数字）', 'error'); return; }
+    if (updates.email && !validateEmail(updates.email)) { showToast('邮箱格式不正确', 'error'); return; }
+    
     // 处理平台多选
     const platforms = [];
     document.querySelectorAll('.platform-checkbox-label input:checked').forEach(el => {
@@ -6903,11 +6917,23 @@ function openStockCustomerForm(module, dataKey, customer) {
       selectedTags.push(el.dataset.tagId);
     });
     
-    // 更新客户对象
-    Object.assign(c, updates);
+    // HTML 转义处理（备注字段保持原始值，其他字符串字段转义）
+    const noEscapeKeys = ['remark'];
+    const safeUpdates = {};
+    for (const k of Object.keys(updates)) {
+      if (noEscapeKeys.includes(k)) safeUpdates[k] = typeof updates[k] === 'string' ? updates[k].trim() : updates[k];
+      else safeUpdates[k] = typeof updates[k] === 'string' ? escapeHTML(updates[k]).trim() : updates[k];
+    }
+    // 移除通过 setChannelField 管理的模块专有字段，避免顶层和 channelData 重复
+    const channelManaged = ['level', 'status', 'amount', 'nextFollowDate', 'tagIds'];
+    for (const k of channelManaged) {
+      delete safeUpdates[k];
+    }
+    // 更新客户对象（仅包含非模块专有字段）
+    Object.assign(c, safeUpdates);
     c.updatedAt = Date.now();
     
-    // 设置模块特定的字段
+    // 设置模块特定的字段（仅存入 channelData）
     if (updates.level !== undefined) setChannelField(c, module, 'level', updates.level);
     if (updates.status !== undefined) setChannelField(c, module, 'status', updates.status);
     if (updates.amount !== undefined) setChannelField(c, module, 'amount', Number(updates.amount) || 0);
@@ -7178,7 +7204,7 @@ function renderDashboard() {
   renderAlertSection(list, todayStart);
 }
 
-let _dashboardMode = 'sales';
+window._dashboardMode = 'sales';
 function renderStockDashboard() {
   const stockList = (Store.data.stockCustomers || []).filter(c => c.deleted !== true);
   const brandList = (Store.data.brandProducts || []).filter(c => c.deleted !== true);
@@ -7219,13 +7245,13 @@ function renderStockDashboard() {
       </div>`).join('');
   }
 
-  renderStockAISummary();
+  renderStockDashboardAISummary();
   drawStockSourcePie();
   drawStockTrendBar();
   renderStockAlertSection();
 }
 
-function renderStockAISummary() {
+function renderStockDashboardAISummary() {
   const stockList = (Store.data.stockCustomers || []).filter(c => c.deleted !== true);
   const brandList = (Store.data.brandProducts || []).filter(c => c.deleted !== true);
   const serviceList = (Store.data.serviceFees || []).filter(c => c.deleted !== true);
@@ -7835,6 +7861,10 @@ function restoreTopbar() {
 // 显示统计浮层
 function showStatPopup(type) {
   const list = (Store.data.customers || []).filter(c => c.deleted !== true);
+  const stockList = (Store.data.stockCustomers || []).filter(c => c.deleted !== true);
+  const brandList = (Store.data.brandProducts || []).filter(c => c.deleted !== true);
+  const serviceList = (Store.data.serviceFees || []).filter(c => c.deleted !== true);
+  const qifuList = (Store.data.qiFuProducts || []).filter(c => c.deleted !== true);
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
   
@@ -7868,6 +7898,27 @@ function showStatPopup(type) {
         return followTime !== null && followTime >= todayStart.getTime();
       });
       title = '待跟进客户 (' + customers.length + ')';
+      break;
+    // 存量统计类型
+    case 'stock-total':
+      customers = [...stockList, ...brandList, ...serviceList, ...qifuList];
+      title = '存量客户总数 (' + customers.length + ')';
+      break;
+    case 'stock-list':
+      customers = stockList;
+      title = '客户列表 (' + stockList.length + ')';
+      break;
+    case 'stock-brand':
+      customers = brandList;
+      title = '品牌产品 (' + brandList.length + ')';
+      break;
+    case 'stock-service':
+      customers = serviceList;
+      title = '服务费 (' + serviceList.length + ')';
+      break;
+    case 'stock-qifu':
+      customers = qifuList;
+      title = '企服产品 (' + qifuList.length + ')';
       break;
   }
   
@@ -9341,7 +9392,7 @@ function renderBIPage() {
   setTimeout(() => renderAllBICharts(list), 50);
 }
 
-let _biMode = 'sales';
+window._biMode = 'sales';
 function renderStockBIPage() {
   const stockList = (Store.data.stockCustomers || []).filter(c => c.deleted !== true);
   const brandList = (Store.data.brandProducts || []).filter(c => c.deleted !== true);
@@ -11931,14 +11982,16 @@ function navigate(pageName) {
 
   if (pageName === 'dashboard') { 
     if (_dashboardMode === 'sales') {
-      renderDashboard(); 
+      renderDashboard();
+      startAIRefresh();
     } else {
       renderStockDashboard();
+      startStockAIRefresh('stock-list');
     }
-    startAIRefresh(); 
   }
   else {
     stopAIRefresh();
+    stopStockAIRefresh();
     if (pageName === 'bi') {
       if (_biMode === 'sales') {
         renderBIPage();
